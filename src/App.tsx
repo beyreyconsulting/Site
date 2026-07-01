@@ -44,7 +44,7 @@ function Header({onNav}:{onNav:(id:string)=>void}){
           ))}
         </nav>
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
-          <button onClick={()=>onNav("contact")} style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"10px 18px",borderRadius:10,fontWeight:700,fontSize:13,boxShadow:"0 4px 16px rgba(200,151,26,.3)"})}>
+          <button onClick={()=>onNav("contact")} className="hide-mobile" style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"10px 18px",borderRadius:10,fontWeight:700,fontSize:13,boxShadow:"0 4px 16px rgba(200,151,26,.3)"})}>
             Nous contacter
           </button>
           <button onClick={()=>setMobileOpen(true)} style={btn({display:"none",background:C.s2,color:C.t,border:`1px solid ${C.bdr}`,width:38,height:38,borderRadius:10,fontSize:18})} className="mobile-only">☰</button>
@@ -79,13 +79,13 @@ function Hero({onNav,onExplore}:{onNav:(id:string)=>void,onExplore:()=>void}){
       </div>
       <style>{`@keyframes twinkle{to{opacity:.9;transform:scale(1.4)}}`}</style>
 
-      <div style={{maxWidth:1200,margin:"0 auto",position:"relative",display:"grid",gridTemplateColumns:"1.1fr .9fr",gap:60,alignItems:"center"}}>
+      <div className="hero-grid" style={{maxWidth:1200,margin:"0 auto",position:"relative",display:"grid",gridTemplateColumns:"1.1fr .9fr",gap:60,alignItems:"center"}}>
         <div>
           <div style={{display:"inline-flex",alignItems:"center",gap:8,background:`${C.gold}12`,border:`1px solid ${C.gold}28`,borderRadius:20,padding:"6px 14px",marginBottom:24}}>
             <span style={{width:6,height:6,borderRadius:"50%",background:C.grn,animation:"pulse 2s infinite"}}/>
             <span style={{fontFamily:F.mono,fontSize:11,color:C.gold,letterSpacing:".08em"}}>CABINAT DATA & BI · BAMAKO</span>
           </div>
-          <h1 style={{fontFamily:F.serif,fontSize:64,fontWeight:600,color:"#fff",lineHeight:1.05,margin:"0 0 20px",letterSpacing:"-0.02em"}}>
+          <h1 className="hero-title" style={{fontFamily:F.serif,fontSize:64,fontWeight:600,color:"#fff",lineHeight:1.05,margin:"0 0 20px",letterSpacing:"-0.02em"}}>
             La data au service<br/>
             <span style={{color:C.gold,fontStyle:"italic"}}>des PME maliennes.</span>
           </h1>
@@ -141,7 +141,7 @@ function SectionTitle({tag,title,sub,center}:{tag:string,title:React.ReactNode,s
   return(
     <div style={{maxWidth:680,margin:center?"0 auto 48px":"0 0 40px",textAlign:center?"center":"left"}}>
       <div style={{fontFamily:F.mono,fontSize:11,color:C.gold,letterSpacing:".15em",textTransform:"uppercase",marginBottom:12}}>{tag}</div>
-      <h2 style={{fontFamily:F.serif,fontSize:42,fontWeight:600,color:"#fff",lineHeight:1.15,margin:"0 0 14px",letterSpacing:"-0.01em"}}>{title}</h2>
+      <h2 className="section-title" style={{fontFamily:F.serif,fontSize:42,fontWeight:600,color:"#fff",lineHeight:1.15,margin:"0 0 14px",letterSpacing:"-0.01em"}}>{title}</h2>
       {sub&&<p style={{fontSize:15,color:C.t2,lineHeight:1.7,margin:0}}>{sub}</p>}
     </div>
   );
@@ -248,7 +248,7 @@ function DialSection(){
           ))}
         </div>
 
-        <div style={{background:"linear-gradient(135deg,#0E1A2C,#162438)",border:`1px solid ${C.bdr}`,borderRadius:20,padding:32,display:"grid",gridTemplateColumns:"1fr 1fr",gap:32,alignItems:"center"}}>
+        <div className="dial-book" style={{background:"linear-gradient(135deg,#0E1A2C,#162438)",border:`1px solid ${C.bdr}`,borderRadius:20,padding:32,display:"grid",gridTemplateColumns:"1fr 1fr",gap:32,alignItems:"center"}}>
           <div>
             <Tag c={C.gold}>📚 LIVRE BLANC</Tag>
             <h3 style={{fontFamily:F.serif,fontSize:28,fontWeight:600,color:"#fff",margin:"14px 0 12px",lineHeight:1.2}}>L'Art de la Rigueur</h3>
@@ -346,7 +346,7 @@ function BlogSection({onOpenPost}:{onOpenPost:(p:any)=>void}){
 function AboutSection(){
   return(
     <section id="apropos" style={{padding:"80px 24px",background:"linear-gradient(180deg,transparent,rgba(14,26,44,.4),transparent)"}}>
-      <div style={{maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:60,alignItems:"center"}}>
+      <div style={{maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:60,alignItems:"center"}} className="about-grid">
         <div>
           <SectionTitle tag="Le cabinet" title={<>Beyrey <span style={{color:C.gold,fontStyle:"italic"}}>Consulting</span></>}/>
           <p style={{fontSize:15,color:C.t,lineHeight:1.8,margin:"0 0 20px"}}>
@@ -403,7 +403,7 @@ function ContactSection(){
 
   return(
     <section id="contact" style={{padding:"80px 24px",maxWidth:1200,margin:"0 auto"}}>
-      <div style={{background:"linear-gradient(135deg,#0E1A2C,#162438)",border:`1px solid ${C.bdr}`,borderRadius:24,overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr"}}>
+      <div style={{background:"linear-gradient(135deg,#0E1A2C,#162438)",border:`1px solid ${C.bdr}`,borderRadius:24,overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr"}} className="contact-grid">
         <div style={{padding:40}}>
           <SectionTitle tag="Travaillons ensemble" title={<>Un projet data ?<br/><span style={{color:C.gold,fontStyle:"italic"}}>Parlons-en.</span></>}/>
           <p style={{fontSize:14,color:C.t2,lineHeight:1.7,margin:"0 0 24px"}}>
@@ -420,7 +420,7 @@ function ContactSection(){
             </div>
             <div style={{display:"flex",alignItems:"center",gap:12,color:C.t2,fontSize:13}}>
               <span style={{width:36,height:36,borderRadius:10,background:`${C.wa}18`,color:C.wa,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>💬</span>
-              +223 76 00 00 00
+              +223 92 97 66 46
             </div>
           </div>
         </div>
@@ -498,7 +498,7 @@ function Footer({onNav}:{onNav:(id:string)=>void}){
         <div>
           <div style={{fontFamily:F.mono,fontSize:10,color:C.gold,letterSpacing:".1em",textTransform:"uppercase",marginBottom:14}}>Contact</div>
           <div style={{fontSize:13,color:C.t2,lineHeight:1.8}}>
-            📍 Bamako, Mali<br/>✉️ contact@beyrey.consulting<br/>💬 +223 76 00 00 00
+            📍 Bamako, Mali<br/>✉️ contact@beyrey.consulting<br/>💬 +223 92 97 66 46
           </div>
         </div>
       </div>
@@ -545,6 +545,17 @@ export default function App() {
         @media(max-width:768px){
           .mobile-only{display:flex !important;}
           nav{display:none !important;}
+          .hero-grid{grid-template-columns:1fr !important;gap:32px !important;}
+          .hero-title{font-size:40px !important;}
+          .about-grid{grid-template-columns:1fr !important;gap:32px !important;}
+          .contact-grid{grid-template-columns:1fr !important;}
+          .dial-book{grid-template-columns:1fr !important;}
+          .section-title{font-size:30px !important;}
+          .hide-mobile{display:none !important;}
+        }
+        @media(max-width:480px){
+          .hero-title{font-size:32px !important;}
+          .section-title{font-size:26px !important;}
         }
       `}</style>
 

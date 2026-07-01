@@ -28,7 +28,7 @@ function Header({onNav}:{onNav:(id:string)=>void}){
     <header style={{position:"fixed",top:0,left:0,right:0,zIndex:100,transition:"all .3s",background:scrolled?"rgba(8,17,30,.92)":"transparent",backdropFilter:scrolled?"blur(12px)":"none",borderBottom:scrolled?`1px solid ${C.bdr}`:"1px solid transparent"}}>
       <div style={{maxWidth:1200,margin:"0 auto",padding:"14px 24px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div onClick={()=>onNav("hero")} style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}>
-          <div style={{width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#C8971A,#E0A820)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:800,color:C.bg}}>B</div>
+          <img src="/logo.png" alt="Beyrey Consulting" style={{width:40,height:40,objectFit:"contain",borderRadius:8}}/>
           <div>
             <div style={{fontFamily:F.serif,fontSize:18,fontWeight:600,color:"#fff",lineHeight:1}}>Beyrey</div>
             <div style={{fontFamily:F.mono,fontSize:9,color:C.gold,letterSpacing:".15em",textTransform:"uppercase"}}>Consulting</div>
@@ -367,7 +367,7 @@ function AboutSection(){
         <div style={{position:"relative"}}>
           <div style={{background:"linear-gradient(160deg,#0E1A2C,#162438)",border:`1px solid ${C.bdr}`,borderRadius:20,padding:28}}>
             <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
-              <div style={{width:72,height:72,borderRadius:"50%",background:"linear-gradient(135deg,#C8971A,#E0A820)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:30}}>👨‍🏫</div>
+              <img src="/tof.jpg" alt="Ibrahim Seydou" style={{width:72,height:72,borderRadius:"50%",objectFit:"cover",border:"2px solid #C8971A"}}/>
               <div>
                 <div style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:"#fff"}}>Ibrahim Seydou</div>
                 <div style={{fontSize:12,color:C.gold,fontFamily:F.mono}}>Fondateur · Consultant Principal</div>
@@ -468,7 +468,7 @@ function Footer({onNav}:{onNav:(id:string)=>void}){
       <div style={{maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:40,marginBottom:32}}>
         <div>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
-            <div style={{width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#C8971A,#E0A820)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:800,color:C.bg}}>B</div>
+            <img src="/logo.png" alt="Beyrey Consulting" style={{width:36,height:36,objectFit:"contain",borderRadius:8}}/>
             <div>
               <div style={{fontFamily:F.serif,fontSize:18,fontWeight:600,color:"#fff",lineHeight:1}}>Beyrey</div>
               <div style={{fontFamily:F.mono,fontSize:9,color:C.gold,letterSpacing:".15em",textTransform:"uppercase"}}>Consulting</div>

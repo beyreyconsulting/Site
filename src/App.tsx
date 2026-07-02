@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { C, F, COURSES, POSTS, DIAL, TESTIMONIALS, STATS, fmt, btn, Tag } from "./data.tsx";
 import { KalanAI, VideoPlayer, PaymentModal, BookDownloadModal } from "./components";
 import { CourseDetailModal, BlogModal } from "./modals";
+import { AdminPanel } from "./admin";
+import { CourseViewer, CourseCatalog } from "./lms";
 
 /* ═══════════════════════════════════════════════════
    HEADER
@@ -515,13 +517,37 @@ function Footer({onNav}:{onNav:(id:string)=>void}){
 /* ═══════════════════════════════════════════════════
    APP ROOT
 ═══════════════════════════════════════════════════ */
+type Route = "home" | "admin" | "lms-catalog" | "lms-course";
+
+function parseHash(): { route: Route; courseId?: string } {
+  const hash = window.location.hash.slice(1);
+  if (hash === "admin") return { route: "admin" };
+  if (hash === "lms") return { route: "lms-catalog" };
+  if (hash.startsWith("lms/")) return { route: "lms-course", courseId: hash.slice(4) };
+  return { route: "home" };
+}
+
 export default function App() {
+  const [route, setRoute] = useState<Route>("home");
+  const [lmsCourseId, setLmsCourseId] = useState<string | undefined>();
   const [showPayment,setShowPayment]=useState(false);
   const [payCourse,setPayCourse]=useState<any>(null);
   const [detailCourse,setDetailCourse]=useState<any>(null);
   const [blogPost,setBlogPost]=useState<any>(null);
   const [enrolled,setEnrolled]=useState<number[]>([]);
   const [showBook,setShowBook]=useState(false);
+
+  // Hash routing
+  useEffect(() => {
+    const updateRoute = () => {
+      const parsed = parseHash();
+      setRoute(parsed.route);
+      setLmsCourseId(parsed.courseId);
+    };
+    updateRoute();
+    window.addEventListener("hashchange", updateRoute);
+    return () => window.removeEventListener("hashchange", updateRoute);
+  }, []);
 
   const nav=(id:string)=>{
     const el=document.getElementById(id);
@@ -539,6 +565,32 @@ export default function App() {
     if(payCourse&&!enrolled.includes(payCourse.id))setEnrolled([...enrolled,payCourse.id]);
   };
 
+  // Admin route
+  if (route === "admin") {
+    return <AdminPanel />;
+  }
+
+  // LMS Catalog route
+  if (route === "lms-catalog") {
+    return (
+      <CourseCatalog
+        onSelectCourse={(id) => { window.location.hash = `lms/${id}`; }}
+        onBack={() => { window.location.hash = ""; }}
+      />
+    );
+  }
+
+  // LMS Course Viewer route
+  if (route === "lms-course" && lmsCourseId) {
+    return (
+      <CourseViewer
+        courseId={lmsCourseId}
+        onBack={() => { window.location.hash = "lms"; }}
+      />
+    );
+  }
+
+  // Home route (default)
   return (
     <div style={{background:C.bg,minHeight:"100vh",color:C.t,fontFamily:F.sans,overflowX:"hidden"}}>
       <style>{`

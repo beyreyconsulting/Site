@@ -4,6 +4,7 @@ import { KalanAI, VideoPlayer, PaymentModal, BookDownloadModal } from "./compone
 import { CourseDetailModal, BlogModal } from "./modals";
 import { AdminPanel } from "./admin";
 import { CourseViewer, CourseCatalog } from "./lms";
+import { useAuth, AuthModal, StudentDashboard, CartModal, useCart, useEnrollments } from "./student";
 
 /* ═══════════════════════════════════════════════════
    HEADER
@@ -44,8 +45,27 @@ function Header({onNav}:{onNav:(id:string)=>void}){
               {x.l}
             </button>
           ))}
+          <button onClick={()=>{ window.location.hash = "lms"; }} style={btn({background:"none",color:C.gold,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:"2px solid transparent",transition:"all .2s"})}
+            onMouseEnter={e=>{e.currentTarget.style.borderBottomColor=C.gold;}}
+            onMouseLeave={e=>{e.currentTarget.style.borderBottomColor="transparent";}}>
+            LMS
+          </button>
         </nav>
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
+          {user && (
+            <button onClick={()=>setShowCart(true)} style={btn({background:C.s2,border:`1px solid ${C.bdr}`,color:C.t,padding:"8px 12px",borderRadius:10,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6})}>
+              🛒 {cartCount > 0 && <span style={{background:C.gold,color:C.bg,borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11}}>{cartCount}</span>}
+            </button>
+          )}
+          {user ? (
+            <button onClick={()=>{ window.location.hash = "student"; }} style={btn({background:`${C.gold}18`,border:`1px solid ${C.gold}30`,color:C.gold,padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:700})}>
+              {profile?.full_name?.split(" ")[0] || "Espace"} ▾
+            </button>
+          ) : (
+            <button onClick={()=>setShowAuth(true)} style={btn({background:"none",color:C.t2,border:`1px solid ${C.bdr}`,padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:600})}>
+              Connexion
+            </button>
+          )}
           <button onClick={()=>onNav("contact")} className="hide-mobile" style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"10px 18px",borderRadius:10,fontWeight:700,fontSize:13,boxShadow:"0 4px 16px rgba(200,151,26,.3)"})}>
             Nous contacter
           </button>
@@ -517,11 +537,12 @@ function Footer({onNav}:{onNav:(id:string)=>void}){
 /* ═══════════════════════════════════════════════════
    APP ROOT
 ═══════════════════════════════════════════════════ */
-type Route = "home" | "admin" | "lms-catalog" | "lms-course";
+type Route = "home" | "admin" | "lms-catalog" | "lms-course" | "student";
 
 function parseHash(): { route: Route; courseId?: string } {
   const hash = window.location.hash.slice(1);
   if (hash === "admin") return { route: "admin" };
+  if (hash === "student") return { route: "student" };
   if (hash === "lms") return { route: "lms-catalog" };
   if (hash.startsWith("lms/")) return { route: "lms-course", courseId: hash.slice(4) };
   return { route: "home" };
@@ -536,6 +557,11 @@ export default function App() {
   const [blogPost,setBlogPost]=useState<any>(null);
   const [enrolled,setEnrolled]=useState<number[]>([]);
   const [showBook,setShowBook]=useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [showCart, setShowCart] = useState(false);
+
+  const { user, profile, loading: authLoading, signIn, signOut } = useAuth();
+  const { addToCart, count: cartCount } = useCart(user);
 
   // Hash routing
   useEffect(() => {
@@ -570,12 +596,34 @@ export default function App() {
     return <AdminPanel />;
   }
 
+  // Student dashboard route
+  if (route === "student") {
+    if (!user) {
+      return (
+        <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🔐</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: C.t, marginBottom: 8 }}>Connexion requise</div>
+            <div style={{ fontSize: 13, color: C.t2, marginBottom: 20 }}>Connectez-vous pour acceder a votre espace etudiant.</div>
+            <button onClick={() => setShowAuth(true)} style={btn({ background: C.gold, color: C.bg, padding: "12px 24px", borderRadius: 10, fontWeight: 700, fontSize: 14 })}>
+              Se connecter
+            </button>
+          </div>
+          {showAuth && <AuthModal onClose={() => setShowAuth(false)} onAuth={() => setShowAuth(false)} />}
+        </div>
+      );
+    }
+    return <StudentDashboard user={user} profile={profile} onSignOut={signOut} onViewCourse={(id) => { window.location.hash = `lms/${id}`; }} />;
+  }
+
   // LMS Catalog route
   if (route === "lms-catalog") {
     return (
       <CourseCatalog
         onSelectCourse={(id) => { window.location.hash = `lms/${id}`; }}
         onBack={() => { window.location.hash = ""; }}
+        user={user}
+        onAddToCart={async (courseId) => { await addToCart(courseId); setShowCart(true); }}
       />
     );
   }
@@ -586,6 +634,7 @@ export default function App() {
       <CourseViewer
         courseId={lmsCourseId}
         onBack={() => { window.location.hash = "lms"; }}
+        user={user}
       />
     );
   }
@@ -635,6 +684,12 @@ export default function App() {
       )}
       {showBook&&(
         <BookDownloadModal onClose={()=>setShowBook(false)}/>
+      )}
+      {showAuth && (
+        <AuthModal onClose={()=>setShowAuth(false)} onAuth={()=>setShowAuth(false)} />
+      )}
+      {showCart && user && (
+        <CartModal onClose={()=>setShowCart(false)} onCheckout={()=>{ setShowCart(false); /* TODO: implement checkout */ }} />
       )}
 
       <a

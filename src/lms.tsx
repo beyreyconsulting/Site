@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { C, F, btn } from "./data.tsx";
 import { supabase } from "./supabase";
 
@@ -12,14 +12,100 @@ interface Question { id: string; quiz_id: string; question: string; explanation:
 interface Option { id: string; question_id: string; text: string; is_correct: boolean; position: number; }
 interface QA { id: string; lesson_id: string; author_name: string; author_email: string; question: string; is_answered: boolean; created_at: string; answers: QAAnswer[]; }
 interface QAAnswer { id: string; qa_id: string; author_name: string; answer: string; is_from_instructor: boolean; created_at: string; }
+interface LessonProgress { lesson_id: string; completed_at?: string; video_progress_seconds: number; quiz_passed: boolean; }
+interface User { id: string; email: string; }
 
 /* ─────────────── HELPERS ─────────────── */
 const fmtSecs = (s: number) => { if (!s || s <= 0) return ""; const m = Math.floor(s / 60); const sec = s % 60; return `${m}:${String(sec).padStart(2, "0")}`; };
 const fmtBytes = (b: number) => b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${(b / 1024).toFixed(0)} KB`;
 const fileIcon = (m: string) => m?.includes("pdf") ? "📄" : m?.includes("word") || m?.includes("document") ? "📝" : m?.includes("sheet") || m?.includes("excel") ? "📊" : m?.includes("zip") || m?.includes("rar") ? "📦" : "📎";
 
+/* ─────────────── PROGRESS TRACKING HOOK ─────────────── */
+function useProgress(user: User | null, courseId: string) {
+  const [progress, setProgress] = useState<Record<string, LessonProgress>>({});
+  const [enrollmentId, setEnrollmentId] = useState<string | null>(null);
+  const [progressPct, setProgressPct] = useState(0);
+
+  const loadProgress = useCallback(async () => {
+    if (!user || !courseId) return;
+    // Get enrollment
+    const { data: enrollment } = await supabase
+      .from("student_enrollments")
+      .select("id, progress_pct")
+      .eq("student_id", user.id)
+      .eq("course_id", courseId)
+      .maybeSingle();
+    if (enrollment) {
+      setEnrollmentId(enrollment.id);
+      setProgressPct(enrollment.progress_pct || 0);
+    }
+    // Get lesson progress
+    const { data: lp } = await supabase
+      .from("lesson_progress")
+      .select("lesson_id, completed_at, video_progress_seconds, quiz_passed")
+      .eq("student_id", user.id);
+    const map: Record<string, LessonProgress> = {};
+    (lp || []).forEach((p: any) => { map[p.lesson_id] = p; });
+    setProgress(map);
+  }, [user, courseId]);
+
+  useEffect(() => { loadProgress(); }, [loadProgress]);
+
+  const markComplete = async (lessonId: string) => {
+    if (!user) return;
+    const existing = progress[lessonId];
+    if (existing?.completed_at) return; // Already complete
+
+    const { error } = await supabase.from("lesson_progress").upsert({
+      student_id: user.id,
+      lesson_id: lessonId,
+      completed_at: new Date().toISOString(),
+      video_progress_seconds: existing?.video_progress_seconds || 0,
+      quiz_passed: existing?.quiz_passed || false,
+    }, { onConflict: "student_id,lesson_id" });
+    if (!error) loadProgress();
+  };
+
+  const updateVideoProgress = async (lessonId: string, seconds: number) => {
+    if (!user) return;
+    const existing = progress[lessonId];
+    await supabase.from("lesson_progress").upsert({
+      student_id: user.id,
+      lesson_id: lessonId,
+      video_progress_seconds: seconds,
+      completed_at: existing?.completed_at || null,
+      quiz_passed: existing?.quiz_passed || false,
+    }, { onConflict: "student_id,lesson_id" });
+  };
+
+  const markQuizPassed = async (lessonId: string) => {
+    if (!user) return;
+    const existing = progress[lessonId];
+    await supabase.from("lesson_progress").upsert({
+      student_id: user.id,
+      lesson_id: lessonId,
+      video_progress_seconds: existing?.video_progress_seconds || 0,
+      completed_at: existing?.completed_at || new Date().toISOString(),
+      quiz_passed: true,
+    }, { onConflict: "student_id,lesson_id" });
+    loadProgress();
+  };
+
+  const updateCourseProgress = async (totalLessons: number) => {
+    if (!user || !enrollmentId || totalLessons === 0) return;
+    const completedLessons = Object.values(progress).filter(p => p.completed_at).length;
+    const pct = Math.round((completedLessons / totalLessons) * 100);
+    setProgressPct(pct);
+    const update: any = { progress_pct: pct, last_accessed_at: new Date().toISOString() };
+    if (pct >= 100) update.completed_at = new Date().toISOString();
+    await supabase.from("student_enrollments").update(update).eq("id", enrollmentId);
+  };
+
+  return { progress, progressPct, markComplete, updateVideoProgress, markQuizPassed, updateCourseProgress, loadProgress, enrollmentId };
+}
+
 /* ─────────────── PROTECTED VIDEO PLAYER ─────────────── */
-function ProtectedVideoPlayer({ url, isPreview }: { url: string; isPreview?: boolean }) {
+function ProtectedVideoPlayer({ url, isPreview, onComplete, onProgress }: { url: string; isPreview?: boolean; onComplete?: () => void; onProgress?: (seconds: number) => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -48,16 +134,26 @@ function ProtectedVideoPlayer({ url, isPreview }: { url: string; isPreview?: boo
     return `${m}:${String(sec).padStart(2, "0")}`;
   };
 
+  const handleTimeUpdate = () => {
+    if (!videoRef.current) return;
+    const t = videoRef.current.currentTime;
+    setCurrentTime(t);
+    onProgress?.(Math.floor(t));
+  };
+
+  const handleEnded = () => {
+    setPlaying(false);
+    onComplete?.();
+  };
+
   return (
     <div style={{ background: "#000", borderRadius: 12, overflow: "hidden", position: "relative" }}>
-      {/* Preview badge */}
       {isPreview && (
         <div style={{ position: "absolute", top: 12, left: 12, background: `${C.grn}20`, color: C.grn, padding: "4px 10px", borderRadius: 6, fontSize: 10, fontFamily: F.mono, fontWeight: 700, zIndex: 10, border: `1px solid ${C.grn}40` }}>
           APERCU GRATUIT
         </div>
       )}
 
-      {/* Video element with protection */}
       <video
         ref={videoRef}
         src={url}
@@ -66,16 +162,14 @@ function ProtectedVideoPlayer({ url, isPreview }: { url: string; isPreview?: boo
         disableRemotePlayback
         onContextMenu={e => e.preventDefault()}
         onLoadedMetadata={() => { if (videoRef.current) setDuration(videoRef.current.duration); setLoading(false); }}
-        onTimeUpdate={() => { if (videoRef.current) setCurrentTime(videoRef.current.currentTime); }}
-        onEnded={() => setPlaying(false)}
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={handleEnded}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         style={{ width: "100%", display: "block", background: "#000" }}
       />
 
-      {/* Custom controls overlay */}
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,.85))", padding: "20px 16px 12px" }}>
-        {/* Progress bar */}
         <div onClick={seek} style={{ height: 4, background: "rgba(255,255,255,.15)", borderRadius: 4, cursor: "pointer", marginBottom: 10 }}>
           <div style={{ height: "100%", width: `${(currentTime / duration) * 100 || 0}%`, background: C.gold, borderRadius: 4, transition: "width .05s linear" }} />
         </div>
@@ -91,7 +185,6 @@ function ProtectedVideoPlayer({ url, isPreview }: { url: string; isPreview?: boo
         </div>
       </div>
 
-      {/* Loading state */}
       {loading && url && (
         <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ width: 36, height: 36, border: `3px solid ${C.bdr}`, borderTopColor: C.gold, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
@@ -104,13 +197,12 @@ function ProtectedVideoPlayer({ url, isPreview }: { url: string; isPreview?: boo
 }
 
 /* ─────────────── QUIZ TAKER ─────────────── */
-function QuizTaker({ lessonId, onComplete }: { lessonId: string; onComplete?: () => void }) {
+function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?: string; onComplete?: () => void }) {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
-  const [showExplanations, setShowExplanations] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const load = async () => {
@@ -130,7 +222,7 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; onComplete?: ()
     setAnswers(a => ({ ...a, [qId]: oId }));
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (submitted) return;
     let correct = 0;
     for (const q of questions) {
@@ -140,6 +232,18 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; onComplete?: ()
     const pct = Math.round((correct / questions.length) * 100);
     setScore(pct);
     setSubmitted(true);
+
+    // Save attempt
+    if (userId) {
+      await supabase.from("quiz_attempts").insert({
+        student_id: userId,
+        quiz_id: quiz.id,
+        score: pct,
+        passed: pct >= quiz.pass_score,
+        answers: answers,
+      });
+    }
+
     if (pct >= quiz.pass_score) onComplete?.();
   };
 
@@ -177,7 +281,6 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; onComplete?: ()
       {questions.map((q, qi) => {
         const userAnswer = answers[q.id];
         const isCorrect = q.options.find(o => o.id === userAnswer)?.is_correct;
-        const correctOption = q.options.find(o => o.is_correct);
 
         return (
           <div key={q.id} style={{ background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 18, marginBottom: 14 }}>
@@ -277,7 +380,6 @@ function QASection({ lessonId }: { lessonId: string }) {
         </div>
       </div>
 
-      {/* Ask question form */}
       <div style={{ background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 16, marginBottom: 20 }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: C.t, marginBottom: 12 }}>Posez votre question</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
@@ -295,7 +397,6 @@ function QASection({ lessonId }: { lessonId: string }) {
         </button>
       </div>
 
-      {/* Existing questions */}
       {qas.length === 0 && <div style={{ fontSize: 13, color: C.t3, textAlign: "center", padding: 20 }}>Aucune question pour cette lecon. Soyez le premier a poser la votre !</div>}
       {qas.map(qa => (
         <div key={qa.id} style={{ background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 16, marginBottom: 12 }}>
@@ -311,7 +412,6 @@ function QASection({ lessonId }: { lessonId: string }) {
           </div>
           <p style={{ fontSize: 13, color: C.t, lineHeight: 1.65, margin: 0 }}>{qa.question}</p>
 
-          {/* Answers */}
           {qa.answers.map(ans => (
             <div key={ans.id} style={{ marginTop: 12, marginLeft: 16, padding: 12, background: ans.is_from_instructor ? `${C.gold}08` : C.s1, border: `1px solid ${ans.is_from_instructor ? C.gold + "30" : C.bdr}`, borderRadius: 10 }}>
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
@@ -371,9 +471,10 @@ function FilesSection({ lessonId }: { lessonId: string }) {
 }
 
 /* ─────────────── LESSON VIEWER ─────────────── */
-function LessonViewer({ lesson, onBack, onPrevious, onNext, hasQuiz }: { lesson: Lesson; onBack: () => void; onPrevious?: () => void; onNext?: () => void; hasQuiz?: boolean }) {
+function LessonViewer({ lesson, onBack, onPrevious, onNext, hasQuiz, user, progress, onComplete, onQuizPass }: { lesson: Lesson; onBack: () => void; onPrevious?: () => void; onNext?: () => void; hasQuiz?: boolean; user: User | null; progress?: LessonProgress; onComplete: () => void; onQuizPass: () => void }) {
   const [tab, setTab] = useState<"video" | "files" | "quiz" | "qa">("video");
-  const hasFiles = false; // will be checked in FilesSection
+
+  const isComplete = progress?.completed_at;
 
   return (
     <div>
@@ -383,7 +484,10 @@ function LessonViewer({ lesson, onBack, onPrevious, onNext, hasQuiz }: { lesson:
           ← Retour
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lesson.title}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lesson.title}</div>
+            {isComplete && <span style={{ background: `${C.grn}20`, color: C.grn, padding: "2px 8px", borderRadius: 6, fontSize: 10, fontFamily: F.mono, fontWeight: 700 }}>✓ Terminee</span>}
+          </div>
           {lesson.duration_seconds > 0 && <div style={{ fontSize: 11, color: C.t3, fontFamily: F.mono }}>{fmtSecs(lesson.duration_seconds)}</div>}
         </div>
         <div style={{ display: "flex", gap: 6 }}>
@@ -402,7 +506,7 @@ function LessonViewer({ lesson, onBack, onPrevious, onNext, hasQuiz }: { lesson:
         </button>
         {hasQuiz && (
           <button onClick={() => setTab("quiz")} style={btn({ background: tab === "quiz" ? C.gold : C.s2, color: tab === "quiz" ? C.bg : C.t2, border: `1px solid ${tab === "quiz" ? C.gold : C.bdr}`, padding: "8px 16px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>
-            🧠 Quiz
+            🧠 Quiz {progress?.quiz_passed && <span style={{ color: C.grn }}>✓</span>}
           </button>
         )}
         <button onClick={() => setTab("qa")} style={btn({ background: tab === "qa" ? C.gold : C.s2, color: tab === "qa" ? C.bg : C.t2, border: `1px solid ${tab === "qa" ? C.gold : C.bdr}`, padding: "8px 16px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>
@@ -413,16 +517,19 @@ function LessonViewer({ lesson, onBack, onPrevious, onNext, hasQuiz }: { lesson:
       {/* Content */}
       {tab === "video" && (
         lesson.video_url ? (
-          <ProtectedVideoPlayer url={lesson.video_url} isPreview={lesson.is_preview} />
+          <ProtectedVideoPlayer url={lesson.video_url} isPreview={lesson.is_preview} onComplete={onComplete} />
         ) : (
           <div style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 16, padding: 60, textAlign: "center" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🎬</div>
             <div style={{ fontSize: 15, color: C.t2 }}>Aucune video pour cette lecon</div>
+            <button onClick={onComplete} style={btn({ background: C.gold, color: C.bg, padding: "12px 24px", borderRadius: 10, fontWeight: 700, fontSize: 13, marginTop: 20 })}>
+              Marquer comme terminee
+            </button>
           </div>
         )
       )}
       {tab === "files" && <FilesSection lessonId={lesson.id} />}
-      {tab === "quiz" && <QuizTaker lessonId={lesson.id} />}
+      {tab === "quiz" && <QuizTaker lessonId={lesson.id} userId={user?.id} onComplete={onQuizPass} />}
       {tab === "qa" && <QASection lessonId={lesson.id} />}
 
       {/* Description */}
@@ -437,7 +544,7 @@ function LessonViewer({ lesson, onBack, onPrevious, onNext, hasQuiz }: { lesson:
 }
 
 /* ─────────────── COURSE VIEWER ─────────────── */
-export function CourseViewer({ courseId, onBack }: { courseId: string; onBack: () => void }) {
+export function CourseViewer({ courseId, onBack, user }: { courseId: string; onBack: () => void; user: User | null }) {
   const [course, setCourse] = useState<Course | null>(null);
   const [sections, setSections] = useState<Section[]>([]);
   const [lessons, setLessons] = useState<Record<string, Lesson[]>>({});
@@ -445,6 +552,8 @@ export function CourseViewer({ courseId, onBack }: { courseId: string; onBack: (
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+
+  const { progress, progressPct, markComplete, markQuizPassed, updateCourseProgress, enrollmentId } = useProgress(user, courseId);
 
   useEffect(() => {
     const load = async () => {
@@ -480,6 +589,16 @@ export function CourseViewer({ courseId, onBack }: { courseId: string; onBack: (
   const prevLesson = lessonIndex > 0 ? allLessons[lessonIndex - 1] : undefined;
   const nextLesson = lessonIndex >= 0 && lessonIndex < allLessons.length - 1 ? allLessons[lessonIndex + 1] : undefined;
 
+  // Calculate overall progress
+  const totalLessons = allLessons.length;
+  const completedLessons = Object.values(progress).filter(p => p.completed_at).length;
+
+  useEffect(() => {
+    if (totalLessons > 0) {
+      updateCourseProgress(totalLessons);
+    }
+  }, [completedLessons, totalLessons]);
+
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -513,6 +632,10 @@ export function CourseViewer({ courseId, onBack }: { courseId: string; onBack: (
             onPrevious={prevLesson ? () => setSelectedLesson(prevLesson) : undefined}
             onNext={nextLesson ? () => setSelectedLesson(nextLesson) : undefined}
             hasQuiz={!!quizzes[selectedLesson.id]}
+            user={user}
+            progress={progress[selectedLesson.id]}
+            onComplete={() => markComplete(selectedLesson.id)}
+            onQuizPass={() => markQuizPassed(selectedLesson.id)}
           />
         </div>
       </div>
@@ -520,7 +643,6 @@ export function CourseViewer({ courseId, onBack }: { courseId: string; onBack: (
   }
 
   // Course overview
-  const totalLessons = allLessons.length;
   const totalDuration = allLessons.reduce((sum, l) => sum + (l.duration_seconds || 0), 0);
   const totalQuizzes = Object.keys(quizzes).length;
 
@@ -530,7 +652,7 @@ export function CourseViewer({ courseId, onBack }: { courseId: string; onBack: (
       <div style={{ background: "linear-gradient(160deg,#0E1A2C,#162438)", borderBottom: `1px solid ${C.bdr}` }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "100px 24px 32px" }}>
           <button onClick={onBack} style={btn({ background: C.s2, border: `1px solid ${C.bdr}`, color: C.t2, padding: "8px 14px", borderRadius: 8, fontSize: 12, marginBottom: 20 })}>
-            ← Retour au site
+            ← Retour
           </button>
           <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
             <div style={{ width: 64, height: 64, borderRadius: 16, background: `${course.color}18`, border: `1px solid ${course.color}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, flexShrink: 0 }}>
@@ -543,13 +665,31 @@ export function CourseViewer({ courseId, onBack }: { courseId: string; onBack: (
               </div>
               <h1 style={{ fontFamily: F.serif, fontSize: 28, fontWeight: 600, color: "#fff", margin: "0 0 6px", lineHeight: 1.2 }}>{course.title}</h1>
               {course.subtitle && <div style={{ fontSize: 14, color: C.t2, marginBottom: 12 }}>{course.subtitle}</div>}
-              <div style={{ display: "flex", gap: 20, fontSize: 11, color: C.t3, fontFamily: F.mono, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 20, fontSize: 11, color: C.t3, fontFamily: F.mono, flexWrap: "wrap", alignItems: "center" }}>
                 <span>📚 {totalLessons} lecons</span>
                 <span>⏱️ {totalDuration > 0 ? `${Math.floor(totalDuration / 60)} min` : "Duration variable"}</span>
                 <span>🧠 {totalQuizzes} quiz</span>
+                {enrollmentId && (
+                  <span style={{ color: progressPct >= 100 ? C.grn : C.gold, fontWeight: 700 }}>
+                    {progressPct >= 100 ? "✓ Terminee" : `${progressPct}% complete`}
+                  </span>
+                )}
               </div>
             </div>
           </div>
+
+          {/* Progress bar if enrolled */}
+          {enrollmentId && totalLessons > 0 && (
+            <div style={{ marginTop: 20 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ fontSize: 11, color: C.t2, fontFamily: F.mono }}>Progression</span>
+                <span style={{ fontSize: 11, color: progressPct >= 100 ? C.grn : C.gold, fontFamily: F.mono, fontWeight: 700 }}>{completedLessons}/{totalLessons} lecons ({progressPct}%)</span>
+              </div>
+              <div style={{ height: 8, background: C.bdr, borderRadius: 4, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${progressPct}%`, background: progressPct >= 100 ? C.grn : C.gold, borderRadius: 4, transition: "width .3s" }} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -595,6 +735,7 @@ export function CourseViewer({ courseId, onBack }: { courseId: string; onBack: (
                 <div style={{ borderTop: `1px solid ${C.bdr}`, padding: "0 20px 16px" }}>
                   {secLessons.map((les, li) => {
                     const hasQuiz = !!quizzes[les.id];
+                    const lessonProg = progress[les.id];
                     return (
                       <div key={les.id}
                         onClick={() => setSelectedLesson(les)}
@@ -602,15 +743,15 @@ export function CourseViewer({ courseId, onBack }: { courseId: string; onBack: (
                         onMouseEnter={e => { e.currentTarget.style.borderColor = C.gold; e.currentTarget.style.background = `${C.gold}08`; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = C.bdr; e.currentTarget.style.background = C.bg; }}
                       >
-                        <div style={{ width: 28, height: 28, borderRadius: 8, background: les.video_url ? `${C.grn}18` : C.s2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: les.video_url ? C.grn : C.t3, flexShrink: 0 }}>
-                          {les.video_url ? "▶" : li + 1}
+                        <div style={{ width: 28, height: 28, borderRadius: 8, background: lessonProg?.completed_at ? C.grn : les.video_url ? `${C.gold}18` : C.s2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: lessonProg?.completed_at ? "#fff" : les.video_url ? C.gold : C.t3, flexShrink: 0 }}>
+                          {lessonProg?.completed_at ? "✓" : les.video_url ? "▶" : li + 1}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 13, fontWeight: 600, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{les.title}</div>
                           <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
                             {les.duration_seconds > 0 && <span style={{ fontSize: 10, color: C.t3, fontFamily: F.mono }}>{fmtSecs(les.duration_seconds)}</span>}
                             {les.is_preview && <span style={{ fontSize: 10, color: C.grn, fontFamily: F.mono }}>Apercu gratuit</span>}
-                            {hasQuiz && <span style={{ fontSize: 10, color: C.gold, fontFamily: F.mono }}>Quiz</span>}
+                            {hasQuiz && <span style={{ fontSize: 10, color: lessonProg?.quiz_passed ? C.grn : C.gold, fontFamily: F.mono }}>{lessonProg?.quiz_passed ? "Quiz ✓" : "Quiz"}</span>}
                           </div>
                         </div>
                         <span style={{ fontSize: 14, color: C.t3 }}>→</span>
@@ -628,9 +769,10 @@ export function CourseViewer({ courseId, onBack }: { courseId: string; onBack: (
 }
 
 /* ─────────────── COURSE CATALOG PAGE ─────────────── */
-export function CourseCatalog({ onSelectCourse, onBack }: { onSelectCourse: (id: string) => void; onBack: () => void }) {
+export function CourseCatalog({ onSelectCourse, onBack, user, onAddToCart }: { onSelectCourse: (id: string) => void; onBack: () => void; user: User | null; onAddToCart?: (courseId: string) => void }) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [enrollmentIds, setEnrollmentIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const load = async () => {
@@ -640,6 +782,13 @@ export function CourseCatalog({ onSelectCourse, onBack }: { onSelectCourse: (id:
     };
     load();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("student_enrollments").select("course_id").eq("student_id", user.id).then(({ data }) => {
+      setEnrollmentIds(new Set((data || []).map((e: any) => e.course_id)));
+    });
+  }, [user]);
 
   if (loading) {
     return (
@@ -659,7 +808,7 @@ export function CourseCatalog({ onSelectCourse, onBack }: { onSelectCourse: (id:
             ← Retour au site
           </button>
           <h1 style={{ fontFamily: F.serif, fontSize: 36, fontWeight: 600, color: "#fff", margin: 0 }}>Catalogue des formations</h1>
-          <p style={{ fontSize: 15, color: C.t2, marginTop: 8 }}>Explorez nos formations disponibles et commencez votre apprentissage.</p>
+          <p style={{ fontSize: 15, color: C.t2, marginTop: 8 }}>Explorez nos formations disponibles et lancez-vous.</p>
         </div>
       </div>
 
@@ -673,37 +822,51 @@ export function CourseCatalog({ onSelectCourse, onBack }: { onSelectCourse: (id:
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
-            {courses.map(c => (
-              <div key={c.id}
-                style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: "hidden", transition: "all .3s", cursor: "pointer" }}
-                onClick={() => onSelectCourse(c.id)}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = c.color; e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 20px 48px rgba(0,0,0,.4)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = C.bdr; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
-                <div style={{ padding: 20, background: `linear-gradient(135deg,${c.color}10,transparent)`, borderBottom: `1px solid ${C.bdr}` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                    <div style={{ width: 48, height: 48, borderRadius: 12, background: `${c.color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{c.icon}</div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
-                      <span style={{ fontSize: 10, color: c.color, fontFamily: F.mono, background: `${c.color}18`, padding: "3px 8px", borderRadius: 4 }}>{c.category}</span>
-                      <span style={{ fontSize: 10, color: C.t2, fontFamily: F.mono }}>{c.level}</span>
+            {courses.map(c => {
+              const isEnrolled = enrollmentIds.has(c.id);
+              return (
+                <div key={c.id}
+                  style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: "hidden", transition: "all .3s" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = c.color; e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 20px 48px rgba(0,0,0,.4)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.bdr; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
+                  <div style={{ padding: 20, background: `linear-gradient(135deg,${c.color}10,transparent)`, borderBottom: `1px solid ${C.bdr}` }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                      <div style={{ width: 48, height: 48, borderRadius: 12, background: `${c.color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{c.icon}</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
+                        <span style={{ fontSize: 10, color: c.color, fontFamily: F.mono, background: `${c.color}18`, padding: "3px 8px", borderRadius: 4 }}>{c.category}</span>
+                        <span style={{ fontSize: 10, color: C.t2, fontFamily: F.mono }}>{c.level}</span>
+                      </div>
                     </div>
+                    <h3 style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: "#fff", margin: "0 0 6px", lineHeight: 1.25 }}>{c.title}</h3>
+                    {c.subtitle && <div style={{ fontSize: 12, color: C.t2, lineHeight: 1.5 }}>{c.subtitle}</div>}
                   </div>
-                  <h3 style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: "#fff", margin: "0 0 6px", lineHeight: 1.25 }}>{c.title}</h3>
-                  {c.subtitle && <div style={{ fontSize: 12, color: C.t2, lineHeight: 1.5 }}>{c.subtitle}</div>}
-                </div>
-                <div style={{ padding: 18 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 600, color: C.gold }}>{(c.price || 0).toLocaleString("fr-FR")}</span>
-                      <span style={{ fontSize: 12, color: C.t3 }}>FCFA</span>
-                      {c.original_price > c.price && (
-                        <span style={{ fontSize: 12, color: C.t3, textDecoration: "line-through" }}>{c.original_price.toLocaleString("fr-FR")}</span>
-                      )}
+                  <div style={{ padding: 18 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 600, color: C.gold }}>{(c.price || 0).toLocaleString("fr-FR")}</span>
+                        <span style={{ fontSize: 12, color: C.t3 }}>FCFA</span>
+                        {c.original_price > c.price && (
+                          <span style={{ fontSize: 12, color: C.t3, textDecoration: "line-through" }}>{c.original_price.toLocaleString("fr-FR")}</span>
+                        )}
+                      </div>
                     </div>
-                    <span style={{ fontSize: 14, color: C.gold }}>→</span>
+                    {isEnrolled ? (
+                      <button onClick={() => onSelectCourse(c.id)} style={btn({ width: "100%", background: C.grn, color: "#fff", padding: 12, borderRadius: 10, fontWeight: 700, fontSize: 13 })}>
+                        Continuer la formation
+                      </button>
+                    ) : user && onAddToCart ? (
+                      <button onClick={() => onAddToCart(c.id)} style={btn({ width: "100%", background: C.gold, color: C.bg, padding: 12, borderRadius: 10, fontWeight: 800, fontSize: 13 })}>
+                        Ajouter au panier
+                      </button>
+                    ) : (
+                      <button onClick={() => onSelectCourse(c.id)} style={btn({ width: "100%", background: C.s2, color: C.t, border: `1px solid ${C.bdr2}`, padding: 12, borderRadius: 10, fontWeight: 700, fontSize: 13 })}>
+                        Voir les details
+                      </button>
+                    )}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

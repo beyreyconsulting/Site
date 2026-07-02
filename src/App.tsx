@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { C, F, COURSES, POSTS, DIAL, TESTIMONIALS, STATS, fmt, btn, Tag } from "./data.tsx";
-import { KalanAI, VideoPlayer, PaymentModal } from "./components";
+import { KalanAI, VideoPlayer, PaymentModal, BookDownloadModal } from "./components";
 import { CourseDetailModal, BlogModal } from "./modals";
 
 /* ═══════════════════════════════════════════════════
@@ -222,7 +222,7 @@ function CoursesSection({onOpenCourse,onBuy}:{onOpenCourse:(c:any)=>void,onBuy:(
 /* ═══════════════════════════════════════════════════
    DIAL METHOD SECTION
 ═══════════════════════════════════════════════════ */
-function DialSection(){
+function DialSection({onDownload}:{onDownload:()=>void}){
   return(
     <section id="methode" style={{padding:"80px 24px",background:"linear-gradient(180deg,transparent,rgba(14,26,44,.4),transparent)"}}>
       <div style={{maxWidth:1200,margin:"0 auto"}}>
@@ -255,7 +255,7 @@ function DialSection(){
             <p style={{fontSize:14,color:C.t2,lineHeight:1.7,margin:"0 0 20px"}}>
               Manifeste pour une gouvernance frugale de la data en Afrique. Écrit par Ibrahim Seydou après 5 ans de terrain à Bamako. Disponible en téléchargement gratuit.
             </p>
-            <button style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"12px 24px",borderRadius:10,fontWeight:700,fontSize:13})}>
+            <button onClick={onDownload} style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"12px 24px",borderRadius:10,fontWeight:700,fontSize:13})}>
               📖 Télécharger gratuitement
             </button>
           </div>
@@ -521,6 +521,7 @@ export default function App() {
   const [detailCourse,setDetailCourse]=useState<any>(null);
   const [blogPost,setBlogPost]=useState<any>(null);
   const [enrolled,setEnrolled]=useState<number[]>([]);
+  const [showBook,setShowBook]=useState(false);
 
   const nav=(id:string)=>{
     const el=document.getElementById(id);
@@ -562,7 +563,7 @@ export default function App() {
       <Header onNav={nav}/>
       <Hero onNav={nav} onExplore={()=>nav("formations")}/>
       <CoursesSection onOpenCourse={openCourse} onBuy={openBuy}/>
-      <DialSection/>
+      <DialSection onDownload={()=>setShowBook(true)}/>
       <TestimonialsSection/>
       <BlogSection onOpenPost={setBlogPost}/>
       <AboutSection/>
@@ -579,6 +580,9 @@ export default function App() {
       )}
       {blogPost&&(
         <BlogModal post={blogPost} onClose={()=>setBlogPost(null)}/>
+      )}
+      {showBook&&(
+        <BookDownloadModal onClose={()=>setShowBook(false)}/>
       )}
 
       <a

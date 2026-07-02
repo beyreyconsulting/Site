@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { C, F, PAY, KALAN_SYS, fmt, btn, Tag } from "./data.tsx";
+import { supabase } from "./supabase";
 
 /* ═══════════════════════════════════════════════════
    KALAN AI ASSISTANT
@@ -283,6 +284,162 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
              </button>
            </div>
         </div>}
+
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   BOOK DOWNLOAD MODAL
+═══════════════════════════════════════════════════ */
+export function BookDownloadModal({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState({ nom: "", email: "", entreprise: "", poste: "" });
+  const [err, setErr] = useState<Partial<typeof form>>({});
+  const [step, setStep] = useState<"form" | "loading" | "done">("form");
+  const [submitErr, setSubmitErr] = useState("");
+
+  const validate = () => {
+    const e: Partial<typeof form> = {};
+    if (!form.nom.trim()) e.nom = "Requis";
+    if (!form.email.trim()) e.email = "Requis";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Email invalide";
+    return e;
+  };
+
+  const submit = async () => {
+    const errors = validate();
+    if (Object.keys(errors).length) { setErr(errors); return; }
+    setStep("loading");
+    setSubmitErr("");
+    const { error } = await supabase.from("book_leads").insert({
+      nom: form.nom.trim(),
+      email: form.email.trim(),
+      entreprise: form.entreprise.trim() || null,
+      poste: form.poste.trim() || null,
+    });
+    if (error) {
+      setSubmitErr("Une erreur s'est produite. Réessayez.");
+      setStep("form");
+      return;
+    }
+    setStep("done");
+    const a = document.createElement("a");
+    a.href = "/L_Art_de_la_Rigueur.pdf";
+    a.download = "L_Art_de_la_Rigueur_Beyrey_Consulting.pdf";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const inp = (field: keyof typeof form) => ({
+    value: form[field],
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      setForm(f => ({ ...f, [field]: e.target.value }));
+      setErr(er => ({ ...er, [field]: undefined }));
+    },
+    style: {
+      width: "100%", background: C.s2, border: `1px solid ${err[field] ? C.red : C.bdr}`,
+      borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14,
+      fontFamily: F.sans, outline: "none", boxSizing: "border-box" as const,
+      transition: "border-color .2s",
+    },
+  });
+
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(4,8,16,.88)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 480, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}>
+
+        {/* Header */}
+        <div style={{ background: "linear-gradient(135deg,#0E1A2C,#162438)", borderBottom: `1px solid ${C.bdr}`, padding: "24px 28px 20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+              <div style={{ width: 52, height: 52, borderRadius: 12, background: `${C.gold}18`, border: `1px solid ${C.gold}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>📖</div>
+              <div>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 4 }}>Livre blanc · Gratuit</div>
+                <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: "#fff", lineHeight: 1.2 }}>L'Art de la Rigueur</div>
+                <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>Manifeste pour une gouvernance frugale de la data en Afrique</div>
+              </div>
+            </div>
+            <button onClick={onClose} style={btn({ background: C.bdr, color: C.t2, width: 30, height: 30, borderRadius: "50%", fontSize: 14, flexShrink: 0 })}>✕</button>
+          </div>
+        </div>
+
+        {step === "form" && (
+          <div style={{ padding: "24px 28px 28px" }}>
+            <p style={{ fontSize: 13, color: C.t2, lineHeight: 1.65, margin: "0 0 22px" }}>
+              Renseignez vos informations pour recevoir votre exemplaire. Le téléchargement démarrera immédiatement.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>
+                  Nom complet <span style={{ color: C.red }}>*</span>
+                </div>
+                <input {...inp("nom")} placeholder="Ibrahim Seydou" />
+                {err.nom && <div style={{ fontSize: 11, color: C.red, marginTop: 4 }}>{err.nom}</div>}
+              </div>
+
+              <div>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>
+                  Email professionnel <span style={{ color: C.red }}>*</span>
+                </div>
+                <input {...inp("email")} placeholder="vous@entreprise.com" type="email" />
+                {err.email && <div style={{ fontSize: 11, color: C.red, marginTop: 4 }}>{err.email}</div>}
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Entreprise</div>
+                  <input {...inp("entreprise")} placeholder="Beyrey Consulting" />
+                </div>
+                <div>
+                  <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Poste</div>
+                  <input {...inp("poste")} placeholder="Directeur Data" />
+                </div>
+              </div>
+            </div>
+
+            {submitErr && (
+              <div style={{ marginTop: 14, background: `${C.red}12`, border: `1px solid ${C.red}30`, borderRadius: 8, padding: "9px 14px", fontSize: 12, color: C.red }}>{submitErr}</div>
+            )}
+
+            <div style={{ background: `${C.gold}10`, border: `1px solid ${C.gold}25`, borderRadius: 10, padding: "9px 14px", fontSize: 11, color: C.t, margin: "18px 0 0" }}>
+              🔒 Vos données sont confidentielles. Aucune revente, aucun spam.
+            </div>
+
+            <button onClick={submit} style={btn({ width: "100%", background: "linear-gradient(135deg,#C8971A,#E0A820)", color: C.bg, fontWeight: 800, fontSize: 14, padding: 14, borderRadius: 10, marginTop: 14, boxShadow: "0 6px 24px rgba(200,151,26,.3)" })}>
+              Télécharger gratuitement →
+            </button>
+          </div>
+        )}
+
+        {step === "loading" && (
+          <div style={{ padding: 48, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+            <div style={{ width: 40, height: 40, border: `3px solid ${C.bdr}`, borderTopColor: C.gold, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+            <div style={{ fontSize: 14, color: C.t }}>Préparation du téléchargement…</div>
+            <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+          </div>
+        )}
+
+        {step === "done" && (
+          <div style={{ padding: "28px 28px 36px", display: "flex", flexDirection: "column", alignItems: "center", gap: 14, textAlign: "center" }}>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: C.grn, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, color: "#fff", boxShadow: `0 8px 24px ${C.grn}50` }}>✓</div>
+            <div>
+              <div style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 600, color: "#fff", marginBottom: 8 }}>Votre téléchargement a démarré !</div>
+              <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.65, maxWidth: 340 }}>
+                Si le téléchargement ne démarre pas automatiquement,{" "}
+                <a href="/L_Art_de_la_Rigueur.pdf" download="L_Art_de_la_Rigueur_Beyrey_Consulting.pdf" style={{ color: C.gold, textDecoration: "underline" }}>cliquez ici</a>.
+              </div>
+            </div>
+            <button onClick={onClose} style={btn({ background: C.s2, color: C.t, border: `1px solid ${C.bdr2}`, padding: "10px 24px", borderRadius: 10, fontWeight: 700, fontSize: 13, marginTop: 6 })}>
+              Fermer
+            </button>
+          </div>
+        )}
 
       </div>
     </div>

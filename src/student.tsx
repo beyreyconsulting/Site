@@ -577,8 +577,17 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
 }
 
 /* ─────────────── CERTIFICATE VIEW ─────────────── */
-function CertificateView({ certificate, onClose }: { certificate: Certificate; onClose: () => void }) {
+function CertificateView({ certificate, onClose, onShare }: { certificate: Certificate; onClose: () => void; onShare: () => void }) {
   const course = certificate.course;
+  const [copied, setCopied] = useState(false);
+  const verifyUrl = `${window.location.origin}/#verify-cert/${certificate.verification_code}`;
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(verifyUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(4,8,16,.95)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -607,7 +616,7 @@ function CertificateView({ certificate, onClose }: { certificate: Certificate; o
             {course?.title}
           </div>
 
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 40, borderTop: "1px solid #e0d5c5", paddingTop: 32 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 40, borderTop: "1px solid #e0d5c5", paddingTop: 32, flexWrap: "wrap", gap: 16 }}>
             <div style={{ textAlign: "left" }}>
               <div style={{ fontSize: 10, color: "#999", textTransform: "uppercase", letterSpacing: ".1em" }}>Date</div>
               <div style={{ fontSize: 14, color: "#333", fontWeight: 700 }}>{new Date(certificate.issued_at).toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })}</div>
@@ -623,12 +632,28 @@ function CertificateView({ certificate, onClose }: { certificate: Certificate; o
           </div>
         </div>
 
-        <div style={{ padding: 16, background: C.s1, borderTop: `1px solid ${C.bdr}`, display: "flex", justifyContent: "flex-end", gap: 10 }}>
-          <button onClick={onClose} style={btn({ background: C.s2, color: C.t, padding: "10px 20px", borderRadius: 8, fontWeight: 700, fontSize: 13 })}>
+        {/* Share section */}
+        <div style={{ padding: 16, background: C.s2, borderBottom: `1px solid ${C.bdr}` }}>
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 8 }}>Lien de verification</div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input value={verifyUrl} readOnly style={{ flex: 1, background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 6, padding: "8px 12px", fontSize: 12, color: C.t, fontFamily: F.mono }} />
+            <button onClick={copyLink} style={btn({ background: copied ? C.grn : C.gold, color: copied ? "#fff" : C.bg, padding: "8px 14px", borderRadius: 6, fontWeight: 700, fontSize: 12, whiteSpace: "nowrap" })}>
+              {copied ? "✓ Copié !" : "Copier"}
+            </button>
+          </div>
+        </div>
+
+        <div style={{ padding: 16, background: C.s1, display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={onShare} style={btn({ background: C.blue, color: "#fff", padding: "10px 20px", borderRadius: 8, fontWeight: 700, fontSize: 13 })}>
+              📤 Partager
+            </button>
+            <button onClick={() => window.print()} style={btn({ background: C.s2, color: C.t, border: `1px solid ${C.bdr}`, padding: "10px 20px", borderRadius: 8, fontWeight: 700, fontSize: 13 })}>
+              🖨️ Imprimer
+            </button>
+          </div>
+          <button onClick={onClose} style={btn({ background: C.s2, color: C.t2, padding: "10px 20px", borderRadius: 8, fontWeight: 700, fontSize: 13 })}>
             Fermer
-          </button>
-          <button onClick={() => window.print()} style={btn({ background: C.gold, color: C.bg, padding: "10px 20px", borderRadius: 8, fontWeight: 700, fontSize: 13 })}>
-            Imprimer
           </button>
         </div>
       </div>
@@ -642,15 +667,51 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
   const { certificates, hasCertificate, generateCertificate } = useCertificates(user);
   const [tab, setTab] = useState<"courses" | "certificates">("courses");
   const [selectedCert, setSelectedCert] = useState<Certificate | null>(null);
+  const [showShare, setShowShare] = useState<Certificate | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const completedCount = enrollments.filter(e => e.completed_at).length;
 
+  const shareCertificate = (cert: Certificate) => {
+    const url = `${window.location.origin}/#verify-cert/${cert.verification_code}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: F.sans }}>
+      {/* Top Navigation Bar */}
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(8,17,30,.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${C.bdr}` }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div onClick={() => { window.location.hash = ""; }} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+            <img src="/logo.png" alt="Beyrey Consulting" style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 8 }} />
+            <div style={{ fontFamily: F.serif, fontSize: 16, fontWeight: 600, color: "#fff" }}>Beyrey Consulting</div>
+          </div>
+          <nav style={{ display: "flex", gap: 20, alignItems: "center" }}>
+            <button onClick={() => { window.location.hash = ""; }} style={btn({ background: "none", color: C.t2, fontSize: 13, fontWeight: 600, padding: "6px 0" })}
+              onMouseEnter={e => e.currentTarget.style.color = C.t}
+              onMouseLeave={e => e.currentTarget.style.color = C.t2}>
+              Accueil
+            </button>
+            <button onClick={() => { window.location.hash = "lms"; }} style={btn({ background: "none", color: C.t2, fontSize: 13, fontWeight: 600, padding: "6px 0" })}
+              onMouseEnter={e => e.currentTarget.style.color = C.gold}
+              onMouseLeave={e => e.currentTarget.style.color = C.t2}>
+              Catalogue
+            </button>
+            <button onClick={() => { window.location.hash = ""; }} style={btn({ background: "none", color: C.t2, fontSize: 13, fontWeight: 600, padding: "6px 0" })}
+              onMouseEnter={e => e.currentTarget.style.color = C.t}
+              onMouseLeave={e => e.currentTarget.style.color = C.t2}>
+              Contact
+            </button>
+          </nav>
+        </div>
+      </div>
+
       {/* Header */}
       <div style={{ background: "linear-gradient(160deg,#0E1A2C,#162438)", borderBottom: `1px solid ${C.bdr}` }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "100px 24px 32px" }}>
-          <div style={{ display: "flex", gap: 16, alignItems: "flex-start", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", gap: 16, alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap" }}>
             <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
               <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg,#C8971A,#E0A820)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, color: C.bg, fontWeight: 800, flexShrink: 0 }}>
                 {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U"}
@@ -662,9 +723,14 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                 <div style={{ fontSize: 13, color: C.t2, fontFamily: F.mono }}>{user.email}</div>
               </div>
             </div>
-            <button onClick={onSignOut} style={btn({ background: C.s2, border: `1px solid ${C.bdr}`, color: C.t2, padding: "10px 18px", borderRadius: 8, fontSize: 12 })}>
-              Se deconnecter
-            </button>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <button onClick={() => { window.location.hash = "lms"; }} style={btn({ background: C.gold, color: C.bg, padding: "10px 18px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>
+                Explorer les formations
+              </button>
+              <button onClick={onSignOut} style={btn({ background: C.s2, border: `1px solid ${C.bdr}`, color: C.t2, padding: "10px 18px", borderRadius: 8, fontSize: 12 })}>
+                Se deconnecter
+              </button>
+            </div>
           </div>
 
           {/* Stats */}
@@ -772,15 +838,21 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
               {certificates.map(cert => (
-                <div key={cert.id} style={{ background: "linear-gradient(135deg,#fffdf8,#f5f0e8)", border: `2px solid #C8971A`, borderRadius: 16, padding: 24, textAlign: "center", cursor: "pointer", transition: "transform .2s" }}
-                  onClick={() => setSelectedCert(cert)}
+                <div key={cert.id} style={{ background: "linear-gradient(135deg,#fffdf8,#f5f0e8)", border: `2px solid #C8971A`, borderRadius: 16, padding: 24, textAlign: "center", transition: "transform .2s" }}
                   onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
                   onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
                   <div style={{ fontSize: 28, marginBottom: 12 }}>🏆</div>
                   <div style={{ fontSize: 10, color: "#8B7355", letterSpacing: ".2em", textTransform: "uppercase", fontFamily: F.mono, marginBottom: 8 }}>Certificat de Reussite</div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1a", fontFamily: F.serif, marginBottom: 8 }}>{cert.course?.title}</div>
-                  <div style={{ fontSize: 11, color: "#666", fontFamily: F.mono }}>N° {cert.certificate_number}</div>
-                  <div style={{ marginTop: 16, color: C.gold, fontSize: 12, fontWeight: 700 }}>Voir le certificat →</div>
+                  <div style={{ fontSize: 11, color: "#666", fontFamily: F.mono, marginBottom: 16 }}>N° {cert.certificate_number}</div>
+                  <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                    <button onClick={() => setSelectedCert(cert)} style={btn({ background: C.gold, color: C.bg, padding: "10px 16px", borderRadius: 8, fontWeight: 700, fontSize: 12 })}>
+                      Voir
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); shareCertificate(cert); }} style={btn({ background: C.blue, color: "#fff", padding: "10px 16px", borderRadius: 8, fontWeight: 700, fontSize: 12 })}>
+                      {copied ? "✓ Copié" : "Partager"}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -789,7 +861,13 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
       </div>
 
       {/* Certificate Modal */}
-      {selectedCert && <CertificateView certificate={selectedCert} onClose={() => setSelectedCert(null)} />}
+      {selectedCert && (
+        <CertificateView
+          certificate={selectedCert}
+          onClose={() => setSelectedCert(null)}
+          onShare={() => { shareCertificate(selectedCert); setSelectedCert(null); }}
+        />
+      )}
     </div>
   );
 }

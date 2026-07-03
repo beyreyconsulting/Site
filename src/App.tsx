@@ -9,7 +9,7 @@ import { useAuth, AuthModal, StudentDashboard, CartModal, useCart, useEnrollment
 /* ═══════════════════════════════════════════════════
    HEADER
 ═══════════════════════════════════════════════════ */
-function Header({onNav}:{onNav:(id:string)=>void}){
+function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav:(id:string)=>void; user: any; profile: any; cartCount: number; onShowAuth: ()=>void; onShowCart: ()=>void}){
   const [scrolled,setScrolled]=useState(false);
   const [mobileOpen,setMobileOpen]=useState(false);
 
@@ -53,7 +53,7 @@ function Header({onNav}:{onNav:(id:string)=>void}){
         </nav>
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           {user && (
-            <button onClick={()=>setShowCart(true)} style={btn({background:C.s2,border:`1px solid ${C.bdr}`,color:C.t,padding:"8px 12px",borderRadius:10,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6})}>
+            <button onClick={onShowCart} style={btn({background:C.s2,border:`1px solid ${C.bdr}`,color:C.t,padding:"8px 12px",borderRadius:10,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6})}>
               🛒 {cartCount > 0 && <span style={{background:C.gold,color:C.bg,borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11}}>{cartCount}</span>}
             </button>
           )}
@@ -62,7 +62,7 @@ function Header({onNav}:{onNav:(id:string)=>void}){
               {profile?.full_name?.split(" ")[0] || "Espace"} ▾
             </button>
           ) : (
-            <button onClick={()=>setShowAuth(true)} style={btn({background:"none",color:C.t2,border:`1px solid ${C.bdr}`,padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:600})}>
+            <button onClick={onShowAuth} style={btn({background:"none",color:C.t2,border:`1px solid ${C.bdr}`,padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:600})}>
               Connexion
             </button>
           )}
@@ -661,7 +661,7 @@ export default function App() {
         }
       `}</style>
 
-      <Header onNav={nav}/>
+      <Header onNav={nav} user={user} profile={profile} cartCount={cartCount} onShowAuth={()=>setShowAuth(true)} onShowCart={()=>setShowCart(true)} />
       <Hero onNav={nav} onExplore={()=>nav("formations")}/>
       <CoursesSection onOpenCourse={openCourse} onBuy={openBuy}/>
       <DialSection onDownload={()=>setShowBook(true)}/>

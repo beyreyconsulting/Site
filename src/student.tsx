@@ -12,6 +12,15 @@ interface CartItem { id: string; course_id: string; created_at: string; course: 
 interface Lesson { id: string; section_id: string; course_id: string; title: string; is_preview: boolean; position: number; }
 interface LessonProgress { lesson_id: string; completed_at?: string; video_progress_seconds: number; quiz_passed: boolean; }
 
+/* ─────────────── PASSWORD VALIDATION ─────────────── */
+function validatePassword(password: string): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  if (password.length < 8) errors.push("Au moins 8 caracteres");
+  if (!/[a-zA-Z]/.test(password)) errors.push("Au moins une lettre");
+  if (!/[0-9]/.test(password)) errors.push("Au moins un chiffre");
+  return { valid: errors.length === 0, errors };
+}
+
 /* ─────────────── AUTH CONTEXT ─────────────── */
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -47,113 +56,353 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, [fetchProfile]);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } }
-    });
-    if (error) throw error;
-    return data;
-  };
-
-  const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    return data;
-  };
-
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
   };
 
-  return { user, profile, loading, signUp, signIn, signOut, fetchProfile };
+  return { user, profile, loading, signOut, fetchProfile };
 }
 
 /* ─────────────── AUTH MODAL ─────────────── */
 export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: () => void }) {
-  const [mode, setMode] = useState<"login" | "register">("login");
-  const [form, setForm] = useState({ email: "", password: "", fullName: "" });
+  const [mode, setMode] = useState<"login" | "register" | "forgot" | "verify">("login");
+  const [form, setForm] = useState({ email: "", password: "", fullName: "", confirmPassword: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
 
-  const submit = async () => {
+  const checkEmailExists = async (email: string): Promise<boolean> => {
+    // Try to sign in and check if user exists
+    const { error } = await supabase.auth.signInWithPassword({ email, password: "dummy-password-to-check" });
+    if (error?.message?.includes("Invalid login credentials")) {
+      // User might exist but wrong password - let's check with reset password
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
+      // If no error or different error, user likely exists
+      return !resetError || !resetError.message?.includes("User not found");
+    }
+    return false;
+  };
+
+  const handleRegister = async () => {
+    // Validate
+    if (!form.fullName.trim()) { setError("Le nom complet est requis"); return false; }
+    if (!form.email.trim()) { setError("L'email est requis"); return false; }
+
+    const pwdValidation = validatePassword(form.password);
+    if (!pwdValidation.valid) {
+      setPasswordErrors(pwdValidation.errors);
+      setError("Mot de passe invalide");
+      return false;
+    }
+
+    if (form.password !== form.confirmPassword) {
+      setError("Les mots de passe ne correspondent pas");
+      return false;
+    }
+
     setLoading(true);
     setError("");
+    setPasswordErrors([]);
+
     try {
-      if (mode === "register") {
-        if (!form.fullName.trim()) { setError("Le nom est requis"); setLoading(false); return; }
-        if (form.password.length < 6) { setError("Le mot de passe doit contenir au moins 6 caracteres"); setLoading(false); return; }
-        await supabase.auth.signUp({
-          email: form.email.trim(),
-          password: form.password,
-          options: { data: { full_name: form.fullName.trim() } }
-        });
-        // Auto sign in after signup (email confirmation disabled)
-        await supabase.auth.signInWithPassword({ email: form.email.trim(), password: form.password });
-      } else {
-        await supabase.auth.signInWithPassword({ email: form.email.trim(), password: form.password });
+      // Check if email already exists
+      const { data: { users }, error: listError } = await supabase.auth.admin ?
+        await supabase.auth.admin.listUsers() :
+        { data: { users: [] }, error: null };
+
+      // Try signup - Supabase will return error if email exists
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+        options: {
+          data: { full_name: form.fullName.trim() },
+          emailRedirectTo: window.location.origin + "/#student"
+        }
+      });
+
+      if (signUpError) {
+        if (signUpError.message?.includes("already registered") || signUpError.message?.includes("already exists")) {
+          setError("Un compte existe deja avec cet email. Connectez-vous ou reinitialisez votre mot de passe.");
+          return false;
+        }
+        throw signUpError;
       }
+
+      // Check if email confirmation is needed
+      if (data.user && !data.session) {
+        setPendingEmail(form.email.trim().toLowerCase());
+        setSuccess("Un email de confirmation a ete envoye. Veuillez verifier votre boite mail et cliquer sur le lien pour activer votre compte.");
+        setMode("verify");
+        return true;
+      }
+
+      // User is signed in automatically (email confirmation disabled)
+      setSuccess("Compte cree avec succes !");
       onAuth();
-      onClose();
+      setTimeout(() => onClose(), 500);
+      return true;
     } catch (e: any) {
       setError(e.message || "Une erreur s'est produite");
+      return false;
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const handleLogin = async () => {
+    if (!form.email.trim() || !form.password) {
+      setError("Email et mot de passe requis");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
+
+      if (signInError) {
+        if (signInError.message?.includes("Invalid login credentials")) {
+          setError("Email ou mot de passe incorrect");
+        } else if (signInError.message?.includes("Email not confirmed")) {
+          setError("Veuillez d'abord confirmer votre email. Verifiez votre boite mail.");
+          setPendingEmail(form.email.trim().toLowerCase());
+          setMode("verify");
+        } else {
+          throw signInError;
+        }
+        return;
+      }
+
+      if (data.session) {
+        onAuth();
+        onClose();
+      }
+    } catch (e: any) {
+      setError(e.message || "Une erreur s'est produite");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!form.email.trim()) {
+      setError("Veuillez entrer votre email");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(form.email.trim().toLowerCase(), {
+        redirectTo: window.location.origin + "/#student?reset=true"
+      });
+
+      if (resetError) throw resetError;
+
+      setSuccess("Un email de reinitialisation a ete envoye. Verifiez votre boite mail.");
+      setMode("login");
+    } catch (e: any) {
+      setError(e.message || "Une erreur s'est produite");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!pendingEmail) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email: pendingEmail,
+        options: { emailRedirectTo: window.location.origin + "/#student" }
+      });
+
+      if (resendError) throw resendError;
+      setSuccess("Email de confirmation renvoye !");
+    } catch (e: any) {
+      setError(e.message || "Erreur lors de l'envoi");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // OTP verification (for email confirmation)
+  const handleVerifyOTP = async (token: string) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: pendingEmail,
+        token,
+        type: "signup"
+      });
+
+      if (verifyError) throw verifyError;
+
+      setSuccess("Email confirme ! Connexion en cours...");
+      onAuth();
+      setTimeout(() => onClose(), 500);
+    } catch (e: any) {
+      setError(e.message || "Code invalide ou expire");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(4,8,16,.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 420, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}>
+      <div style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 440, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)", maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ background: "linear-gradient(135deg,#0E1A2C,#162438)", padding: "24px 28px", borderBottom: `1px solid ${C.bdr}` }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 600, color: "#fff" }}>
-                {mode === "login" ? "Connexion" : "Creer un compte"}
+                {mode === "login" ? "Connexion" : mode === "register" ? "Creer un compte" : mode === "forgot" ? "Mot de passe oublie" : "Confirmation email"}
               </div>
               <div style={{ fontSize: 12, color: C.t2, marginTop: 4 }}>
-                {mode === "login" ? "Accédez à votre espace étudiant" : "Rejoignez Beyrey Consulting"}
+                {mode === "login" ? "Accédez à votre espace étudiant" : mode === "register" ? "Rejoignez Beyrey Consulting" : mode === "forgot" ? "Reinitialisez votre mot de passe" : "Verifiez votre adresse email"}
               </div>
             </div>
             <button onClick={onClose} style={btn({ background: C.bdr, color: C.t2, width: 30, height: 30, borderRadius: "50%", fontSize: 14 })}>✕</button>
           </div>
         </div>
+
         <div style={{ padding: "24px 28px 28px" }}>
-          {mode === "register" && (
-            <div style={{ marginBottom: 14 }}>
-              <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Nom complet</div>
-              <input value={form.fullName} onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))}
-                style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
-                placeholder="Ibrahim Seydou" />
-            </div>
+          {success && <div style={{ fontSize: 13, color: C.grn, marginBottom: 14, padding: 10, background: `${C.grn}10`, borderRadius: 8, border: `1px solid ${C.grn}30` }}>{success}</div>}
+          {error && <div style={{ fontSize: 12, color: C.red, marginBottom: 14, padding: 10, background: `${C.red}10`, borderRadius: 8, border: `1px solid ${C.red}30` }}>{error}</div>}
+
+          {/* LOGIN MODE */}
+          {mode === "login" && (
+            <>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Email</div>
+                <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
+                  placeholder="vous@exemple.com" type="email" />
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Mot de passe</div>
+                <input value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                  style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
+                  placeholder="••••••••" type="password" />
+              </div>
+              <button onClick={handleLogin} disabled={loading || !form.email || !form.password}
+                style={btn({ width: "100%", background: loading || !form.email || !form.password ? C.bdr : "linear-gradient(135deg,#C8971A,#E0A820)", color: loading || !form.email || !form.password ? C.t3 : C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14, marginBottom: 12 })}>
+                {loading ? "Connexion..." : "Se connecter"}
+              </button>
+              <div style={{ textAlign: "center" }}>
+                <button onClick={() => { setMode("forgot"); setError(""); setSuccess(""); }} style={btn({ background: "none", color: C.t2, fontSize: 12, padding: 4 })}>
+                  Mot de passe oublie ?
+                </button>
+              </div>
+              <div style={{ marginTop: 16, textAlign: "center", fontSize: 13, color: C.t2 }}>
+                Pas encore de compte ? <button onClick={() => { setMode("register"); setError(""); setPasswordErrors([]); }} style={{ background: "none", border: "none", color: C.gold, cursor: "pointer", fontWeight: 700 }}>S'inscrire</button>
+              </div>
+            </>
           )}
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Email</div>
-            <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-              style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
-              placeholder="vous@exemple.com" type="email" />
-          </div>
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Mot de passe</div>
-            <input value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-              style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
-              placeholder="••••••••" type="password" />
-          </div>
-          {error && <div style={{ fontSize: 12, color: C.red, marginBottom: 14 }}>{error}</div>}
-          <button onClick={submit} disabled={loading || !form.email || !form.password}
-            style={btn({ width: "100%", background: loading || !form.email || !form.password ? C.bdr : "linear-gradient(135deg,#C8971A,#E0A820)", color: loading || !form.email || !form.password ? C.t3 : C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14, boxShadow: "0 6px 24px rgba(200,151,26,.3)" })}>
-            {loading ? "Chargement..." : mode === "login" ? "Se connecter" : "Creer mon compte"}
-          </button>
-          <div style={{ marginTop: 16, textAlign: "center", fontSize: 13, color: C.t2 }}>
-            {mode === "login" ? (
-              <>Pas encore de compte ? <button onClick={() => setMode("register")} style={{ background: "none", border: "none", color: C.gold, cursor: "pointer", fontWeight: 700 }}>S'inscrire</button></>
-            ) : (
-              <>Déjà un compte ? <button onClick={() => setMode("login")} style={{ background: "none", border: "none", color: C.gold, cursor: "pointer", fontWeight: 700 }}>Se connecter</button></>
-            )}
-          </div>
+
+          {/* REGISTER MODE */}
+          {mode === "register" && (
+            <>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Nom complet *</div>
+                <input value={form.fullName} onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))}
+                  style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
+                  placeholder="Ibrahim Seydou" />
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Email *</div>
+                <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
+                  placeholder="vous@exemple.com" type="email" />
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Mot de passe *</div>
+                <input value={form.password} onChange={e => { setForm(f => ({ ...f, password: e.target.value })); setPasswordErrors([]); }}
+                  style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
+                  placeholder="Minimum 8 caracteres" type="password" />
+                {passwordErrors.length > 0 && (
+                  <div style={{ marginTop: 6 }}>
+                    {passwordErrors.map((e, i) => (
+                      <div key={i} style={{ fontSize: 11, color: C.red }}>✗ {e}</div>
+                    ))}
+                  </div>
+                )}
+                <div style={{ marginTop: 6, fontSize: 10, color: C.t3 }}>
+                  Le mot de passe doit contenir au moins 8 caracteres, une lettre et un chiffre.
+                </div>
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Confirmer le mot de passe *</div>
+                <input value={form.confirmPassword} onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
+                  style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
+                  placeholder="Retapez le mot de passe" type="password" />
+              </div>
+              <button onClick={handleRegister} disabled={loading || !form.email || !form.password || !form.fullName || !form.confirmPassword}
+                style={btn({ width: "100%", background: loading || !form.email || !form.password || !form.fullName || !form.confirmPassword ? C.bdr : "linear-gradient(135deg,#C8971A,#E0A820)", color: loading ? C.t3 : C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
+                {loading ? "Creation..." : "Creer mon compte"}
+              </button>
+              <div style={{ marginTop: 16, textAlign: "center", fontSize: 13, color: C.t2 }}>
+                Déjà un compte ? <button onClick={() => { setMode("login"); setError(""); }} style={{ background: "none", border: "none", color: C.gold, cursor: "pointer", fontWeight: 700 }}>Se connecter</button>
+              </div>
+            </>
+          )}
+
+          {/* FORGOT PASSWORD MODE */}
+          {mode === "forgot" && (
+            <>
+              <div style={{ marginBottom: 20, fontSize: 13, color: C.t2 }}>
+                Entrez votre adresse email. Nous vous enverrons un lien pour reinitialiser votre mot de passe.
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Email</div>
+                <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
+                  placeholder="vous@exemple.com" type="email" />
+              </div>
+              <button onClick={handleForgotPassword} disabled={loading || !form.email}
+                style={btn({ width: "100%", background: loading || !form.email ? C.bdr : "linear-gradient(135deg,#C8971A,#E0A820)", color: loading || !form.email ? C.t3 : C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14, marginBottom: 12 })}>
+                {loading ? "Envoi..." : "Envoyer le lien"}
+              </button>
+              <div style={{ textAlign: "center" }}>
+                <button onClick={() => { setMode("login"); setError(""); setSuccess(""); }} style={btn({ background: "none", color: C.t2, fontSize: 12, padding: 4 })}>
+                  ← Retour a la connexion
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* VERIFY EMAIL MODE */}
+          {mode === "verify" && (
+            <>
+              <div style={{ marginBottom: 20, fontSize: 13, color: C.t2, textAlign: "center" }}>
+                Nous avons envoye un email de confirmation a <strong style={{ color: C.t }}>{pendingEmail}</strong>. Cliquez sur le lien dans l'email pour activer votre compte.
+              </div>
+              <button onClick={handleResendConfirmation} disabled={loading}
+                style={btn({ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, color: C.t, padding: 14, borderRadius: 10, fontWeight: 700, fontSize: 14, marginBottom: 12 })}>
+                {loading ? "Envoi..." : "Renvoyer l'email de confirmation"}
+              </button>
+              <div style={{ textAlign: "center" }}>
+                <button onClick={() => { setMode("login"); setError(""); setSuccess(""); setPendingEmail(""); }} style={btn({ background: "none", color: C.gold, fontSize: 12, padding: 4, fontWeight: 700 })}>
+                  ← Retour a la connexion
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -394,7 +643,6 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
   const [tab, setTab] = useState<"courses" | "certificates">("courses");
   const [selectedCert, setSelectedCert] = useState<Certificate | null>(null);
 
-  const totalPages = enrollments.reduce((sum, e) => sum + 1, 0);
   const completedCount = enrollments.filter(e => e.completed_at).length;
 
   return (
@@ -420,7 +668,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
           </div>
 
           {/* Stats */}
-          <div style={{ display: "flex", gap: 24, marginTop: 28 }}>
+          <div style={{ display: "flex", gap: 24, marginTop: 28, flexWrap: "wrap" }}>
             <div style={{ padding: "16px 20px", background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 12 }}>
               <div style={{ fontFamily: F.serif, fontSize: 28, fontWeight: 600, color: C.gold }}>{enrollments.length}</div>
               <div style={{ fontSize: 10, color: C.t2, fontFamily: F.mono, letterSpacing: ".08em", textTransform: "uppercase" }}>Formations inscrites</div>

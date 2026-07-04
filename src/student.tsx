@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { C, F, btn } from "./data.tsx";
 import { supabase } from "./supabase";
+import { fadeInUp, fadeIn, staggerContainer, staggerItem, hoverLift, hoverScale, tapScale } from "./motion";
 
 /* ─────────────── TYPES ─────────────── */
 interface User { id: string; email: string; }
@@ -671,6 +673,9 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
   const [copied, setCopied] = useState(false);
 
   const completedCount = enrollments.filter(e => e.completed_at).length;
+  const totalProgress = enrollments.length > 0
+    ? Math.round(enrollments.reduce((acc, e) => acc + e.progress_pct, 0) / enrollments.length)
+    : 0;
 
   const shareCertificate = (cert: Certificate) => {
     const url = `${window.location.origin}/#verify-cert/${cert.verification_code}`;
@@ -680,194 +685,431 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: F.sans }}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      style={{ minHeight: "100vh", background: C.bg, fontFamily: F.sans }}
+    >
       {/* Top Navigation Bar */}
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(8,17,30,.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${C.bdr}` }}>
+      <motion.div
+        initial={{ y: -60 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(8,17,30,.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${C.bdr}` }}
+      >
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div onClick={() => { window.location.hash = ""; }} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+          <motion.div
+            onClick={() => { window.location.hash = ""; }}
+            whileHover={{ scale: 1.02 }}
+            style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
+          >
             <img src="/logo.png" alt="Beyrey Consulting" style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 8 }} />
             <div style={{ fontFamily: F.serif, fontSize: 16, fontWeight: 600, color: "#fff" }}>Beyrey Consulting</div>
-          </div>
+          </motion.div>
           <nav style={{ display: "flex", gap: 20, alignItems: "center" }}>
-            <button onClick={() => { window.location.hash = ""; }} style={btn({ background: "none", color: C.t2, fontSize: 13, fontWeight: 600, padding: "6px 0" })}
-              onMouseEnter={e => e.currentTarget.style.color = C.t}
-              onMouseLeave={e => e.currentTarget.style.color = C.t2}>
-              Accueil
-            </button>
-            <button onClick={() => { window.location.hash = "lms"; }} style={btn({ background: "none", color: C.t2, fontSize: 13, fontWeight: 600, padding: "6px 0" })}
-              onMouseEnter={e => e.currentTarget.style.color = C.gold}
-              onMouseLeave={e => e.currentTarget.style.color = C.t2}>
-              Catalogue
-            </button>
-            <button onClick={() => { window.location.hash = ""; }} style={btn({ background: "none", color: C.t2, fontSize: 13, fontWeight: 600, padding: "6px 0" })}
-              onMouseEnter={e => e.currentTarget.style.color = C.t}
-              onMouseLeave={e => e.currentTarget.style.color = C.t2}>
-              Contact
-            </button>
+            {[
+              { label: "Accueil", hash: "", hoverColor: C.t },
+              { label: "Catalogue", hash: "lms", hoverColor: C.gold },
+              { label: "Contact", hash: "", hoverColor: C.t },
+            ].map((item, i) => (
+              <motion.button
+                key={i}
+                onClick={() => { window.location.hash = item.hash; }}
+                whileHover={{ y: -2 }}
+                style={{ background: "none", border: "none", color: C.t2, fontSize: 13, fontWeight: 600, padding: "6px 0", cursor: "pointer" }}
+              >
+                {item.label}
+              </motion.button>
+            ))}
           </nav>
         </div>
-      </div>
+      </motion.div>
 
       {/* Header */}
       <div style={{ background: "linear-gradient(160deg,#0E1A2C,#162438)", borderBottom: `1px solid ${C.bdr}` }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "100px 24px 32px" }}>
-          <div style={{ display: "flex", gap: 16, alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "100px 24px 40px" }}>
+          {/* Profile Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            style={{ display: "flex", gap: 16, alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap" }}
+          >
             <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-              <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg,#C8971A,#E0A820)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, color: C.bg, fontWeight: 800, flexShrink: 0 }}>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg,#C8971A,#E0A820)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, color: C.bg, fontWeight: 800, flexShrink: 0, boxShadow: "0 8px 32px rgba(200,151,26,.3)" }}
+              >
                 {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U"}
-              </div>
+              </motion.div>
               <div>
-                <div style={{ fontSize: 24, fontFamily: F.serif, fontWeight: 600, color: "#fff" }}>
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  style={{ fontSize: 28, fontFamily: F.serif, fontWeight: 600, color: "#fff" }}
+                >
                   {profile?.full_name || "Étudiant"}
-                </div>
-                <div style={{ fontSize: 13, color: C.t2, fontFamily: F.mono }}>{user.email}</div>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  style={{ fontSize: 13, color: C.t2, fontFamily: F.mono }}
+                >
+                  {user.email}
+                </motion.div>
               </div>
             </div>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <button onClick={() => { window.location.hash = "lms"; }} style={btn({ background: C.gold, color: C.bg, padding: "10px 18px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>
+              <motion.button
+                onClick={() => { window.location.hash = "lms"; }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                style={{ background: C.gold, border: "none", color: C.bg, padding: "12px 20px", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(200,151,26,.3)" }}
+              >
                 Explorer les formations
-              </button>
-              <button onClick={onSignOut} style={btn({ background: C.s2, border: `1px solid ${C.bdr}`, color: C.t2, padding: "10px 18px", borderRadius: 8, fontSize: 12 })}>
-                Se deconnecter
-              </button>
+              </motion.button>
+              <motion.button
+                onClick={onSignOut}
+                whileHover={{ backgroundColor: C.s3 }}
+                whileTap={{ scale: 0.95 }}
+                style={{ background: C.s2, border: `1px solid ${C.bdr}`, color: C.t2, padding: "12px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+              >
+                Se déconnecter
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Stats */}
-          <div style={{ display: "flex", gap: 24, marginTop: 28, flexWrap: "wrap" }}>
-            <div style={{ padding: "16px 20px", background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 12 }}>
-              <div style={{ fontFamily: F.serif, fontSize: 28, fontWeight: 600, color: C.gold }}>{enrollments.length}</div>
-              <div style={{ fontSize: 10, color: C.t2, fontFamily: F.mono, letterSpacing: ".08em", textTransform: "uppercase" }}>Formations inscrites</div>
-            </div>
-            <div style={{ padding: "16px 20px", background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 12 }}>
-              <div style={{ fontFamily: F.serif, fontSize: 28, fontWeight: 600, color: C.grn }}>{completedCount}</div>
-              <div style={{ fontSize: 10, color: C.t2, fontFamily: F.mono, letterSpacing: ".08em", textTransform: "uppercase" }}>Formations completees</div>
-            </div>
-            <div style={{ padding: "16px 20px", background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 12 }}>
-              <div style={{ fontFamily: F.serif, fontSize: 28, fontWeight: 600, color: C.blue }}>{certificates.length}</div>
-              <div style={{ fontSize: 10, color: C.t2, fontFamily: F.mono, letterSpacing: ".08em", textTransform: "uppercase" }}>Certificats obtenus</div>
-            </div>
-          </div>
+          {/* Stats with Animation */}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 20, marginTop: 32 }}
+          >
+            {[
+              { label: "Formations inscrites", value: enrollments.length, color: C.gold, icon: "📚" },
+              { label: "Formations complétées", value: completedCount, color: C.grn, icon: "🎓" },
+              { label: "Certificats obtenus", value: certificates.length, color: C.blue, icon: "🏆" },
+              { label: "Progression globale", value: `${totalProgress}%`, color: C.gold, icon: "📈" },
+            ].map((stat, i) => (
+              <motion.div
+                key={i}
+                variants={staggerItem}
+                whileHover={{ y: -4, boxShadow: `0 12px 40px ${stat.color}20` }}
+                style={{ padding: "20px 24px", background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 16, position: "relative", overflow: "hidden" }}
+              >
+                <div style={{ position: "absolute", top: 12, right: 12, fontSize: 24, opacity: 0.3 }}>{stat.icon}</div>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.3 + i * 0.1, type: "spring", stiffness: 150 }}
+                  style={{ fontFamily: F.serif, fontSize: 36, fontWeight: 700, color: stat.color }}
+                >
+                  {stat.value}
+                </motion.div>
+                <div style={{ fontSize: 11, color: C.t2, fontFamily: F.mono, letterSpacing: ".06em", textTransform: "uppercase", marginTop: 4 }}>{stat.label}</div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Overall Progress Bar */}
+          {enrollments.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              style={{ marginTop: 24, padding: "20px 24px", background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 16 }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: C.t }}>Progression globale</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: C.gold, fontFamily: F.mono }}>{totalProgress}%</span>
+              </div>
+              <div style={{ height: 10, background: C.bdr, borderRadius: 5, overflow: "hidden" }}>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${totalProgress}%` }}
+                  transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
+                  style={{ height: "100%", background: "linear-gradient(90deg, #C8971A, #E0A820)", borderRadius: 5 }}
+                />
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
 
       {/* Content */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
         {/* Tabs */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
-          <button onClick={() => setTab("courses")} style={btn({ background: tab === "courses" ? C.gold : C.s2, color: tab === "courses" ? C.bg : C.t2, border: `1px solid ${tab === "courses" ? C.gold : C.bdr}`, padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 700 })}>
-            📚 Mes formations
-          </button>
-          <button onClick={() => setTab("certificates")} style={btn({ background: tab === "certificates" ? C.gold : C.s2, color: tab === "certificates" ? C.bg : C.t2, border: `1px solid ${tab === "certificates" ? C.gold : C.bdr}`, padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 700 })}>
-            🏆 Certificats ({certificates.length})
-          </button>
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          style={{ display: "flex", gap: 8, marginBottom: 24 }}
+        >
+          {[
+            { id: "courses", label: "Mes formations", icon: "📚" },
+            { id: "certificates", label: `Certificats (${certificates.length})`, icon: "🏆" },
+          ].map((t) => (
+            <motion.button
+              key={t.id}
+              onClick={() => setTab(t.id as "courses" | "certificates")}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              style={{
+                background: tab === t.id ? C.gold : C.s2,
+                border: `1px solid ${tab === t.id ? C.gold : C.bdr}`,
+                color: tab === t.id ? C.bg : C.t2,
+                padding: "12px 24px",
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <span>{t.icon}</span>
+              {t.label}
+            </motion.button>
+          ))}
+        </motion.div>
 
-        {tab === "courses" && (
-          enrollLoading ? (
-            <div style={{ textAlign: "center", padding: 60, color: C.t3 }}>Chargement...</div>
-          ) : enrollments.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 60 }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>📚</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: C.t, marginBottom: 8 }}>Aucune formation</div>
-              <div style={{ fontSize: 13, color: C.t2, marginBottom: 20 }}>Explorez notre catalogue et inscrivez-vous à une formation.</div>
-              <button onClick={() => { window.location.hash = "lms"; }} style={btn({ background: C.gold, color: C.bg, padding: "12px 24px", borderRadius: 10, fontWeight: 700, fontSize: 14 })}>
-                Voir le catalogue
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 20 }}>
-              {enrollments.map(en => (
-                <div key={en.id} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 16, overflow: "hidden" }}>
-                  <div style={{ padding: 20, background: `linear-gradient(135deg,${en.course?.color || C.gold}10,transparent)`, borderBottom: `1px solid ${C.bdr}` }}>
-                    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                      <div style={{ width: 48, height: 48, borderRadius: 12, background: `${en.course?.color || C.gold}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
-                        {en.course?.icon || "📚"}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{en.course?.title}</div>
-                        <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
-                          <span style={{ fontSize: 10, color: en.course?.color || C.gold, fontFamily: F.mono }}>{en.course?.category}</span>
-                          <span style={{ fontSize: 10, color: C.t3, fontFamily: F.mono }}>{en.course?.level}</span>
+        <AnimatePresence mode="wait">
+          {tab === "courses" && (
+            <motion.div
+              key="courses"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {enrollLoading ? (
+                <div style={{ textAlign: "center", padding: 60 }}>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    style={{ width: 40, height: 40, border: `3px solid ${C.bdr}`, borderTopColor: C.gold, borderRadius: "50%", margin: "0 auto 16px" }}
+                  />
+                  <div style={{ color: C.t3 }}>Chargement...</div>
+                </div>
+              ) : enrollments.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  style={{ textAlign: "center", padding: 60 }}
+                >
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200 }}
+                    style={{ fontSize: 64, marginBottom: 20 }}
+                  >📚</motion.div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: C.t, marginBottom: 10 }}>Aucune formation</div>
+                  <div style={{ fontSize: 14, color: C.t2, marginBottom: 24, maxWidth: 400, margin: "0 auto 24px" }}>
+                    Explorez notre catalogue et inscrivez-vous à une formation pour commencer votre apprentissage.
+                  </div>
+                  <motion.button
+                    onClick={() => { window.location.hash = "lms"; }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{ background: C.gold, border: "none", color: C.bg, padding: "14px 28px", borderRadius: 12, fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 8px 24px rgba(200,151,26,.3)" }}
+                  >
+                    Découvrir le catalogue
+                  </motion.button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={staggerContainer}
+                  style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 24 }}
+                >
+                  {enrollments.map((en, idx) => (
+                    <motion.div
+                      key={en.id}
+                      variants={staggerItem}
+                      whileHover={{ y: -4, boxShadow: "0 16px 48px rgba(0,0,0,.3)" }}
+                      style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 20, overflow: "hidden" }}
+                    >
+                      {/* Card Header */}
+                      <div style={{ padding: 24, background: `linear-gradient(135deg,${en.course?.color || C.gold}15,transparent)`, borderBottom: `1px solid ${C.bdr}` }}>
+                        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+                          <motion.div
+                            whileHover={{ rotate: [0, -10, 10, 0] }}
+                            transition={{ duration: 0.4 }}
+                            style={{ width: 56, height: 56, borderRadius: 14, background: `${en.course?.color || C.gold}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, flexShrink: 0 }}
+                          >
+                            {en.course?.icon || "📚"}
+                          </motion.div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 17, fontWeight: 700, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{en.course?.title}</div>
+                            <div style={{ display: "flex", gap: 10, marginTop: 6, alignItems: "center" }}>
+                              <span style={{ fontSize: 11, color: en.course?.color || C.gold, fontFamily: F.mono, fontWeight: 600, background: `${en.course?.color || C.gold}15`, padding: "3px 8px", borderRadius: 4 }}>{en.course?.category}</span>
+                              <span style={{ fontSize: 11, color: C.t3, fontFamily: F.mono }}>{en.course?.level}</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                  <div style={{ padding: 20 }}>
-                    {/* Progress */}
-                    <div style={{ marginBottom: 16 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                        <span style={{ fontSize: 11, color: C.t2, fontFamily: F.mono }}>Progression</span>
-                        <span style={{ fontSize: 11, color: en.progress_pct >= 100 ? C.grn : C.gold, fontFamily: F.mono, fontWeight: 700 }}>{en.progress_pct}%</span>
-                      </div>
-                      <div style={{ height: 6, background: C.bdr, borderRadius: 3, overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${en.progress_pct}%`, background: en.progress_pct >= 100 ? C.grn : C.gold, borderRadius: 3, transition: "width .3s" }} />
-                      </div>
-                    </div>
 
-                    {en.completed_at && hasCertificate(en.course_id) ? (
-                      <button onClick={() => {
-                        const cert = certificates.find(c => c.course_id === en.course_id);
-                        if (cert) setSelectedCert(cert);
-                      }} style={btn({ width: "100%", background: C.grn, color: "#fff", padding: 12, borderRadius: 10, fontWeight: 700, fontSize: 13 })}>
-                        🏆 Voir mon certificat
-                      </button>
-                    ) : en.progress_pct >= 100 && !hasCertificate(en.course_id) ? (
-                      <button onClick={async () => { await generateCertificate(en.course_id); }} style={btn({ width: "100%", background: C.gold, color: C.bg, padding: 12, borderRadius: 10, fontWeight: 800, fontSize: 13 })}>
-                        🏆 Obtenir mon certificat
-                      </button>
-                    ) : (
-                      <button onClick={() => onViewCourse(en.course_id)} style={btn({ width: "100%", background: C.s2, color: C.t, border: `1px solid ${C.bdr2}`, padding: 12, borderRadius: 10, fontWeight: 700, fontSize: 13 })}>
-                        Continuer la formation
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
-        )}
+                      {/* Card Body */}
+                      <div style={{ padding: 24 }}>
+                        {/* Progress */}
+                        <div style={{ marginBottom: 20 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                            <span style={{ fontSize: 12, color: C.t2, fontFamily: F.mono, letterSpacing: ".04em" }}>Progression</span>
+                            <motion.span
+                              key={en.progress_pct}
+                              initial={{ scale: 1.3 }}
+                              animate={{ scale: 1 }}
+                              style={{ fontSize: 15, fontWeight: 800, color: en.progress_pct >= 100 ? C.grn : C.gold, fontFamily: F.mono }}
+                            >
+                              {en.progress_pct}%
+                            </motion.span>
+                          </div>
+                          <div style={{ height: 8, background: C.bdr, borderRadius: 4, overflow: "hidden" }}>
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${en.progress_pct}%` }}
+                              transition={{ duration: 0.8, delay: idx * 0.1 }}
+                              style={{ height: "100%", background: en.progress_pct >= 100 ? `linear-gradient(90deg, ${C.grn}, #4ade80)` : `linear-gradient(90deg, ${C.gold}, #E0A820)`, borderRadius: 4 }}
+                            />
+                          </div>
+                        </div>
 
-        {tab === "certificates" && (
-          certificates.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 60 }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🏆</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: C.t, marginBottom: 8 }}>Aucun certificat</div>
-              <div style={{ fontSize: 13, color: C.t2 }}>Completez une formation pour obtenir votre premier certificat.</div>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
-              {certificates.map(cert => (
-                <div key={cert.id} style={{ background: "linear-gradient(135deg,#fffdf8,#f5f0e8)", border: `2px solid #C8971A`, borderRadius: 16, padding: 24, textAlign: "center", transition: "transform .2s" }}
-                  onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
-                  onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
-                  <div style={{ fontSize: 28, marginBottom: 12 }}>🏆</div>
-                  <div style={{ fontSize: 10, color: "#8B7355", letterSpacing: ".2em", textTransform: "uppercase", fontFamily: F.mono, marginBottom: 8 }}>Certificat de Reussite</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1a", fontFamily: F.serif, marginBottom: 8 }}>{cert.course?.title}</div>
-                  <div style={{ fontSize: 11, color: "#666", fontFamily: F.mono, marginBottom: 16 }}>N° {cert.certificate_number}</div>
-                  <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-                    <button onClick={() => setSelectedCert(cert)} style={btn({ background: C.gold, color: C.bg, padding: "10px 16px", borderRadius: 8, fontWeight: 700, fontSize: 12 })}>
-                      Voir
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); shareCertificate(cert); }} style={btn({ background: C.blue, color: "#fff", padding: "10px 16px", borderRadius: 8, fontWeight: 700, fontSize: 12 })}>
-                      {copied ? "✓ Copié" : "Partager"}
-                    </button>
+                        {/* Action Button */}
+                        {en.completed_at && hasCertificate(en.course_id) ? (
+                          <motion.button
+                            onClick={() => {
+                              const cert = certificates.find(c => c.course_id === en.course_id);
+                              if (cert) setSelectedCert(cert);
+                            }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            style={{ width: "100%", background: C.grn, border: "none", color: "#fff", padding: 14, borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                          >
+                            <span>🏆</span> Voir mon certificat
+                          </motion.button>
+                        ) : en.progress_pct >= 100 && !hasCertificate(en.course_id) ? (
+                          <motion.button
+                            onClick={async () => { await generateCertificate(en.course_id); }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            style={{ width: "100%", background: "linear-gradient(135deg,#C8971A,#E0A820)", border: "none", color: C.bg, padding: 14, borderRadius: 12, fontWeight: 800, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 6px 24px rgba(200,151,26,.3)" }}
+                          >
+                            <span>🏆</span> Obtenir mon certificat
+                          </motion.button>
+                        ) : (
+                          <motion.button
+                            onClick={() => onViewCourse(en.course_id)}
+                            whileHover={{ scale: 1.02, backgroundColor: C.s3 }}
+                            whileTap={{ scale: 0.98 }}
+                            style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr2}`, color: C.t, padding: 14, borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: "pointer" }}
+                          >
+                            Continuer la formation →
+                          </motion.button>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
+          {tab === "certificates" && (
+            <motion.div
+              key="certificates"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {certificates.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  style={{ textAlign: "center", padding: 60 }}
+                >
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 200 }}
+                    style={{ fontSize: 64, marginBottom: 20 }}
+                  >🏆</motion.div>
+                  <motion.div style={{ fontSize: 20, fontWeight: 700, color: C.t, marginBottom: 10 }}>Aucun certificat</motion.div>
+                  <div style={{ fontSize: 14, color: C.t2, maxWidth: 400, margin: "0 auto" }}>
+                    Complétez une formation pour obtenir votre premier certificat.
                   </div>
-                </div>
-              ))}
-            </div>
-          )
-        )}
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={staggerContainer}
+                  style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 24 }}
+                >
+                  {certificates.map((cert, idx) => (
+                    <motion.div
+                      key={cert.id}
+                      variants={staggerItem}
+                      whileHover={{ y: -4, boxShadow: "0 16px 48px rgba(200,151,26,.2)" }}
+                      style={{ background: "linear-gradient(135deg,#fffdf8,#f5f0e8)", border: `2px solid #C8971A`, borderRadius: 20, padding: 28, textAlign: "center", position: "relative", overflow: "hidden" }}
+                    >
+                      <div style={{ position: "absolute", top: 16, right: 16, fontSize: 12, fontFamily: F.mono, color: "#8B7355", opacity: 0.5 }}>N° {cert.certificate_number}</div>
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: idx * 0.1, type: "spring", stiffness: 200 }}
+                        style={{ fontSize: 48, marginBottom: 16 }}
+                      >🏆</motion.div>
+                      <div style={{ fontSize: 10, color: "#8B7355", letterSpacing: ".2em", textTransform: "uppercase", fontFamily: F.mono, marginBottom: 8 }}>Certificat de Réussite</div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: "#1a1a1a", fontFamily: F.serif, marginBottom: 12 }}>{cert.course?.title}</div>
+                      <div style={{ fontSize: 11, color: "#666", fontFamily: F.mono, marginBottom: 20 }}>
+                        Délivré le {new Date(cert.issued_at).toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })}
+                      </div>
+                      <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                        <motion.button
+                          onClick={() => setSelectedCert(cert)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          style={{ background: C.gold, border: "none", color: C.bg, padding: "10px 18px", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+                        >
+                          Voir
+                        </motion.button>
+                        <motion.button
+                          onClick={() => { shareCertificate(cert); }}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          style={{ background: C.blue, border: "none", color: "#fff", padding: "10px 18px", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+                        >
+                          {copied ? "✓ Copié" : "Partager"}
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Certificate Modal */}
-      {selectedCert && (
-        <CertificateView
-          certificate={selectedCert}
-          onClose={() => setSelectedCert(null)}
-          onShare={() => { shareCertificate(selectedCert); setSelectedCert(null); }}
-        />
-      )}
-    </div>
+      <AnimatePresence>
+        {selectedCert && (
+          <CertificateView
+            certificate={selectedCert}
+            onClose={() => setSelectedCert(null)}
+            onShare={() => { shareCertificate(selectedCert); setSelectedCert(null); }}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

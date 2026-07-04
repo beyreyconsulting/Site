@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { C, F, PAY, KALAN_SYS, fmt, btn, Tag } from "./data.tsx";
 import { supabase } from "./supabase";
+import { fadeInUp, scaleIn, hoverScale, hoverLift, tapScale } from "./motion";
 
 /* ═══════════════════════════════════════════════════
    KALAN AI ASSISTANT
@@ -78,14 +80,32 @@ export function KalanAI(){
 }
 
 /* ═══════════════════════════════════════════════════
-   VIDEO PLAYER
+   VIDEO PLAYER - OPTIMIZED WITH LAZY LOADING
 ═══════════════════════════════════════════════════ */
 export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
   const [playing,setPlaying]=useState(false);
   const [prog,setProg]=useState(0);
   const [sel,setSel]=useState(0);
   const [done,setDone]=useState<number[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [showResources, setShowResources] = useState(false);
   const iv=useRef<any>(null);
+  const playerRef=useRef<HTMLDivElement>(null);
+
+  // Lazy load simulation - load video only when in viewport
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsLoaded(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    if (playerRef.current) observer.observe(playerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(()=>{
     if(playing){iv.current=setInterval(()=>{setProg(p=>{if(p>=100){clearInterval(iv.current);setPlaying(false);return 100;}return p+.25;});},80);}
@@ -99,56 +119,129 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
   const timeStr=`${Math.floor(secs/60).toString().padStart(2,"0")}:${(secs%60).toString().padStart(2,"0")}`;
   const canPlay=enrolled||course.preview;
 
+  // Course resources (mock data - in real app would come from DB)
+  const resources = [
+    { name: "Template Power BI - Dashboard Executif", type: "pbix", size: "2.4 MB", icon: "📊" },
+    { name: "Dataset Formation - Ventes 2024.xlsx", type: "xlsx", size: "1.1 MB", icon: "📈" },
+    { name: "Guide Methodologie DIAL.pdf", type: "pdf", size: "856 KB", icon: "📄" },
+  ];
+
   if(!canPlay) return(
-    <div style={{background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:16,overflow:"hidden"}}>
+    <motion.div
+      ref={playerRef}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      style={{background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:16,overflow:"hidden"}}
+    >
       <div style={{position:"relative",paddingBottom:"56.25%",background:"linear-gradient(135deg,#08111E,#0E1A2C)"}}>
         <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:14}}>
           <div style={{position:"absolute",inset:0,overflow:"hidden",opacity:.3}}>
             {[...Array(6)].map((_,i)=>(
-              <div key={i} style={{position:"absolute",width:3,height:3,borderRadius:"50%",background:C.gold,left:`${20+i*12}%`,top:`${30+Math.sin(i)*20}%`,animation:`float ${2+i*.3}s ease-in-out ${i*.2}s infinite alternate`}}/>
+              <motion.div
+                key={i}
+                animate={{ y: [0, -10, 0], opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 2 + i * 0.3, repeat: Infinity, delay: i * 0.2 }}
+                style={{position:"absolute",width:3,height:3,borderRadius:"50%",background:C.gold,left:`${20+i*12}%`,top:`${30+Math.sin(i)*20}%`}}
+              />
             ))}
           </div>
-          <div style={{width:60,height:60,borderRadius:"50%",background:`${C.bdr}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,border:`2px solid ${C.bdr2}`}}>🔒</div>
-          <div style={{textAlign:"center",position:"relative",zIndex:1}}>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            style={{width:60,height:60,borderRadius:"50%",background:`${C.bdr}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,border:`2px solid ${C.bdr2}`}}
+          >🔒</motion.div>
+          <motion.div
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            style={{textAlign:"center",position:"relative",zIndex:1}}
+          >
             <div style={{fontFamily:F.serif,fontSize:17,fontWeight:600,color:"#fff",marginBottom:6}}>Contenu verrouillé</div>
             <div style={{fontSize:12,color:C.t2}}>Inscrivez-vous pour accéder aux {totalVids} leçons</div>
-          </div>
+          </motion.div>
         </div>
       </div>
-      <style>{`@keyframes float{to{transform:translate(4px,-4px)}}`}</style>
-    </div>
+    </motion.div>
   );
 
   return(
-    <div style={{background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:16,overflow:"hidden"}}>
+    <motion.div
+      ref={playerRef}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      style={{background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:16,overflow:"hidden"}}
+    >
+      {/* Video Area */}
       <div style={{position:"relative",paddingBottom:"56.25%",background:"#000"}}>
+        <AnimatePresence>
+          {!isLoaded && (
+            <motion.div
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{position:"absolute",inset:0,background:"linear-gradient(160deg,#070F1C,#0C1828)",display:"flex",alignItems:"center",justifyContent:"center"}}
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                style={{width:40,height:40,border:`3px solid ${C.bdr}`,borderTopColor:C.gold,borderRadius:"50%"}}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div style={{position:"absolute",inset:0,background:"linear-gradient(160deg,#070F1C,#0C1828)",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{position:"absolute",top:14,left:14,background:"rgba(0,0,0,.6)",borderRadius:6,padding:"3px 10px",fontFamily:F.mono,fontSize:10,color:C.t2}}>
             {course.preview&&!enrolled?"▶ APERÇU GRATUIT":`📖 ${sec?.t}`}
           </div>
-          <button onClick={()=>{setPlaying(p=>!p);if(prog>=100)setProg(0);}}
-            style={btn({width:60,height:60,borderRadius:"50%",background:playing?"rgba(200,151,26,.2)":"linear-gradient(135deg,#C8971A,#E0A820)",border:playing?`2px solid ${C.gold}`:"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:playing?C.gold:C.bg,boxShadow:playing?"none":"0 8px 32px rgba(200,151,26,.4)",transition:"all .2s"})}>
+          <motion.button
+            onClick={()=>{setPlaying(p=>!p);if(prog>=100)setProg(0);}}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            style={{width:60,height:60,borderRadius:"50%",background:playing?"rgba(200,151,26,.2)":"linear-gradient(135deg,#C8971A,#E0A820)",border:playing?`2px solid ${C.gold}`:"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:playing?C.gold:C.bg,boxShadow:playing?"none":"0 8px 32px rgba(200,151,26,.4)",cursor:"pointer"}}
+          >
             {playing?"⏸":"▶"}
-          </button>
+          </motion.button>
         </div>
+
+        {/* Progress bar */}
         <div style={{position:"absolute",bottom:0,left:0,right:0}}>
           <div onClick={e=>{const r=e.currentTarget.getBoundingClientRect();setProg(((e.clientX-r.left)/r.width)*100);}} style={{height:4,background:"rgba(255,255,255,.15)",cursor:"pointer"}}>
-            <div style={{height:"100%",width:`${prog}%`,background:C.gold,transition:"width .08s linear"}}/>
+            <motion.div
+              style={{height:"100%",background:C.gold}}
+              initial={{ width: 0 }}
+              animate={{ width: `${prog}%` }}
+              transition={{ duration: 0.08 }}
+            />
           </div>
           <div style={{background:"rgba(0,0,0,.85)",padding:"7px 14px",display:"flex",alignItems:"center",gap:12}}>
-            <button onClick={()=>{setPlaying(p=>!p);if(prog>=100)setProg(0);}} style={btn({background:"none",color:"#fff",fontSize:15})}>{playing?"⏸":"▶"}</button>
+            <motion.button
+              onClick={()=>{setPlaying(p=>!p);if(prog>=100)setProg(0);}}
+              whileTap={{ scale: 0.9 }}
+              style={{background:"none",border:"none",color:"#fff",fontSize:15,cursor:"pointer"}}
+            >{playing?"⏸":"▶"}</motion.button>
             <span style={{fontFamily:F.mono,fontSize:10,color:C.t2}}>{timeStr} / 48:00</span>
             <div style={{flex:1}}/>
             <span style={{fontSize:12,color:C.t2}}>⛶</span>
           </div>
         </div>
       </div>
+
+      {/* Course Curriculum */}
       <div style={{padding:16,maxHeight:300,overflowY:"auto"}}>
         <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".1em",textTransform:"uppercase",marginBottom:12}}>Programme · {totalVids} vidéos</div>
         {course.curriculum.map((s:any,si:number)=>{
           const base=course.curriculum.slice(0,si).reduce((a:number,c:any)=>a+c.n,0);
           return(
-            <div key={si} style={{marginBottom:12}}>
+            <motion.div
+              key={si}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: si * 0.05 }}
+              style={{marginBottom:12}}
+            >
               <div style={{fontSize:12,fontWeight:700,color:C.t,marginBottom:6,display:"flex",justifyContent:"space-between"}}>
                 <span>{s.t}</span><span style={{fontFamily:F.mono,fontSize:10,color:C.t2}}>{s.d}</span>
               </div>
@@ -156,20 +249,94 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
                 const idx=base+li;
                 const isDone=done.includes(idx);
                 return(
-                  <div key={li} onClick={()=>{setSel(si);setProg(0);setPlaying(false);setDone(d=>d.includes(idx)?d.filter(x=>x!==idx):[...d,idx]);}}
-                    style={{display:"flex",alignItems:"center",gap:10,padding:"6px 10px",borderRadius:8,cursor:"pointer",marginBottom:3,background:sel===si&&li===0?`${C.gold}15`:isDone?`${C.grn}08`:"transparent",transition:"background .15s"}}>
-                    <div style={{width:18,height:18,borderRadius:4,background:isDone?C.grn:C.bdr,border:`1px solid ${isDone?C.grn:C.bdr2}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:isDone?"#fff":C.t3,flexShrink:0}}>
+                  <motion.div
+                    key={li}
+                    onClick={()=>{setSel(si);setProg(0);setPlaying(false);setDone(d=>d.includes(idx)?d.filter(x=>x!==idx):[...d,idx]);}}
+                    whileHover={{ backgroundColor: `${C.gold}20` }}
+                    style={{display:"flex",alignItems:"center",gap:10,padding:"6px 10px",borderRadius:8,cursor:"pointer",marginBottom:3,background:sel===si&&li===0?`${C.gold}15`:isDone?`${C.grn}08`:"transparent"}}
+                  >
+                    <motion.div
+                      animate={{ scale: isDone ? [1, 1.2, 1] : 1 }}
+                      transition={{ duration: 0.3 }}
+                      style={{width:18,height:18,borderRadius:4,background:isDone?C.grn:C.bdr,border:`1px solid ${isDone?C.grn:C.bdr2}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:isDone?"#fff":C.t3,flexShrink:0}}
+                    >
                       {isDone?"✓":li+1}
-                    </div>
+                    </motion.div>
                     <span style={{fontSize:11,color:isDone?C.grn:C.t2}}>Leçon {li+1}</span>
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           );
         })}
       </div>
-    </div>
+
+      {/* Resources Section */}
+      {enrolled && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{borderTop:`1px solid ${C.bdr}`,padding:16}}
+        >
+          <button
+            onClick={() => setShowResources(r => !r)}
+            style={btn({width:"100%",background:C.s1,border:`1px solid ${C.bdr}`,color:C.t,padding:"12px 16px",borderRadius:10,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"})}
+          >
+            <span style={{display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:18}}>📎</span>
+              Ressources de la formation ({resources.length})
+            </span>
+            <motion.span
+              animate={{ rotate: showResources ? 180 : 0 }}
+              style={{display:"inline-block"}}
+            >▾</motion.span>
+          </button>
+
+          <AnimatePresence>
+            {showResources && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                style={{overflow:"hidden"}}
+              >
+                <div style={{paddingTop:12,display:"flex",flexDirection:"column",gap:8}}>
+                  {resources.map((res, i) => (
+                    <motion.a
+                      key={i}
+                      href="#"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      whileHover={{ backgroundColor: `${C.gold}15`, x: 4 }}
+                      style={{
+                        display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:10,textDecoration:"none",cursor:"pointer"
+                      }}
+                    >
+                      <div style={{width:40,height:40,borderRadius:8,background:`${C.gold}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
+                        {res.icon}
+                      </div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:13,fontWeight:600,color:C.t,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{res.name}</div>
+                        <div style={{fontSize:10,color:C.t2,fontFamily:F.mono,marginTop:2}}>{res.type.toUpperCase()} · {res.size}</div>
+                      </div>
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        style={{width:32,height:32,borderRadius:8,background:C.gold,color:C.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,flexShrink:0}}
+                      >
+                        ⬇
+                      </motion.div>
+                    </motion.a>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      )}
+    </motion.div>
   );
 }
 

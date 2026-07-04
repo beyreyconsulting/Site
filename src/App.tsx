@@ -1,17 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { C, F, COURSES, POSTS, DIAL, TESTIMONIALS, STATS, fmt, btn, Tag } from "./data.tsx";
 import { KalanAI, VideoPlayer, PaymentModal, BookDownloadModal } from "./components";
 import { CourseDetailModal, BlogModal } from "./modals";
 import { AdminPanel } from "./admin";
 import { CourseViewer, CourseCatalog } from "./lms";
 import { useAuth, AuthModal, StudentDashboard, CartModal, useCart, useEnrollments } from "./student";
+import { fadeInUp, fadeIn, staggerContainer, staggerItem, hoverScale, hoverLift, tapScale } from "./motion";
 
 /* ═══════════════════════════════════════════════════
-   HEADER
+   HEADER - CONSULTING & KALAN SEPARATED
 ═══════════════════════════════════════════════════ */
 function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav:(id:string)=>void; user: any; profile: any; cartCount: number; onShowAuth: ()=>void; onShowCart: ()=>void}){
   const [scrolled,setScrolled]=useState(false);
   const [mobileOpen,setMobileOpen]=useState(false);
+  const [activeSection, setActiveSection] = useState<"consulting" | "kalan">("consulting");
 
   useEffect(()=>{
     const onScroll=()=>setScrolled(window.scrollY>20);
@@ -19,8 +22,8 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
     return()=>window.removeEventListener("scroll",onScroll);
   },[]);
 
-  const links=[
-    {l:"Formations",id:"formations"},
+  const consultingLinks=[
+    {l:"Services",id:"formations"},
     {l:"Méthode DIAL™",id:"methode"},
     {l:"Témoignages",id:"temoignages"},
     {l:"Blog",id:"blog"},
@@ -28,144 +31,433 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
   ];
 
   return(
-    <header style={{position:"fixed",top:0,left:0,right:0,zIndex:100,transition:"all .3s",background:scrolled?"rgba(8,17,30,.92)":"transparent",backdropFilter:scrolled?"blur(12px)":"none",borderBottom:scrolled?`1px solid ${C.bdr}`:"1px solid transparent"}}>
+    <motion.header
+      initial={{ y: -80 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      style={{position:"fixed",top:0,left:0,right:0,zIndex:100,transition:"all .3s",background:scrolled?"rgba(8,17,30,.95)":"transparent",backdropFilter:scrolled?"blur(16px)":"none",borderBottom:scrolled?`1px solid ${C.bdr}`:"1px solid transparent"}}
+    >
+      {/* Brand Switcher Bar */}
+      <AnimatePresence>
+        {scrolled && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            style={{background:"rgba(200,151,26,.08)",borderBottom:`1px solid ${C.bdr}`,overflow:"hidden"}}
+          >
+            <div style={{maxWidth:1200,margin:"0 auto",padding:"0 24px",display:"flex",gap:16}}>
+              <motion.button
+                onClick={() => setActiveSection("consulting")}
+                whileHover={{ backgroundColor: "rgba(200,151,26,.15)" }}
+                style={{
+                  background: activeSection === "consulting" ? `${C.gold}20` : "transparent",
+                  border: "none",
+                  borderBottom: activeSection === "consulting" ? `2px solid ${C.gold}` : "2px solid transparent",
+                  color: activeSection === "consulting" ? C.gold : C.t2,
+                  padding: "8px 16px",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  fontFamily: F.mono,
+                  letterSpacing: ".08em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                💼 Consulting Entreprise
+              </motion.button>
+              <motion.button
+                onClick={() => { setActiveSection("kalan"); window.location.hash = "lms"; }}
+                whileHover={{ backgroundColor: "rgba(0,200,150,.15)" }}
+                style={{
+                  background: activeSection === "kalan" ? `${C.grn}15` : "transparent",
+                  border: "none",
+                  borderBottom: activeSection === "kalan" ? `2px solid ${C.grn}` : "2px solid transparent",
+                  color: activeSection === "kalan" ? C.grn : C.t2,
+                  padding: "8px 16px",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  fontFamily: F.mono,
+                  letterSpacing: ".08em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                🎓 Académie Kalan
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div style={{maxWidth:1200,margin:"0 auto",padding:"14px 24px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div onClick={()=>onNav("hero")} style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}>
-          <img src="/logo.png" alt="Beyrey Consulting" style={{width:40,height:40,objectFit:"contain",borderRadius:8}}/>
+        <motion.div
+          onClick={()=>onNav("hero")}
+          whileHover={{ scale: 1.02 }}
+          style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}
+        >
+          <motion.img
+            src="/logo.png"
+            alt="Beyrey Consulting"
+            style={{width:40,height:40,objectFit:"contain",borderRadius:8}}
+            whileHover={{ rotate: [0, -5, 5, 0] }}
+            transition={{ duration: 0.4 }}
+          />
           <div>
             <div style={{fontFamily:F.serif,fontSize:18,fontWeight:600,color:"#fff",lineHeight:1}}>Beyrey</div>
             <div style={{fontFamily:F.mono,fontSize:9,color:C.gold,letterSpacing:".15em",textTransform:"uppercase"}}>Consulting</div>
           </div>
-        </div>
+        </motion.div>
+
         <nav style={{display:"flex",gap:28,alignItems:"center"}}>
-          {links.map(x=>(
-            <button key={x.id} onClick={()=>onNav(x.id)} style={btn({background:"none",color:C.t2,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:"2px solid transparent",transition:"all .2s"})}
-              onMouseEnter={e=>{e.currentTarget.style.color=C.t;e.currentTarget.style.borderBottomColor=C.gold;}}
-              onMouseLeave={e=>{e.currentTarget.style.color=C.t2;e.currentTarget.style.borderBottomColor="transparent";}}>
+          {consultingLinks.map((x, i) => (
+            <motion.button
+              key={x.id}
+              onClick={()=>onNav(x.id)}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              whileHover={{ y: -2 }}
+              style={btn({background:"none",color:C.t2,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:"2px solid transparent"})}
+            >
               {x.l}
-            </button>
+            </motion.button>
           ))}
-          <button onClick={()=>{ window.location.hash = "lms"; }} style={btn({background:"none",color:C.gold,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:"2px solid transparent",transition:"all .2s"})}
-            onMouseEnter={e=>{e.currentTarget.style.borderBottomColor=C.gold;}}
-            onMouseLeave={e=>{e.currentTarget.style.borderBottomColor="transparent";}}>
-            LMS
-          </button>
+          <motion.button
+            onClick={()=>{ window.location.hash = "lms"; }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: consultingLinks.length * 0.05 }}
+            whileHover={{ y: -2, color: C.gold }}
+            style={btn({background:`${C.gold}12`,border:`1px solid ${C.gold}30`,color:C.gold,fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8})}
+          >
+            🎓 Kalan
+          </motion.button>
         </nav>
+
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           {user && (
-            <button onClick={onShowCart} style={btn({background:C.s2,border:`1px solid ${C.bdr}`,color:C.t,padding:"8px 12px",borderRadius:10,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6})}>
-              🛒 {cartCount > 0 && <span style={{background:C.gold,color:C.bg,borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11}}>{cartCount}</span>}
-            </button>
+            <motion.button
+              onClick={onShowCart}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              style={btn({background:C.s2,border:`1px solid ${C.bdr}`,color:C.t,padding:"8px 12px",borderRadius:10,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6})}
+            >
+              🛒 {cartCount > 0 && <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                style={{background:C.gold,color:C.bg,borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11}}
+              >{cartCount}</motion.span>}
+            </motion.button>
           )}
           {user ? (
-            <button onClick={()=>{ window.location.hash = "student"; }} style={btn({background:`${C.gold}18`,border:`1px solid ${C.gold}30`,color:C.gold,padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:700})}>
+            <motion.button
+              onClick={()=>{ window.location.hash = "student"; }}
+              whileHover={{ scale: 1.05, backgroundColor: `${C.gold}25` }}
+              whileTap={{ scale: 0.95 }}
+              style={btn({background:`${C.gold}18`,border:`1px solid ${C.gold}30`,color:C.gold,padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:700})}
+            >
               {profile?.full_name?.split(" ")[0] || "Espace"} ▾
-            </button>
+            </motion.button>
           ) : (
-            <button onClick={onShowAuth} style={btn({background:"none",color:C.t2,border:`1px solid ${C.bdr}`,padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:600})}>
+            <motion.button
+              onClick={onShowAuth}
+              whileHover={{ scale: 1.05, borderColor: C.gold }}
+              whileTap={{ scale: 0.95 }}
+              style={btn({background:"none",color:C.t2,border:`1px solid ${C.bdr}`,padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:600})}
+            >
               Connexion
-            </button>
+            </motion.button>
           )}
-          <button onClick={()=>onNav("contact")} className="hide-mobile" style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"10px 18px",borderRadius:10,fontWeight:700,fontSize:13,boxShadow:"0 4px 16px rgba(200,151,26,.3)"})}>
+          <motion.button
+            onClick={()=>onNav("contact")}
+            className="hide-mobile"
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"10px 20px",borderRadius:10,fontWeight:700,fontSize:13,boxShadow:"0 4px 16px rgba(200,151,26,.3)"})}
+          >
             Nous contacter
-          </button>
-          <button onClick={()=>setMobileOpen(true)} style={btn({display:"none",background:C.s2,color:C.t,border:`1px solid ${C.bdr}`,width:38,height:38,borderRadius:10,fontSize:18})} className="mobile-only">☰</button>
+          </motion.button>
+          <motion.button
+            onClick={()=>setMobileOpen(true)}
+            whileHover={{ backgroundColor: C.s3 }}
+            whileTap={{ scale: 0.9 }}
+            style={btn({display:"none",background:C.s2,color:C.t,border:`1px solid ${C.bdr}`,width:38,height:38,borderRadius:10,fontSize:18})}
+            className="mobile-only"
+          >☰</motion.button>
         </div>
       </div>
-      {mobileOpen&&(
-        <div style={{position:"fixed",inset:0,zIndex:200,background:"rgba(4,8,16,.95)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24}}>
-          <button onClick={()=>setMobileOpen(false)} style={btn({position:"absolute",top:20,right:20,background:C.s2,color:C.t,width:40,height:40,borderRadius:"50%",fontSize:18})}>✕</button>
-          {links.map(x=>(
-            <button key={x.id} onClick={()=>{onNav(x.id);setMobileOpen(false);}} style={btn({background:"none",color:C.t,fontSize:22,fontFamily:F.serif})}>{x.l}</button>
-          ))}
-          <button onClick={()=>{onNav("contact");setMobileOpen(false);}} style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"14px 32px",borderRadius:10,fontWeight:700,fontSize:15})}>Nous contacter</button>
-        </div>
-      )}
-    </header>
+
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{position:"fixed",inset:0,zIndex:200,background:"rgba(4,8,16,.95)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24}}
+          >
+            <motion.button
+              onClick={()=>setMobileOpen(false)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              style={btn({position:"absolute",top:20,right:20,background:C.s2,color:C.t,width:40,height:40,borderRadius:"50%",fontSize:18})}
+            >✕</motion.button>
+
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer}
+              style={{display:"flex",flexDirection:"column",alignItems:"center",gap:20}}
+            >
+              {consultingLinks.map((x, i) => (
+                <motion.button
+                  key={x.id}
+                  variants={staggerItem}
+                  onClick={()=>{onNav(x.id);setMobileOpen(false);}}
+                  style={btn({background:"none",color:C.t,fontSize:22,fontFamily:F.serif})}
+                >{x.l}</motion.button>
+              ))}
+              <motion.button
+                variants={staggerItem}
+                onClick={()=>{ window.location.hash = "lms"; setMobileOpen(false); }}
+                style={btn({background:`${C.gold}18`,border:`1px solid ${C.gold}30`,color:C.gold,padding:"12px 24px",borderRadius:10,fontSize:18,fontFamily:F.serif,fontWeight:700})}
+              >🎓 Académie Kalan</motion.button>
+            </motion.div>
+
+            <motion.button
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              onClick={()=>{onNav("contact");setMobileOpen(false);}}
+              style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"14px 32px",borderRadius:10,fontWeight:700,fontSize:15,marginTop:20})}
+            >Nous contacter</motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 }
 
 /* ═══════════════════════════════════════════════════
-   HERO
+   HERO - ROI-FOCUSED CONSULTING LANDING
 ═══════════════════════════════════════════════════ */
 function Hero({onNav,onExplore}:{onNav:(id:string)=>void,onExplore:()=>void}){
   return(
-    <section id="hero" style={{position:"relative",padding:"140px 24px 80px",overflow:"hidden"}}>
-      {/* Background constellation */}
+    <section id="hero" style={{position:"relative",padding:"140px 24px 100px",overflow:"hidden"}}>
+      {/* Animated Background */}
       <div style={{position:"absolute",inset:0,overflow:"hidden",pointerEvents:"none"}}>
-        {[...Array(40)].map((_,i)=>(
-          <div key={i} style={{position:"absolute",width:Math.random()*2+1,height:Math.random()*2+1,borderRadius:"50%",background:C.gold,opacity:Math.random()*.5+.1,left:`${Math.random()*100}%`,top:`${Math.random()*100}%`,animation:`twinkle ${3+Math.random()*4}s ease-in-out ${Math.random()*3}s infinite alternate`}}/>
+        {[...Array(60)].map((_,i)=>(
+          <motion.div
+            key={i}
+            animate={{
+              opacity: [0.1, 0.6, 0.1],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              duration: 3 + Math.random() * 4,
+              repeat: Infinity,
+              delay: Math.random() * 3,
+            }}
+            style={{position:"absolute",width:Math.random()*3+1,height:Math.random()*3+1,borderRadius:"50%",background:C.gold,left:`${Math.random()*100}%`,top:`${Math.random()*100}%`}}
+          />
         ))}
-        <div style={{position:"absolute",top:"-20%",right:"-10%",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(200,151,26,.08),transparent 70%)"}}/>
-        <div style={{position:"absolute",bottom:"-30%",left:"-10%",width:500,height:500,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,200,150,.06),transparent 70%)"}}/>
+        <motion.div
+          animate={{ scale: [1, 1.1, 1], opacity: [0.08, 0.12, 0.08] }}
+          transition={{ duration: 8, repeat: Infinity }}
+          style={{position:"absolute",top:"-20%",right:"-10%",width:700,height:700,borderRadius:"50%",background:"radial-gradient(circle,rgba(200,151,26,.1),transparent 70%)"}}
+        />
+        <motion.div
+          animate={{ scale: [1, 1.05, 1], opacity: [0.06, 0.1, 0.06] }}
+          transition={{ duration: 10, repeat: Infinity }}
+          style={{position:"absolute",bottom:"-30%",left:"-10%",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,200,150,.08),transparent 70%)"}}
+        />
       </div>
-      <style>{`@keyframes twinkle{to{opacity:.9;transform:scale(1.4)}}`}</style>
 
-      <div className="hero-grid" style={{maxWidth:1200,margin:"0 auto",position:"relative",display:"grid",gridTemplateColumns:"1.1fr .9fr",gap:60,alignItems:"center"}}>
+      <div className="hero-grid" style={{maxWidth:1200,margin:"0 auto",position:"relative",display:"grid",gridTemplateColumns:"1.15fr .85fr",gap:80,alignItems:"center"}}>
         <div>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:`${C.gold}12`,border:`1px solid ${C.gold}28`,borderRadius:20,padding:"6px 14px",marginBottom:24}}>
-            <span style={{width:6,height:6,borderRadius:"50%",background:C.grn,animation:"pulse 2s infinite"}}/>
-            <span style={{fontFamily:F.mono,fontSize:11,color:C.gold,letterSpacing:".08em"}}>CABINAT DATA & BI · BAMAKO</span>
-          </div>
-          <h1 className="hero-title" style={{fontFamily:F.serif,fontSize:64,fontWeight:600,color:"#fff",lineHeight:1.05,margin:"0 0 20px",letterSpacing:"-0.02em"}}>
-            La data au service<br/>
-            <span style={{color:C.gold,fontStyle:"italic"}}>des PME maliennes.</span>
-          </h1>
-          <p style={{fontSize:17,color:C.t2,lineHeight:1.7,maxWidth:520,margin:"0 0 32px"}}>
-            Beyrey Consulting est le cabinet de référence Data & BI au Mali. Formations, audits et accompagnement basés sur la méthode <strong style={{color:C.gold}}>DIAL™</strong> — conçue pour la réalité africaine.
-          </p>
-          <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
-            <button onClick={onExplore} style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"15px 30px",borderRadius:12,fontWeight:800,fontSize:15,boxShadow:"0 8px 32px rgba(200,151,26,.4)"})}>
-              Explorer les formations →
-            </button>
-            <button onClick={()=>onNav("methode")} style={btn({background:C.s2,color:C.t,border:`1px solid ${C.bdr2}`,padding:"15px 30px",borderRadius:12,fontWeight:700,fontSize:15})}>
-              Découvrir DIAL™
-            </button>
-          </div>
-          <div style={{display:"flex",gap:32,marginTop:40,flexWrap:"wrap"}}>
-            {STATS.map((s,i)=>(
-              <div key={i}>
-                <div style={{fontFamily:F.serif,fontSize:32,fontWeight:600,color:C.gold,lineHeight:1}}>{s.n}</div>
-                <div style={{fontSize:11,color:C.t2,fontFamily:F.mono,letterSpacing:".08em",textTransform:"uppercase",marginTop:4}}>{s.l}</div>
-              </div>
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            style={{display:"inline-flex",alignItems:"center",gap:8,background:`${C.gold}12`,border:`1px solid ${C.gold}28`,borderRadius:24,padding:"8px 16px",marginBottom:28}}
+          >
+            <motion.span
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              style={{width:8,height:8,borderRadius:"50%",background:C.grn}}
+            />
+            <span style={{fontFamily:F.mono,fontSize:11,color:C.gold,letterSpacing:".1em"}}>CABINET DATA & BI · BAMAKO</span>
+          </motion.div>
+
+          {/* Headline - ROI Focused */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="hero-title"
+            style={{fontFamily:F.serif,fontSize:68,fontWeight:600,color:"#fff",lineHeight:1.05,margin:"0 0 24px",letterSpacing:"-0.02em"}}
+          >
+            Transformez vos<br/>
+            <span style={{color:C.gold,fontStyle:"italic"}}>données en décisions.</span>
+          </motion.h1>
+
+          {/* Subheadline */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            style={{fontSize:18,color:C.t2,lineHeight:1.75,maxWidth:540,margin:"0 0 36px"}}
+          >
+            <strong style={{color:C.t}}>Beyrey Consulting</strong> aide les entreprises maliennes à exploiter la puissance de leurs données.
+            <span style={{color:C.gold,fontWeight:700}}> ROI prouvé, méthodologie éprouvée DIAL™.</span>
+          </motion.p>
+
+          {/* ROI Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            style={{display:"flex",gap:28,marginBottom:36,flexWrap:"wrap"}}
+          >
+            {[
+              { value: "+40%", label: "Gain d'efficacité" },
+              { value: "50+", label: "Entreprises formées" },
+              { value: "3x", label: "ROI moyen" },
+            ].map((stat, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 + i * 0.1 }}
+                style={{ display: "flex", flexDirection: "column" }}
+              >
+                <span style={{ fontFamily: F.serif, fontSize: 32, fontWeight: 700, color: C.gold }}>{stat.value}</span>
+                <span style={{ fontSize: 11, color: C.t2, fontFamily: F.mono, letterSpacing: ".04em" }}>{stat.label}</span>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            style={{display:"flex",gap:14,flexWrap:"wrap",alignItems:"center"}}
+          >
+            <motion.button
+              onClick={()=>onNav("contact")}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              style={{background:"linear-gradient(135deg,#C8971A,#E0A820)",border:"none",color:C.bg,padding:"16px 32px",borderRadius:12,fontWeight:800,fontSize:15,boxShadow:"0 8px 32px rgba(200,151,26,.4)",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
+            >
+              Réserver un appel <span style={{fontSize:18}}>→</span>
+            </motion.button>
+            <motion.button
+              onClick={()=>onNav("formations")}
+              whileHover={{ scale: 1.05, backgroundColor: C.s3 }}
+              whileTap={{ scale: 0.95 }}
+              style={{background:C.s2,color:C.t,border:`1px solid ${C.bdr2}`,padding:"16px 28px",borderRadius:12,fontWeight:700,fontSize:15,cursor:"pointer"}}
+            >
+              Voir nos services
+            </motion.button>
+          </motion.div>
+
+          {/* Trust indicators */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            style={{display:"flex",gap:24,alignItems:"center",marginTop:24,paddingTop:24,borderTop:`1px solid ${C.bdr}`,flexWrap:"wrap"}}
+          >
+            {STATS.slice(0,3).map((s,i)=>(
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 + i * 0.1 }}
+              >
+                <div style={{fontFamily:F.serif,fontSize:26,fontWeight:700,color:C.t,lineHeight:1}}>{s.n}</div>
+                <div style={{fontSize:10,color:C.t2,fontFamily:F.mono,letterSpacing:".06em",textTransform:"uppercase",marginTop:2}}>{s.l}</div>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
 
-        {/* Hero card — featured course preview */}
-        <div style={{position:"relative"}}>
-          <div style={{background:"linear-gradient(160deg,#0E1A2C,#162438)",border:`1px solid ${C.bdr}`,borderRadius:24,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,0,0,.5)"}}>
-            <div style={{padding:20,paddingBottom:0}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        {/* Hero card — featured course preview with animation */}
+        <motion.div
+          initial={{ opacity: 0, x: 40, rotateY: -10 }}
+          animate={{ opacity: 1, x: 0, rotateY: 0 }}
+          transition={{ delay: 0.4, duration: 0.7 }}
+          style={{position:"relative",perserspective:"1000px"}}
+        >
+          <motion.div
+            whileHover={{ y: -8, boxShadow: "0 40px 100px rgba(0,0,0,.6)" }}
+            style={{background:"linear-gradient(160deg,#0E1A2C,#162438)",border:`1px solid ${C.bdr}`,borderRadius:24,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,0,0,.5)"}}
+          >
+            <div style={{padding:24,paddingBottom:0}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
                 <Tag c={C.gold}>⭐ Formation phare</Tag>
                 <span style={{fontFamily:F.mono,fontSize:10,color:C.t2}}>★ 4.9 · 147 étudiants</span>
               </div>
-              <div style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:"#fff",marginBottom:6}}>Power BI pour PME Maliennes</div>
-              <div style={{fontSize:12,color:C.t2,marginBottom:16}}>De zéro à votre premier dashboard professionnel</div>
+              <div style={{fontFamily:F.serif,fontSize:24,fontWeight:600,color:"#fff",marginBottom:8}}>Power BI pour PME Maliennes</div>
+              <div style={{fontSize:13,color:C.t2,marginBottom:20}}>De zéro à votre premier dashboard professionnel</div>
             </div>
-            <div style={{padding:"0 20px 20px"}}>
+            <div style={{padding:"0 24px 24px"}}>
               <VideoPlayer course={COURSES[0]} enrolled={false} />
             </div>
-          </div>
-          <div style={{position:"absolute",right:-20,top:-20,background:C.gold,color:C.bg,padding:"8px 14px",borderRadius:12,fontSize:11,fontWeight:800,fontFamily:F.mono,transform:"rotate(8deg)",boxShadow:"0 8px 24px rgba(200,151,26,.4)"}}>
+          </motion.div>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.8, type: "spring", stiffness: 300 }}
+            style={{position:"absolute",right:-16,top:-16,background:C.gold,color:C.bg,padding:"10px 16px",borderRadius:12,fontSize:12,fontWeight:800,fontFamily:F.mono,transform:"rotate(8deg)",boxShadow:"0 8px 24px rgba(200,151,26,.5)"}}
+          >
             -25% LANCEMENT
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
 }
 
 /* ═══════════════════════════════════════════════════
-   SECTION TITLE
+   SECTION TITLE - WITH ANIMATION
 ═══════════════════════════════════════════════════ */
 function SectionTitle({tag,title,sub,center}:{tag:string,title:React.ReactNode,sub?:string,center?:boolean}){
   return(
-    <div style={{maxWidth:680,margin:center?"0 auto 48px":"0 0 40px",textAlign:center?"center":"left"}}>
-      <div style={{fontFamily:F.mono,fontSize:11,color:C.gold,letterSpacing:".15em",textTransform:"uppercase",marginBottom:12}}>{tag}</div>
-      <h2 className="section-title" style={{fontFamily:F.serif,fontSize:42,fontWeight:600,color:"#fff",lineHeight:1.15,margin:"0 0 14px",letterSpacing:"-0.01em"}}>{title}</h2>
-      {sub&&<p style={{fontSize:15,color:C.t2,lineHeight:1.7,margin:0}}>{sub}</p>}
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.6 }}
+      style={{maxWidth:680,margin:center?"0 auto 48px":"0 0 40px",textAlign:center?"center":"left"}}
+    >
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.1 }}
+        style={{fontFamily:F.mono,fontSize:11,color:C.gold,letterSpacing:".15em",textTransform:"uppercase",marginBottom:12}}
+      >{tag}</motion.div>
+      <motion.h2
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.2 }}
+        className="section-title"
+        style={{fontFamily:F.serif,fontSize:42,fontWeight:600,color:"#fff",lineHeight:1.15,margin:"0 0 14px",letterSpacing:"-0.01em"}}
+      >{title}</motion.h2>
+      {sub && <motion.p
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.3 }}
+        style={{fontSize:15,color:C.t2,lineHeight:1.7,margin:0}}
+      >{sub}</motion.p>}
+    </motion.div>
   );
 }
 
@@ -613,7 +905,7 @@ export default function App() {
         </div>
       );
     }
-    return <StudentDashboard user={user} profile={profile} onSignOut={signOut} onViewCourse={(id) => { window.location.hash = `lms/${id}`; }} />;
+    return <StudentDashboard user={user} profile={profile} onSignOut={async () => { await signOut(); window.location.hash = ""; }} onViewCourse={(id) => { window.location.hash = `lms/${id}`; }} />;
   }
 
   // LMS Catalog route

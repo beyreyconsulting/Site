@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { C, F, btn } from "./data.tsx";
+import { C, F, btn, clickable, textOn } from "./data.tsx";
 import { supabase } from "./supabase";
 
 /* ─────────────── TYPES ─────────────── */
@@ -278,7 +278,7 @@ function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?
         </div>
       )}
 
-      {questions.map((q, qi) => {
+      {questions.map((q) => {
         const userAnswer = answers[q.id];
         const isCorrect = q.options.find(o => o.id === userAnswer)?.is_correct;
 
@@ -717,7 +717,9 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
           return (
             <div key={sec.id} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 16, marginBottom: 12, overflow: "hidden" }}>
               <div
-                onClick={() => { const next = new Set(expandedSections); if (isExpanded) next.delete(sec.id); else next.add(sec.id); setExpandedSections(next); }}
+                {...clickable(() => { const next = new Set(expandedSections); if (isExpanded) next.delete(sec.id); else next.add(sec.id); setExpandedSections(next); })}
+                aria-expanded={isExpanded}
+                aria-label={`Section : ${sec.title}`}
                 style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", transition: "background .15s" }}
                 onMouseEnter={e => e.currentTarget.style.background = `${C.gold}08`}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
@@ -738,7 +740,8 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
                     const lessonProg = progress[les.id];
                     return (
                       <div key={les.id}
-                        onClick={() => setSelectedLesson(les)}
+                        {...clickable(() => setSelectedLesson(les))}
+                        aria-label={`Leçon : ${les.title}`}
                         style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", marginTop: li === 0 ? 16 : 8, background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, cursor: "pointer", transition: "all .15s" }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = C.gold; e.currentTarget.style.background = `${C.gold}08`; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = C.bdr; e.currentTarget.style.background = C.bg; }}
@@ -851,7 +854,7 @@ export function CourseCatalog({ onSelectCourse, onBack, user, onAddToCart }: { o
                       </div>
                     </div>
                     {isEnrolled ? (
-                      <button onClick={() => onSelectCourse(c.id)} style={btn({ width: "100%", background: C.grn, color: "#fff", padding: 12, borderRadius: 10, fontWeight: 700, fontSize: 13 })}>
+                      <button onClick={() => onSelectCourse(c.id)} style={btn({ width: "100%", background: C.grn, color: textOn(C.grn), padding: 12, borderRadius: 10, fontWeight: 700, fontSize: 13 })}>
                         Continuer la formation
                       </button>
                     ) : user && onAddToCart ? (

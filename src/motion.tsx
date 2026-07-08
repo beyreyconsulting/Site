@@ -1,5 +1,5 @@
 import { motion, Variants, HTMLMotionProps } from "framer-motion";
-import { ReactNode, lazy, Suspense } from "react";
+import { ReactNode, Suspense } from "react";
 
 /* ═══════════════════════════════════════════════════
    ANIMATION VARIANTS

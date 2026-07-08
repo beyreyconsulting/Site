@@ -2,14 +2,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { C, F, btn } from "./data.tsx";
 import { supabase } from "./supabase";
 
-/* ─────────────── ADMIN PASSWORD ─────────────── */
-const ADMIN_PASSWORD = "BeyreyCons2025!";
-
 /* ─────────────── TYPES ─────────────── */
 interface Course { id: string; title: string; subtitle: string; description: string; price: number; original_price: number; category: string; level: string; icon: string; color: string; thumbnail_url: string; is_published: boolean; }
 interface Section { id: string; course_id: string; title: string; position: number; }
 interface Lesson { id: string; section_id: string; course_id: string; title: string; description: string; video_url: string; video_storage_path: string; duration_seconds: number; is_preview: boolean; position: number; }
-interface LessonFile { id: string; lesson_id: string; name: string; file_url: string; size_bytes: number; mime_type: string; }
+interface LessonFile { id: string; lesson_id: string; name: string; file_url: string; storage_path?: string; size_bytes: number; mime_type: string; }
 interface Quiz { id: string; lesson_id: string; title: string; pass_score: number; }
 interface Question { id: string; quiz_id: string; question: string; explanation: string; position: number; options: Option[]; }
 interface Option { id: string; question_id: string; text: string; is_correct: boolean; position: number; }
@@ -52,14 +49,24 @@ function Field({ label, value, onChange, placeholder, type = "text", textarea = 
   );
 }
 
-/* ─────────────── ADMIN LOGIN ─────────────── */
+/* ─────────────── ADMIN LOGIN (real Supabase Auth + is_admin check) ─────────────── */
 function AdminLogin({ onAuth }: { onAuth: () => void }) {
+  const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
-  const submit = () => {
-    if (pw === ADMIN_PASSWORD) { sessionStorage.setItem("lms_admin", "1"); onAuth(); }
-    else setErr("Mot de passe incorrect");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    if (loading) return;
+    setLoading(true); setErr("");
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: pw });
+    if (error) { setErr("Identifiants incorrects"); setLoading(false); return; }
+    const { data: isAdmin } = await supabase.rpc("is_current_user_admin");
+    if (!isAdmin) { await supabase.auth.signOut(); setErr("Compte non autorisé"); setLoading(false); return; }
+    setLoading(false);
+    onAuth();
   };
+
   return (
     <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 20, padding: 40, width: 360, boxShadow: "0 24px 64px rgba(0,0,0,.6)" }}>
@@ -70,11 +77,12 @@ function AdminLogin({ onAuth }: { onAuth: () => void }) {
             <div style={{ fontSize: 11, color: C.t2, fontFamily: F.mono }}>Beyrey Consulting LMS</div>
           </div>
         </div>
-        <Field label="Mot de passe admin" value={pw} onChange={setPw} type="password" placeholder="••••••••••••" />
+        <Field label="Email admin" value={email} onChange={setEmail} type="email" placeholder="admin@beyrey.consulting" />
+        <Field label="Mot de passe" value={pw} onChange={setPw} type="password" placeholder="••••••••••••" />
         {err && <div style={{ fontSize: 12, color: C.red, marginBottom: 12 }}>{err}</div>}
-        <button onClick={submit} onKeyDown={e => e.key === "Enter" && submit()}
+        <button onClick={submit} disabled={loading}
           style={btn({ width: "100%", background: "linear-gradient(135deg,#C8971A,#E0A820)", color: C.bg, padding: 13, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
-          Accéder au panneau →
+          {loading ? "Connexion…" : "Accéder au panneau →"}
         </button>
         <div style={{ marginTop: 16, textAlign: "center", fontSize: 12, color: C.t3 }}>
           <a href="#" onClick={e => { e.preventDefault(); window.location.hash = ""; }} style={{ color: C.t2, textDecoration: "none" }}>← Retour au site</a>
@@ -771,10 +779,30 @@ function CourseList({ onManageSections }: { onManageSections: (c: Course) => voi
 
 /* ─────────────── ADMIN PANEL ROOT ─────────────── */
 export function AdminPanel() {
-  const [authed, setAuthed] = useState(() => sessionStorage.getItem("lms_admin") === "1");
+  const [authed, setAuthed] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [page, setPage] = useState<"courses" | "sections">("courses");
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: isAdmin } = await supabase.rpc("is_current_user_admin");
+        setAuthed(!!isAdmin);
+      }
+      setChecking(false);
+    })();
+  }, []);
+
+  if (checking) {
+    return (
+      <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: 40, height: 40, border: `3px solid ${C.bdr}`, borderTopColor: C.gold, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      </div>
+    );
+  }
   if (!authed) return <AdminLogin onAuth={() => setAuthed(true)} />;
 
   return (
@@ -798,7 +826,7 @@ export function AdminPanel() {
           <a href="#" onClick={e => { e.preventDefault(); window.location.hash = ""; }} style={{ fontSize: 12, color: C.t2, textDecoration: "none", background: C.s2, border: `1px solid ${C.bdr}`, padding: "7px 14px", borderRadius: 8 }}>
             ← Site public
           </a>
-          <button onClick={() => { sessionStorage.removeItem("lms_admin"); setAuthed(false); }} style={btn({ background: `${C.red}18`, color: C.red, border: `1px solid ${C.red}30`, padding: "7px 14px", borderRadius: 8, fontSize: 12 })}>
+          <button onClick={async () => { await supabase.auth.signOut(); setAuthed(false); }} style={btn({ background: `${C.red}18`, color: C.red, border: `1px solid ${C.red}30`, padding: "7px 14px", borderRadius: 8, fontSize: 12 })}>
             Se déconnecter
           </button>
         </div>

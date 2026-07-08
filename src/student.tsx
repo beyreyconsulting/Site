@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { C, F, btn } from "./data.tsx";
-import { supabase } from "./supabase";
-import { fadeInUp, fadeIn, staggerContainer, staggerItem, hoverLift, hoverScale, tapScale } from "./motion";
+import { C, F, btn, textOn } from "./data.tsx";
+import { supabase, enrollInCourse } from "./supabase";
+import { useDialog } from "./a11y";
+import { staggerContainer, staggerItem } from "./motion";
 
 /* ─────────────── TYPES ─────────────── */
 interface User { id: string; email: string; }
@@ -11,8 +12,6 @@ interface Course { id: string; title: string; subtitle: string; icon: string; co
 interface Enrollment { id: string; course_id: string; enrolled_at: string; completed_at?: string; progress_pct: number; course: Course; }
 interface Certificate { id: string; course_id: string; issued_at: string; certificate_number: string; verification_code: string; course: Course; }
 interface CartItem { id: string; course_id: string; created_at: string; course: Course; }
-interface Lesson { id: string; section_id: string; course_id: string; title: string; is_preview: boolean; position: number; }
-interface LessonProgress { lesson_id: string; completed_at?: string; video_progress_seconds: number; quiz_passed: boolean; }
 
 /* ─────────────── PASSWORD VALIDATION ─────────────── */
 function validatePassword(password: string): { valid: boolean; errors: string[] } {
@@ -45,7 +44,7 @@ export function useAuth() {
     };
     init();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setUser({ id: session.user.id, email: session.user.email || "" });
         await fetchProfile(session.user.id);
@@ -69,6 +68,7 @@ export function useAuth() {
 
 /* ─────────────── AUTH MODAL ─────────────── */
 export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: () => void }) {
+  const dialogRef = useDialog(onClose);
   const [mode, setMode] = useState<"login" | "register" | "forgot" | "verify">("login");
   const [form, setForm] = useState({ email: "", password: "", fullName: "", confirmPassword: "" });
   const [loading, setLoading] = useState(false);
@@ -76,18 +76,6 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
   const [success, setSuccess] = useState("");
   const [pendingEmail, setPendingEmail] = useState("");
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
-
-  const checkEmailExists = async (email: string): Promise<boolean> => {
-    // Try to sign in and check if user exists
-    const { error } = await supabase.auth.signInWithPassword({ email, password: "dummy-password-to-check" });
-    if (error?.message?.includes("Invalid login credentials")) {
-      // User might exist but wrong password - let's check with reset password
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
-      // If no error or different error, user likely exists
-      return !resetError || !resetError.message?.includes("User not found");
-    }
-    return false;
-  };
 
   const handleRegister = async () => {
     // Validate
@@ -111,12 +99,7 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
     setPasswordErrors([]);
 
     try {
-      // Check if email already exists
-      const { data: { users }, error: listError } = await supabase.auth.admin ?
-        await supabase.auth.admin.listUsers() :
-        { data: { users: [] }, error: null };
-
-      // Try signup - Supabase will return error if email exists
+      // Supabase returns an error if the email is already registered.
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: form.email.trim().toLowerCase(),
         password: form.password,
@@ -241,34 +224,10 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
     }
   };
 
-  // OTP verification (for email confirmation)
-  const handleVerifyOTP = async (token: string) => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: pendingEmail,
-        token,
-        type: "signup"
-      });
-
-      if (verifyError) throw verifyError;
-
-      setSuccess("Email confirme ! Connexion en cours...");
-      onAuth();
-      setTimeout(() => onClose(), 500);
-    } catch (e: any) {
-      setError(e.message || "Code invalide ou expire");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(4,8,16,.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+    <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(4,8,16,.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 440, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)", maxHeight: "90vh", overflowY: "auto" }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Connexion / Inscription" tabIndex={-1} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 440, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)", maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ background: "linear-gradient(135deg,#0E1A2C,#162438)", padding: "24px 28px", borderBottom: `1px solid ${C.bdr}` }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
@@ -279,7 +238,7 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
                 {mode === "login" ? "Accédez à votre espace étudiant" : mode === "register" ? "Rejoignez Beyrey Consulting" : mode === "forgot" ? "Reinitialisez votre mot de passe" : "Verifiez votre adresse email"}
               </div>
             </div>
-            <button onClick={onClose} style={btn({ background: C.bdr, color: C.t2, width: 30, height: 30, borderRadius: "50%", fontSize: 14 })}>✕</button>
+            <button onClick={onClose} aria-label="Fermer" style={btn({ background: C.bdr, color: C.t2, width: 30, height: 30, borderRadius: "50%", fontSize: 14 })}>✕</button>
           </div>
         </div>
 
@@ -423,7 +382,7 @@ export function useCart(user: User | null) {
       .from("cart_items")
       .select("id, course_id, created_at, course:lms_courses(id, title, subtitle, icon, color, price, original_price, category, level)")
       .eq("student_id", user.id);
-    setItems((data || []) as CartItem[]);
+    setItems((data || []) as unknown as CartItem[]);
     setLoading(false);
   }, [user]);
 
@@ -467,7 +426,7 @@ export function useEnrollments(user: User | null) {
       .select("id, course_id, enrolled_at, completed_at, progress_pct, course:lms_courses(id, title, subtitle, icon, color, price, original_price, category, level)")
       .eq("student_id", user.id)
       .order("enrolled_at", { ascending: false });
-    setEnrollments((data || []) as Enrollment[]);
+    setEnrollments((data || []) as unknown as Enrollment[]);
     setLoading(false);
   }, [user]);
 
@@ -504,7 +463,7 @@ export function useCertificates(user: User | null) {
       .select("id, course_id, issued_at, certificate_number, verification_code, course:lms_courses(id, title, subtitle, icon, color)")
       .eq("student_id", user.id)
       .order("issued_at", { ascending: false });
-    setCertificates((data || []) as Certificate[]);
+    setCertificates((data || []) as unknown as Certificate[]);
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
@@ -524,19 +483,36 @@ export function useCertificates(user: User | null) {
 
 /* ─────────────── SHOPPING CART MODAL ─────────────── */
 export function CartModal({ onClose, onCheckout }: { onClose: () => void; onCheckout: () => void }) {
+  const dialogRef = useDialog(onClose);
   const { user } = useAuth();
-  const { items, loading, removeFromCart, total, count } = useCart(user);
+  const { items, loading, removeFromCart, clearCart, total, count } = useCart(user);
+  const [checkingOut, setCheckingOut] = useState(false);
+  const [checkoutErr, setCheckoutErr] = useState("");
+
+  const doCheckout = async () => {
+    if (checkingOut || items.length === 0) return;
+    setCheckingOut(true); setCheckoutErr("");
+    // NOTE: real payment must be confirmed before enrollment. The `enroll`
+    // Edge Function is the single server-side choke point where that check lives.
+    for (const it of items) {
+      const r = await enrollInCourse(it.course_id);
+      if (!r.ok) { setCheckoutErr("Échec de l'inscription. Réessayez."); setCheckingOut(false); return; }
+    }
+    await clearCart();
+    setCheckingOut(false);
+    onCheckout();
+  };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(4,8,16,.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+    <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(4,8,16,.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 480, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Votre panier" tabIndex={-1} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 480, maxHeight: "92vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}>
         <div style={{ background: "linear-gradient(135deg,#0E1A2C,#162438)", padding: "20px 24px", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: "#fff" }}>Panier</div>
             <div style={{ fontSize: 12, color: C.t2 }}>{count} formation{count > 1 ? "s" : ""}</div>
           </div>
-          <button onClick={onClose} style={btn({ background: C.bdr, color: C.t2, width: 32, height: 32, borderRadius: "50%", fontSize: 14 })}>✕</button>
+          <button onClick={onClose} aria-label="Fermer" style={btn({ background: C.bdr, color: C.t2, width: 32, height: 32, borderRadius: "50%", fontSize: 14 })}>✕</button>
         </div>
         <div style={{ padding: 20, maxHeight: 400, overflowY: "auto" }}>
           {loading && <div style={{ textAlign: "center", color: C.t3, padding: 20 }}>Chargement...</div>}
@@ -568,8 +544,9 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
               <span style={{ fontSize: 14, color: C.t2 }}>Total</span>
               <span style={{ fontFamily: F.serif, fontSize: 24, fontWeight: 600, color: C.gold }}>{total.toLocaleString("fr-FR")} FCFA</span>
             </div>
-            <button onClick={onCheckout} style={btn({ width: "100%", background: "linear-gradient(135deg,#C8971A,#E0A820)", color: C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
-              Proceder au paiement
+            {checkoutErr && <div style={{ fontSize: 12, color: C.red, marginBottom: 10 }}>{checkoutErr}</div>}
+            <button onClick={doCheckout} disabled={checkingOut} style={btn({ width: "100%", background: "linear-gradient(135deg,#C8971A,#E0A820)", color: C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
+              {checkingOut ? "Traitement…" : "Proceder au paiement"}
             </button>
           </div>
         )}
@@ -580,6 +557,7 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
 
 /* ─────────────── CERTIFICATE VIEW ─────────────── */
 function CertificateView({ certificate, onClose, onShare }: { certificate: Certificate; onClose: () => void; onShare: () => void }) {
+  const dialogRef = useDialog(onClose);
   const course = certificate.course;
   const [copied, setCopied] = useState(false);
   const verifyUrl = `${window.location.origin}/#verify-cert/${certificate.verification_code}`;
@@ -591,9 +569,9 @@ function CertificateView({ certificate, onClose, onShare }: { certificate: Certi
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(4,8,16,.95)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
+    <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(4,8,16,.95)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, overflowY: "auto" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: "#fff", borderRadius: 0, width: "100%", maxWidth: 800, overflow: "hidden", boxShadow: "0 40px 100px rgba(0,0,0,.5)" }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Certificat" tabIndex={-1} style={{ background: "#fff", borderRadius: 0, width: "100%", maxWidth: 800, maxHeight: "92vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 40px 100px rgba(0,0,0,.5)" }}>
         {/* Certificate Content */}
         <div style={{ padding: "48px 56px", background: "#fffdf8", position: "relative", textAlign: "center" }}>
           {/* Border decorations */}
@@ -665,11 +643,10 @@ function CertificateView({ certificate, onClose, onShare }: { certificate: Certi
 
 /* ─────────────── STUDENT DASHBOARD ─────────────── */
 export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { user: User; profile: StudentProfile | null; onSignOut: () => void; onViewCourse: (id: string) => void }) {
-  const { enrollments, loading: enrollLoading, isEnrolled } = useEnrollments(user);
+  const { enrollments, loading: enrollLoading } = useEnrollments(user);
   const { certificates, hasCertificate, generateCertificate } = useCertificates(user);
   const [tab, setTab] = useState<"courses" | "certificates">("courses");
   const [selectedCert, setSelectedCert] = useState<Certificate | null>(null);
-  const [showShare, setShowShare] = useState<Certificate | null>(null);
   const [copied, setCopied] = useState(false);
 
   const completedCount = enrollments.filter(e => e.completed_at).length;
@@ -991,7 +968,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                             }}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            style={{ width: "100%", background: C.grn, border: "none", color: "#fff", padding: 14, borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                            style={{ width: "100%", background: C.grn, border: "none", color: textOn(C.grn), padding: 14, borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
                           >
                             <span>🏆</span> Voir mon certificat
                           </motion.button>

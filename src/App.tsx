@@ -1,12 +1,25 @@
-import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { C, F, COURSES, POSTS, DIAL, TESTIMONIALS, STATS, fmt, btn, Tag } from "./data.tsx";
-import { KalanAI, VideoPlayer, PaymentModal, BookDownloadModal } from "./components";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { motion, AnimatePresence, useInView, useReducedMotion } from "framer-motion";
+import { C, F, COURSES, POSTS, DIAL, TESTIMONIALS, STATS, fmt, btn, Tag, clickable, textOn } from "./data.tsx";
+import { track, supabase } from "./supabase";
+import { KalanAI, VideoPlayer, BookDownloadModal } from "./components";
 import { CourseDetailModal, BlogModal } from "./modals";
-import { AdminPanel } from "./admin";
-import { CourseViewer, CourseCatalog } from "./lms";
-import { useAuth, AuthModal, StudentDashboard, CartModal, useCart, useEnrollments } from "./student";
-import { fadeInUp, fadeIn, staggerContainer, staggerItem, hoverScale, hoverLift, tapScale } from "./motion";
+import { useAuth, AuthModal, StudentDashboard, CartModal, useCart } from "./student";
+import { staggerContainer, staggerItem } from "./motion";
+
+// Route-level code splitting — admin & LMS are not needed on the landing page.
+const AdminPanel = lazy(() => import("./admin").then(m => ({ default: m.AdminPanel })));
+const CourseViewer = lazy(() => import("./lms").then(m => ({ default: m.CourseViewer })));
+const CourseCatalog = lazy(() => import("./lms").then(m => ({ default: m.CourseCatalog })));
+
+function RouteFallback() {
+  return (
+    <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ width: 40, height: 40, border: `3px solid ${C.bdr}`, borderTopColor: C.gold, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+}
 
 /* ═══════════════════════════════════════════════════
    HEADER - CONSULTING & KALAN SEPARATED
@@ -111,7 +124,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
           </div>
         </motion.div>
 
-        <nav style={{display:"flex",gap:28,alignItems:"center"}}>
+        <nav aria-label="Navigation principale" style={{display:"flex",gap:28,alignItems:"center"}}>
           {consultingLinks.map((x, i) => (
             <motion.button
               key={x.id}
@@ -200,6 +213,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
           >
             <motion.button
               onClick={()=>setMobileOpen(false)}
+              aria-label="Fermer le menu"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               style={btn({position:"absolute",top:20,right:20,background:C.s2,color:C.t,width:40,height:40,borderRadius:"50%",fontSize:18})}
@@ -211,7 +225,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
               variants={staggerContainer}
               style={{display:"flex",flexDirection:"column",alignItems:"center",gap:20}}
             >
-              {consultingLinks.map((x, i) => (
+              {consultingLinks.map((x) => (
                 <motion.button
                   key={x.id}
                   variants={staggerItem}
@@ -243,12 +257,13 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
 /* ═══════════════════════════════════════════════════
    HERO - ROI-FOCUSED CONSULTING LANDING
 ═══════════════════════════════════════════════════ */
-function Hero({onNav,onExplore}:{onNav:(id:string)=>void,onExplore:()=>void}){
+function Hero({onNav}:{onNav:(id:string)=>void}){
+  const reduce=useReducedMotion();
   return(
     <section id="hero" style={{position:"relative",padding:"140px 24px 100px",overflow:"hidden"}}>
-      {/* Animated Background */}
+      {/* Animated Background — disabled under prefers-reduced-motion */}
       <div style={{position:"absolute",inset:0,overflow:"hidden",pointerEvents:"none"}}>
-        {[...Array(60)].map((_,i)=>(
+        {[...Array(reduce?0:28)].map((_,i)=>(
           <motion.div
             key={i}
             animate={{
@@ -264,12 +279,12 @@ function Hero({onNav,onExplore}:{onNav:(id:string)=>void,onExplore:()=>void}){
           />
         ))}
         <motion.div
-          animate={{ scale: [1, 1.1, 1], opacity: [0.08, 0.12, 0.08] }}
+          animate={reduce?undefined:{ scale: [1, 1.1, 1], opacity: [0.08, 0.12, 0.08] }}
           transition={{ duration: 8, repeat: Infinity }}
           style={{position:"absolute",top:"-20%",right:"-10%",width:700,height:700,borderRadius:"50%",background:"radial-gradient(circle,rgba(200,151,26,.1),transparent 70%)"}}
         />
         <motion.div
-          animate={{ scale: [1, 1.05, 1], opacity: [0.06, 0.1, 0.06] }}
+          animate={reduce?undefined:{ scale: [1, 1.05, 1], opacity: [0.06, 0.1, 0.06] }}
           transition={{ duration: 10, repeat: Infinity }}
           style={{position:"absolute",bottom:"-30%",left:"-10%",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,200,150,.08),transparent 70%)"}}
         />
@@ -391,7 +406,7 @@ function Hero({onNav,onExplore}:{onNav:(id:string)=>void,onExplore:()=>void}){
           initial={{ opacity: 0, x: 40, rotateY: -10 }}
           animate={{ opacity: 1, x: 0, rotateY: 0 }}
           transition={{ delay: 0.4, duration: 0.7 }}
-          style={{position:"relative",perserspective:"1000px"}}
+          style={{position:"relative",perspective:"1000px"}}
         >
           <motion.div
             whileHover={{ y: -8, boxShadow: "0 40px 100px rgba(0,0,0,.6)" }}
@@ -419,6 +434,131 @@ function Hero({onNav,onExplore}:{onNav:(id:string)=>void,onExplore:()=>void}){
           </motion.div>
         </motion.div>
       </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   SCROLL PROGRESS BAR (gold, 3px, top)
+═══════════════════════════════════════════════════ */
+function ScrollProgress(){
+  const [pct,setPct]=useState(0);
+  useEffect(()=>{
+    const onScroll=()=>{
+      const h=document.documentElement;
+      const max=h.scrollHeight-h.clientHeight;
+      setPct(max>0?(h.scrollTop/max)*100:0);
+    };
+    onScroll();
+    window.addEventListener("scroll",onScroll,{passive:true});
+    window.addEventListener("resize",onScroll);
+    return()=>{window.removeEventListener("scroll",onScroll);window.removeEventListener("resize",onScroll);};
+  },[]);
+  return(
+    <div style={{position:"fixed",top:0,left:0,right:0,height:3,zIndex:300,background:"transparent",pointerEvents:"none"}}>
+      <div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#A67C2E,#C8971A,#E0A820)",boxShadow:"0 0 8px rgba(200,151,26,.6)",transition:"width .05s linear"}}/>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   COUNT-UP (animates to target when scrolled into view)
+═══════════════════════════════════════════════════ */
+function CountUp({to,suffix="",prefix="",dur=1400}:{to:number;suffix?:string;prefix?:string;dur?:number}){
+  const ref=useRef<HTMLSpanElement>(null);
+  const inView=useInView(ref,{once:true,margin:"-80px"});
+  const [n,setN]=useState(0);
+  useEffect(()=>{
+    if(!inView)return;
+    let raf=0;const start=performance.now();
+    const tick=(t:number)=>{
+      const p=Math.min((t-start)/dur,1);
+      const eased=1-Math.pow(1-p,3);
+      setN(Math.round(eased*to));
+      if(p<1)raf=requestAnimationFrame(tick);
+    };
+    raf=requestAnimationFrame(tick);
+    return()=>cancelAnimationFrame(raf);
+  },[inView,to,dur]);
+  return<span ref={ref}>{prefix}{n}{suffix}</span>;
+}
+
+/* ═══════════════════════════════════════════════════
+   TRUST BAR — animated operational KPIs
+═══════════════════════════════════════════════════ */
+function TrustBar(){
+  const kpis=[
+    {to:40,suffix:"+",label:"PME & industries auditées"},
+    {to:465,suffix:"+",label:"Cadres & étudiants formés"},
+    {to:20,suffix:" min",label:"de reporting au lieu de 3 jours · EMICOM"},
+    {to:3,suffix:"x",label:"ROI moyen constaté"},
+  ];
+  return(
+    <section style={{background:C.s1,borderTop:`1px solid ${C.bdr}`,borderBottom:`1px solid ${C.bdr}`,padding:"36px 24px"}}>
+      <div style={{maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:24}}>
+        {kpis.map((k,i)=>(
+          <motion.div key={i}
+            initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.08}}
+            style={{textAlign:"center"}}>
+            <div style={{fontFamily:F.mono,fontSize:38,fontWeight:500,color:C.gold,lineHeight:1,letterSpacing:"-0.02em"}}>
+              <CountUp to={k.to} suffix={k.suffix}/>
+            </div>
+            <div style={{fontSize:11,color:C.t2,marginTop:8,lineHeight:1.5}}>{k.label}</div>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   LEAD MAGNET — inline email capture (Template Data & Gouvernance)
+═══════════════════════════════════════════════════ */
+function LeadMagnet(){
+  const [email,setEmail]=useState("");
+  const [state,setState]=useState<"idle"|"loading"|"done"|"err">("idle");
+  const submit=async()=>{
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){setState("err");return;}
+    setState("loading");
+    const { error }=await supabase.from("book_leads").insert({
+      nom:email.split("@")[0], email:email.trim(), poste:"template-data-gouvernance",
+    });
+    if(error){setState("err");return;}
+    track("lead_magnet_download",{magnet:"template-data-gouvernance"});
+    setState("done");
+  };
+  return(
+    <section style={{padding:"40px 24px"}}>
+      <motion.div
+        initial={{opacity:0,y:24}} whileInView={{opacity:1,y:0}} viewport={{once:true,margin:"-100px"}} transition={{duration:0.5}}
+        style={{maxWidth:920,margin:"0 auto",background:"linear-gradient(135deg,#0E1A2C,#162438)",border:`1px solid ${C.gold}30`,borderRadius:20,padding:32,display:"grid",gridTemplateColumns:"1.3fr 1fr",gap:28,alignItems:"center"}}
+        className="dial-book">
+        <div>
+          <Tag c={C.gold}>🎁 RESSOURCE GRATUITE</Tag>
+          <h3 style={{fontFamily:F.serif,fontSize:26,fontWeight:600,color:"#fff",margin:"14px 0 10px",lineHeight:1.2}}>Template de Structuration de Département Data & Gouvernance</h3>
+          <p style={{fontSize:14,color:C.t2,lineHeight:1.7,margin:0}}>Le cadre exact que nous déployons chez nos clients pour poser une gouvernance data rigoureuse. Téléchargement immédiat.</p>
+        </div>
+        <div>
+          {state==="done"?(
+            <div style={{textAlign:"center",padding:"12px 0"}}>
+              <div style={{fontSize:34,marginBottom:8}}>✅</div>
+              <div style={{fontSize:14,fontWeight:700,color:C.grn}}>C'est envoyé !</div>
+              <div style={{fontSize:12,color:C.t2,marginTop:4}}>Vérifiez votre boîte mail.</div>
+            </div>
+          ):(
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <input aria-label="Votre email" value={email} onChange={e=>{setEmail(e.target.value);if(state==="err")setState("idle");}}
+                placeholder="vous@entreprise.com" type="email"
+                style={{width:"100%",background:C.s2,border:`1px solid ${state==="err"?C.red:C.bdr}`,borderRadius:10,padding:"13px 14px",color:C.t,fontSize:14,fontFamily:F.sans,outline:"none",boxSizing:"border-box"}}/>
+              {state==="err"&&<div style={{fontSize:11,color:C.red}}>Email invalide. Réessayez.</div>}
+              <button onClick={submit} disabled={state==="loading"}
+                style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"13px",borderRadius:10,fontWeight:800,fontSize:14})}>
+                {state==="loading"?"Envoi…":"Recevoir le template →"}
+              </button>
+            </div>
+          )}
+        </div>
+      </motion.div>
     </section>
   );
 }
@@ -522,7 +662,7 @@ function CoursesSection({onOpenCourse,onBuy}:{onOpenCourse:(c:any)=>void,onBuy:(
                 </div>
                 <div style={{display:"flex",gap:8}}>
                   <button onClick={()=>onOpenCourse(course)} style={btn({flex:1,background:C.s2,color:C.t,border:`1px solid ${C.bdr2}`,padding:"11px",borderRadius:10,fontWeight:700,fontSize:12})}>Détails</button>
-                  <button onClick={()=>onBuy(course)} style={btn({flex:1,background:course.color,color:"#fff",padding:"11px",borderRadius:10,fontWeight:800,fontSize:12})}>Acheter</button>
+                  <button onClick={()=>onBuy(course)} style={btn({flex:1,background:course.color,color:textOn(course.color),padding:"11px",borderRadius:10,fontWeight:800,fontSize:12})}>S'inscrire</button>
                 </div>
               </div>
             </div>
@@ -631,7 +771,7 @@ function BlogSection({onOpenPost}:{onOpenPost:(p:any)=>void}){
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(340px,1fr))",gap:20}}>
         {list.map(p=>(
-          <div key={p.id} onClick={()=>onOpenPost(p)} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,overflow:"hidden",cursor:"pointer",transition:"all .3s"}}
+          <div key={p.id} {...clickable(()=>onOpenPost(p))} aria-label={`Lire : ${p.title}`} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,overflow:"hidden",cursor:"pointer",transition:"all .3s"}}
             onMouseEnter={e=>{e.currentTarget.style.borderColor=C.gold;e.currentTarget.style.transform="translateY(-4px)";}}
             onMouseLeave={e=>{e.currentTarget.style.borderColor=C.bdr;e.currentTarget.style.transform="none";}}>
             <div style={{height:140,background:`linear-gradient(135deg,${C.s2},${C.s3})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:48,position:"relative"}}>
@@ -705,15 +845,35 @@ function AboutSection(){
 /* ═══════════════════════════════════════════════════
    CONTACT / CTA SECTION
 ═══════════════════════════════════════════════════ */
+const BESOINS=[
+  "Audit de Gouvernance & Architecture Data",
+  "Déploiement de Tableaux de Bord Power BI / Excel",
+  "Automatisation de Rapports de Maintenance Industrielle (MTBF/MTTR)",
+  "Suivi Budgétaire & Tableaux de Bord pour ONG",
+  "Plan de Formation Intra-Entreprise",
+  "Inscription à l'Académie Kalan",
+];
 function ContactSection(){
-  const [form,setForm]=useState({name:"",email:"",msg:""});
+  const [form,setForm]=useState({name:"",entreprise:"",email:"",tel:"",besoin:"",msg:""});
   const [sent,setSent]=useState(false);
+  const [sending,setSending]=useState(false);
+  const [err,setErr]=useState("");
 
-  const submit=()=>{
-    if(!form.name||!form.email||!form.msg)return;
+  const submit=async()=>{
+    if(!form.name.trim()||!form.email.trim()||!form.besoin){setErr("Nom, email et besoin sont requis.");return;}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)){setErr("Email invalide.");return;}
+    setSending(true);setErr("");
+    const { error }=await supabase.from("contact_leads").insert({
+      nom:form.name.trim(), entreprise:form.entreprise.trim()||null, email:form.email.trim(),
+      telephone:form.tel.trim()||null, besoin:form.besoin, message:form.msg.trim()||null,
+    });
+    setSending(false);
+    if(error){setErr("Une erreur s'est produite. Réessayez.");return;}
+    track("audit_requested",{besoin:form.besoin});
     setSent(true);
-    setTimeout(()=>{setSent(false);setForm({name:"",email:"",msg:""});},3000);
+    setTimeout(()=>{setSent(false);setForm({name:"",entreprise:"",email:"",tel:"",besoin:"",msg:""});},4000);
   };
+  const fieldStyle={width:"100%",background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",color:C.t,fontSize:14,fontFamily:F.sans,outline:"none",boxSizing:"border-box" as const};
 
   return(
     <section id="contact" style={{padding:"80px 24px",maxWidth:1200,margin:"0 auto"}}>
@@ -747,23 +907,41 @@ function ContactSection(){
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:14}}>
-              <div>
-                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Nom complet</div>
-                <input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Votre nom"
-                  style={{width:"100%",background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",color:C.t,fontSize:14,fontFamily:F.sans,outline:"none",boxSizing:"border-box"}}/>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                <div>
+                  <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Nom complet *</div>
+                  <input aria-label="Nom complet" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Votre nom" style={fieldStyle}/>
+                </div>
+                <div>
+                  <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Entreprise</div>
+                  <input aria-label="Entreprise" value={form.entreprise} onChange={e=>setForm({...form,entreprise:e.target.value})} placeholder="Organisation" style={fieldStyle}/>
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                <div>
+                  <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Email pro *</div>
+                  <input aria-label="Email professionnel" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="vous@entreprise.com" type="email" style={fieldStyle}/>
+                </div>
+                <div>
+                  <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Téléphone</div>
+                  <input aria-label="Téléphone" value={form.tel} onChange={e=>setForm({...form,tel:e.target.value})} placeholder="+223 …" type="tel" style={fieldStyle}/>
+                </div>
               </div>
               <div>
-                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Email</div>
-                <input value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="vous@exemple.com"
-                  style={{width:"100%",background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",color:C.t,fontSize:14,fontFamily:F.sans,outline:"none",boxSizing:"border-box"}}/>
+                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Votre besoin *</div>
+                <select aria-label="Votre besoin" value={form.besoin} onChange={e=>setForm({...form,besoin:e.target.value})} style={{...fieldStyle,cursor:"pointer",appearance:"auto"}}>
+                  <option value="">— Sélectionnez —</option>
+                  {BESOINS.map(b=><option key={b} value={b}>{b}</option>)}
+                </select>
               </div>
               <div>
-                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Votre projet</div>
-                <textarea value={form.msg} onChange={e=>setForm({...form,msg:e.target.value})} placeholder="Décrivez votre besoin..." rows={4}
-                  style={{width:"100%",background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",color:C.t,fontSize:14,fontFamily:F.sans,outline:"none",boxSizing:"border-box",resize:"vertical"}}/>
+                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Vos blocages actuels</div>
+                <textarea aria-label="Vos blocages actuels" value={form.msg} onChange={e=>setForm({...form,msg:e.target.value})} placeholder="Décrivez brièvement votre situation..." rows={3}
+                  style={{...fieldStyle,resize:"vertical"}}/>
               </div>
-              <button onClick={submit} style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"14px",borderRadius:10,fontWeight:800,fontSize:14,boxShadow:"0 6px 24px rgba(200,151,26,.3)"})}>
-                Envoyer le message →
+              {err&&<div style={{fontSize:12,color:C.red}}>{err}</div>}
+              <button onClick={submit} disabled={sending} style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"14px",borderRadius:10,fontWeight:800,fontSize:14,boxShadow:"0 6px 24px rgba(200,151,26,.3)"})}>
+                {sending?"Envoi…":"Réserver mon diagnostic data →"}
               </button>
             </div>
           )}
@@ -792,8 +970,8 @@ function Footer({onNav}:{onNav:(id:string)=>void}){
             Le cabinet de référence Data & BI au Mali. Méthode DIAL™ — gouvernance frugale pour l'Afrique.
           </p>
           <div style={{display:"flex",gap:10}}>
-            {["𝕏","in","f","✉"].map((s,i)=>(
-              <button key={i} style={btn({width:36,height:36,borderRadius:10,background:C.s2,border:`1px solid ${C.bdr}`,color:C.t2,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"})}>{s}</button>
+            {[{s:"𝕏",l:"X (Twitter)"},{s:"in",l:"LinkedIn"},{s:"f",l:"Facebook"},{s:"✉",l:"Email"}].map((x)=>(
+              <button key={x.l} aria-label={x.l} style={btn({width:44,height:44,borderRadius:10,background:C.s2,border:`1px solid ${C.bdr}`,color:C.t2,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"})}>{x.s}</button>
             ))}
           </div>
         </div>
@@ -843,8 +1021,6 @@ function parseHash(): { route: Route; courseId?: string } {
 export default function App() {
   const [route, setRoute] = useState<Route>("home");
   const [lmsCourseId, setLmsCourseId] = useState<string | undefined>();
-  const [showPayment,setShowPayment]=useState(false);
-  const [payCourse,setPayCourse]=useState<any>(null);
   const [detailCourse,setDetailCourse]=useState<any>(null);
   const [blogPost,setBlogPost]=useState<any>(null);
   const [enrolled,setEnrolled]=useState<number[]>([]);
@@ -852,8 +1028,9 @@ export default function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [showCart, setShowCart] = useState(false);
 
-  const { user, profile, loading: authLoading, signIn, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { addToCart, count: cartCount } = useCart(user);
+  const reduce = useReducedMotion();
 
   // Hash routing
   useEffect(() => {
@@ -872,20 +1049,19 @@ export default function App() {
     if(el)el.scrollIntoView({behavior:"smooth"});
   };
 
-  const openBuy=(c:any)=>{setPayCourse(c);setShowPayment(true);};
+  // Landing "S'inscrire" routes into the real LMS funnel (catalog → cart →
+  // server-side enroll). No fake in-page payment that grants nothing.
+  const openBuy=(c:any)=>{track("course_registration",{course_id:c.id,title:c.title,price:c.price});setDetailCourse(null);window.location.hash="lms";};
   const openCourse=(c:any)=>setDetailCourse(c);
   const onEnroll=(id:number)=>{
     if(!enrolled.includes(id))setEnrolled([...enrolled,id]);
     setDetailCourse(null);
-    nav("formations");
-  };
-  const onPaySuccess=()=>{
-    if(payCourse&&!enrolled.includes(payCourse.id))setEnrolled([...enrolled,payCourse.id]);
+    window.location.hash="lms";
   };
 
   // Admin route
   if (route === "admin") {
-    return <AdminPanel />;
+    return <Suspense fallback={<RouteFallback />}><AdminPanel /></Suspense>;
   }
 
   // Student dashboard route
@@ -911,23 +1087,27 @@ export default function App() {
   // LMS Catalog route
   if (route === "lms-catalog") {
     return (
-      <CourseCatalog
-        onSelectCourse={(id) => { window.location.hash = `lms/${id}`; }}
-        onBack={() => { window.location.hash = ""; }}
-        user={user}
-        onAddToCart={async (courseId) => { await addToCart(courseId); setShowCart(true); }}
-      />
+      <Suspense fallback={<RouteFallback />}>
+        <CourseCatalog
+          onSelectCourse={(id) => { window.location.hash = `lms/${id}`; }}
+          onBack={() => { window.location.hash = ""; }}
+          user={user}
+          onAddToCart={async (courseId) => { await addToCart(courseId); setShowCart(true); }}
+        />
+      </Suspense>
     );
   }
 
   // LMS Course Viewer route
   if (route === "lms-course" && lmsCourseId) {
     return (
-      <CourseViewer
-        courseId={lmsCourseId}
-        onBack={() => { window.location.hash = "lms"; }}
-        user={user}
-      />
+      <Suspense fallback={<RouteFallback />}>
+        <CourseViewer
+          courseId={lmsCourseId}
+          onBack={() => { window.location.hash = "lms"; }}
+          user={user}
+        />
+      </Suspense>
     );
   }
 
@@ -936,6 +1116,14 @@ export default function App() {
     <div style={{background:C.bg,minHeight:"100vh",color:C.t,fontFamily:F.sans,overflowX:"hidden"}}>
       <style>{`
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+        body{cursor:default}
+        a,button,[role="button"]{cursor:pointer}
+        input,textarea{cursor:text}
+        :focus-visible{outline:2px solid ${C.gl};outline-offset:2px;border-radius:4px}
+        a:focus-visible,button:focus-visible,[role="button"]:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid ${C.gl};outline-offset:2px}
+        @media(prefers-reduced-motion:reduce){
+          *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+        }
         @media(max-width:768px){
           .mobile-only{display:flex !important;}
           nav{display:none !important;}
@@ -953,21 +1141,23 @@ export default function App() {
         }
       `}</style>
 
+      <ScrollProgress/>
       <Header onNav={nav} user={user} profile={profile} cartCount={cartCount} onShowAuth={()=>setShowAuth(true)} onShowCart={()=>setShowCart(true)} />
-      <Hero onNav={nav} onExplore={()=>nav("formations")}/>
-      <CoursesSection onOpenCourse={openCourse} onBuy={openBuy}/>
-      <DialSection onDownload={()=>setShowBook(true)}/>
-      <TestimonialsSection/>
-      <BlogSection onOpenPost={setBlogPost}/>
-      <AboutSection/>
-      <ContactSection/>
+      <main id="main">
+        <Hero onNav={nav}/>
+        <TrustBar/>
+        <CoursesSection onOpenCourse={openCourse} onBuy={openBuy}/>
+        <LeadMagnet/>
+        <DialSection onDownload={()=>setShowBook(true)}/>
+        <TestimonialsSection/>
+        <BlogSection onOpenPost={setBlogPost}/>
+        <AboutSection/>
+        <ContactSection/>
+      </main>
       <Footer onNav={nav}/>
 
       <KalanAI/>
 
-      {showPayment&&payCourse&&(
-        <PaymentModal course={payCourse} onClose={()=>{setShowPayment(false);setPayCourse(null);}} onSuccess={onPaySuccess}/>
-      )}
       {detailCourse&&(
         <CourseDetailModal course={detailCourse} enrolled={enrolled.includes(detailCourse.id)} onClose={()=>setDetailCourse(null)} onBuy={()=>{setDetailCourse(null);openBuy(detailCourse);}} onEnroll={onEnroll}/>
       )}
@@ -981,36 +1171,41 @@ export default function App() {
         <AuthModal onClose={()=>setShowAuth(false)} onAuth={()=>setShowAuth(false)} />
       )}
       {showCart && user && (
-        <CartModal onClose={()=>setShowCart(false)} onCheckout={()=>{ setShowCart(false); /* TODO: implement checkout */ }} />
+        <CartModal onClose={()=>setShowCart(false)} onCheckout={()=>{ setShowCart(false); window.location.hash = "student"; }} />
       )}
 
-      <a
-        href="https://wa.me/22392976646"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Contacter sur WhatsApp"
-        style={{
-          position:"fixed",
-          bottom:24,
-          left:24,
-          width:60,
-          height:60,
-          borderRadius:"50%",
-          background:"#25D366",
-          display:"flex",
-          alignItems:"center",
-          justifyContent:"center",
-          boxShadow:"0 6px 20px rgba(37,211,102,.45)",
-          zIndex:1000,
-          transition:"transform .2s ease, box-shadow .2s ease",
-        }}
-        onMouseEnter={e=>{e.currentTarget.style.transform="scale(1.1)";e.currentTarget.style.boxShadow="0 8px 28px rgba(37,211,102,.6)";}}
-        onMouseLeave={e=>{e.currentTarget.style.transform="scale(1)";e.currentTarget.style.boxShadow="0 6px 20px rgba(37,211,102,.45)";}}
-      >
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff">
+      <div style={{position:"fixed",bottom:24,left:24,width:56,height:56,zIndex:1000}}>
+        {!reduce&&<motion.span
+          aria-hidden
+          animate={{scale:[1,1.6],opacity:[0.5,0]}}
+          transition={{duration:1.8,repeat:Infinity,ease:"easeOut"}}
+          style={{position:"absolute",inset:0,borderRadius:"50%",background:"#25D366",pointerEvents:"none"}}
+        />}
+        <a
+          href="https://wa.me/22392976646"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Contacter sur WhatsApp"
+          onClick={()=>track("whatsapp_click")}
+          style={{
+            position:"absolute",
+            inset:0,
+            borderRadius:"50%",
+            background:"#25D366",
+            display:"flex",
+            alignItems:"center",
+            justifyContent:"center",
+            boxShadow:"0 6px 20px rgba(37,211,102,.45)",
+            transition:"transform .2s ease, box-shadow .2s ease",
+          }}
+          onMouseEnter={e=>{e.currentTarget.style.transform="scale(1.1)";e.currentTarget.style.boxShadow="0 8px 28px rgba(37,211,102,.6)";}}
+          onMouseLeave={e=>{e.currentTarget.style.transform="scale(1)";e.currentTarget.style.boxShadow="0 6px 20px rgba(37,211,102,.45)";}}
+        >
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
         </svg>
-      </a>
+        </a>
+      </div>
     </div>
   );
 }

@@ -1,24 +1,24 @@
 import { useState, useEffect } from "react";
-import { C, F, fmt, btn, Tag } from "./data.tsx";
+import { C, F, fmt, btn, Tag, textOn } from "./data.tsx";
 import { VideoPlayer } from "./components";
+import { useDialog } from "./a11y";
 
 /* ═══════════════════════════════════════════════════
    COURSE DETAIL MODAL
 ═══════════════════════════════════════════════════ */
 export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{course:any,enrolled:boolean,onClose:()=>void,onBuy:()=>void,onEnroll:(id:number)=>void}){
   const [tab,setTab]=useState<"apercu"|"programme"|"formateur">("apercu");
+  const dialogRef=useDialog(onClose);
 
   useEffect(()=>{
-    const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape")onClose();};
-    window.addEventListener("keydown",onKey);
     document.body.style.overflow="hidden";
-    return()=>{window.removeEventListener("keydown",onKey);document.body.style.overflow="";};
-  },[onClose]);
+    return()=>{document.body.style.overflow="";};
+  },[]);
 
   return(
     <div style={{position:"fixed",inset:0,zIndex:280,background:"rgba(4,8,16,.88)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
       onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-      <div style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:22,width:"100%",maxWidth:880,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column",boxShadow:"0 32px 80px rgba(0,0,0,.7)"}}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={course.title} tabIndex={-1} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:22,width:"100%",maxWidth:880,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column",boxShadow:"0 32px 80px rgba(0,0,0,.7)"}}>
 
         {/* Header */}
         <div style={{background:"linear-gradient(135deg,#0E1A2C,#162438)",padding:"20px 24px",borderBottom:`1px solid ${C.bdr}`,display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16}}>
@@ -31,7 +31,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
             <h2 style={{fontFamily:F.serif,fontSize:26,fontWeight:600,color:"#fff",margin:0,lineHeight:1.2}}>{course.title}</h2>
             <div style={{fontSize:13,color:C.t2,marginTop:6}}>{course.sub}</div>
           </div>
-          <button onClick={onClose} style={btn({background:C.bdr,color:C.t2,width:32,height:32,borderRadius:"50%",fontSize:14,flexShrink:0})}>✕</button>
+          <button onClick={onClose} aria-label="Fermer" style={btn({background:C.bdr,color:C.t2,width:32,height:32,borderRadius:"50%",fontSize:14,flexShrink:0})}>✕</button>
         </div>
 
         {/* Tabs */}
@@ -124,7 +124,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
             <div style={{fontSize:10,color:C.t2,fontFamily:F.mono,marginTop:2}}>Accès à vie · Certification incluse</div>
           </div>
           {enrolled?(
-            <button onClick={()=>onEnroll(course.id)} style={btn({background:C.grn,color:"#fff",padding:"13px 28px",borderRadius:10,fontWeight:800,fontSize:14,boxShadow:"0 6px 24px rgba(0,200,150,.3)"})}>
+            <button onClick={()=>onEnroll(course.id)} style={btn({background:C.grn,color:textOn(C.grn),padding:"13px 28px",borderRadius:10,fontWeight:800,fontSize:14,boxShadow:"0 6px 24px rgba(0,200,150,.3)"})}>
               ✓ Vous êtes inscrit · Accéder
             </button>
           ):(
@@ -142,12 +142,11 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
    BLOG POST MODAL
 ═══════════════════════════════════════════════════ */
 export function BlogModal({post,onClose}:{post:any,onClose:()=>void}){
+  const dialogRef=useDialog(onClose);
   useEffect(()=>{
-    const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape")onClose();};
-    window.addEventListener("keydown",onKey);
     document.body.style.overflow="hidden";
-    return()=>{window.removeEventListener("keydown",onKey);document.body.style.overflow="";};
-  },[onClose]);
+    return()=>{document.body.style.overflow="";};
+  },[]);
 
   const fmtBody=(s:string)=>s
     .replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
@@ -156,10 +155,10 @@ export function BlogModal({post,onClose}:{post:any,onClose:()=>void}){
   return(
     <div style={{position:"fixed",inset:0,zIndex:280,background:"rgba(4,8,16,.88)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
       onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-      <div style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:22,width:"100%",maxWidth:720,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column",boxShadow:"0 32px 80px rgba(0,0,0,.7)"}}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={post.title} tabIndex={-1} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:22,width:"100%",maxWidth:720,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column",boxShadow:"0 32px 80px rgba(0,0,0,.7)"}}>
 
         <div style={{background:"linear-gradient(135deg,#0E1A2C,#162438)",padding:"24px 28px",borderBottom:`1px solid ${C.bdr}`,position:"relative"}}>
-          <button onClick={onClose} style={btn({position:"absolute",top:18,right:18,background:C.bdr,color:C.t2,width:32,height:32,borderRadius:"50%",fontSize:14})}>✕</button>
+          <button onClick={onClose} aria-label="Fermer" style={btn({position:"absolute",top:18,right:18,background:C.bdr,color:C.t2,width:32,height:32,borderRadius:"50%",fontSize:14})}>✕</button>
           <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
             <Tag c={C.gold}>{post.icon} {post.cat}</Tag>
             <Tag c={C.t2}>{post.time} de lecture</Tag>
@@ -182,8 +181,8 @@ export function BlogModal({post,onClose}:{post:any,onClose:()=>void}){
         <div style={{borderTop:`1px solid ${C.bdr}`,padding:"16px 28px",background:C.s2,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <div style={{fontSize:11,color:C.t2,fontFamily:F.mono}}>Partagez cet article</div>
           <div style={{display:"flex",gap:8}}>
-            {["𝕏","in","f","✉"].map((s,i)=>(
-              <button key={i} style={btn({width:34,height:34,borderRadius:"50%",background:C.bdr,color:C.t2,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"})}>{s}</button>
+            {[{s:"𝕏",l:"Partager sur X"},{s:"in",l:"Partager sur LinkedIn"},{s:"f",l:"Partager sur Facebook"},{s:"✉",l:"Partager par email"}].map((x)=>(
+              <button key={x.l} aria-label={x.l} style={btn({width:34,height:34,borderRadius:"50%",background:C.bdr,color:C.t2,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"})}>{x.s}</button>
             ))}
           </div>
         </div>

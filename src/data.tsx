@@ -9,7 +9,7 @@ export const C = {
   red:"#E84040", rdp:"rgba(232,64,64,.10)",
   blue:"#2062E8", blp:"rgba(32,98,232,.10)",
   wa:"#25D366",
-  t:"#E6E1D8", t2:"#8A9CBE", t3:"#4A5E7A",
+  t:"#E6E1D8", t2:"#8A9CBE", t3:"#7789A6",
   iv:"#F4EFE6", iv2:"#E8E1D4", tl:"#1A2840", tl2:"#4A5E78",
 };
 export const F = {
@@ -294,4 +294,16 @@ export const STATS = [
 ═══════════════════════════════════════════════════ */
 export const fmt = (n:number) => n.toLocaleString("fr-FR") + " FCFA";
 export const btn = (style:React.CSSProperties={}) => ({cursor:"pointer",fontFamily:F.sans,border:"none",...style} as React.CSSProperties);
+
+/* ── A11y helpers ── */
+// Relative luminance (WCAG) for a #rrggbb color.
+const _lin = (c:number) => { const s=c/255; return s<=0.03928 ? s/12.92 : Math.pow((s+0.055)/1.055,2.4); };
+export const lum = (hex:string) => { const h=hex.replace("#",""); return 0.2126*_lin(parseInt(h.slice(0,2),16))+0.7152*_lin(parseInt(h.slice(2,4),16))+0.0722*_lin(parseInt(h.slice(4,6),16)); };
+// Pick dark or white text for best contrast on a colored background (WCAG AA).
+export const textOn = (bg:string) => { const L=lum(bg); const cWhite=1.05/(L+0.05); const cDark=(L+0.05)/(lum("#08111E")+0.05); return cWhite>=cDark ? "#fff" : "#08111E"; };
+// Spread onto a clickable <div> to make it keyboard-operable (Enter/Space).
+export const clickable = (onActivate:()=>void) => ({
+  role:"button" as const, tabIndex:0, onClick:onActivate,
+  onKeyDown:(e:React.KeyboardEvent)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); onActivate(); } },
+});
 export function Tag({c=C.gold,children}:{c?:string,children:React.ReactNode}){return<span style={{background:`${c}18`,color:c,fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:20,border:`1px solid ${c}28`,display:"inline-block"}}>{children}</span>}

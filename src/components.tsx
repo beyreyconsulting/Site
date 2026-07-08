@@ -1,8 +1,26 @@
-import { useState, useEffect, useRef, lazy, Suspense, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { C, F, PAY, KALAN_SYS, fmt, btn, Tag } from "./data.tsx";
-import { supabase } from "./supabase";
-import { fadeInUp, scaleIn, hoverScale, hoverLift, tapScale } from "./motion";
+import { supabase, askKalan, track } from "./supabase";
+import { useDialog } from "./a11y";
+
+/* ═══════════════════════════════════════════════════
+   SAFE MARKDOWN-LITE RENDERER (no innerHTML → no XSS)
+   Supports **bold** and line breaks only.
+═══════════════════════════════════════════════════ */
+function renderBold(s:string, keyBase:number){
+  return s.split(/(\*\*[^*]+\*\*)/g).map((part,i)=>
+    part.startsWith("**")&&part.endsWith("**")
+      ? <strong key={`${keyBase}-${i}`}>{part.slice(2,-2)}</strong>
+      : <span key={`${keyBase}-${i}`}>{part}</span>
+  );
+}
+function RichText({text}:{text:string}){
+  const lines=text.split("\n");
+  return <>{lines.map((line,i)=>(
+    <span key={i}>{renderBold(line,i)}{i<lines.length-1?<br/>:null}</span>
+  ))}</>;
+}
 
 /* ═══════════════════════════════════════════════════
    KALAN AI ASSISTANT
@@ -27,18 +45,12 @@ export function KalanAI(){
     const next=[...msgs,{r:"u",t:txt}];
     setMsgs(next);setInput("");setBusy(true);
     try{
-      const apiMsgs=next.filter((m,i)=>!(i===0&&m.r==="a")).map(m=>({role:m.r==="u"?"user":"assistant",content:m.t}));
-      const res=await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system:KALAN_SYS,messages:apiMsgs})
-      });
-      const d=await res.json();
-      setMsgs([...next,{r:"a",t:d.content?.[0]?.text||"Désolé, une erreur s'est produite."}]);
+      const apiMsgs=next.filter((m,i)=>!(i===0&&m.r==="a")).map(m=>({role:(m.r==="u"?"user":"assistant") as "user"|"assistant",content:m.t}));
+      const text=await askKalan(apiMsgs,KALAN_SYS);
+      setMsgs([...next,{r:"a",t:text||"Désolé, une erreur s'est produite."}]);
     }catch{setMsgs([...next,{r:"a",t:"Une erreur s'est produite. Réessayez dans un instant."}]);}
     finally{setBusy(false);}
   };
-
-  const fmt2=(s:string)=>s.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br>");
 
   return(
     <>
@@ -46,7 +58,7 @@ export function KalanAI(){
         {open?"✕":"🤖"}
       </button>
       {open&&(
-        <div style={{position:"fixed",bottom:88,right:16,zIndex:200,width:Math.min(360,window.innerWidth-24),height:480,background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:20,display:"flex",flexDirection:"column",overflow:"hidden",boxShadow:"0 24px 64px rgba(0,0,0,.7)"}}>
+        <div style={{position:"fixed",bottom:88,right:16,zIndex:200,width:Math.min(360,window.innerWidth-24),height:Math.min(480,window.innerHeight-120),maxHeight:"calc(100vh - 120px)",background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:20,display:"flex",flexDirection:"column",overflow:"hidden",boxShadow:"0 24px 64px rgba(0,0,0,.7)"}}>
           <div style={{background:C.s2,borderBottom:`1px solid ${C.bdr}`,padding:"12px 16px",display:"flex",alignItems:"center",gap:10}}>
             <div style={{width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#C8971A,#E0A820)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>🤖</div>
             <div style={{flex:1}}>
@@ -57,8 +69,9 @@ export function KalanAI(){
           <div style={{flex:1,overflowY:"auto",padding:12,display:"flex",flexDirection:"column",gap:10}}>
             {msgs.map((m,i)=>(
               <div key={i} style={{display:"flex",justifyContent:m.r==="u"?"flex-end":"flex-start"}}>
-                <div style={{maxWidth:"85%",padding:"9px 13px",borderRadius:m.r==="u"?"16px 16px 4px 16px":"16px 16px 16px 4px",background:m.r==="u"?C.gold:C.s2,color:m.r==="u"?C.bg:C.t,fontSize:12,lineHeight:1.65,border:m.r==="a"?`1px solid ${C.bdr}`:"none"}}
-                  dangerouslySetInnerHTML={{__html:fmt2(m.t)}}/>
+                <div style={{maxWidth:"85%",padding:"9px 13px",borderRadius:m.r==="u"?"16px 16px 4px 16px":"16px 16px 16px 4px",background:m.r==="u"?C.gold:C.s2,color:m.r==="u"?C.bg:C.t,fontSize:12,lineHeight:1.65,border:m.r==="a"?`1px solid ${C.bdr}`:"none"}}>
+                  <RichText text={m.t}/>
+                </div>
               </div>
             ))}
             {busy&&<div style={{display:"flex",gap:5,padding:"10px 14px",background:C.s2,borderRadius:"16px 16px 16px 4px",width:"fit-content",border:`1px solid ${C.bdr}`}}>
@@ -67,7 +80,7 @@ export function KalanAI(){
             <div ref={endRef}/>
           </div>
           <div style={{borderTop:`1px solid ${C.bdr}`,padding:"10px 12px",display:"flex",gap:8,background:C.s2}}>
-            <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Posez votre question…"
+            <input aria-label="Votre question à Kalan" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Posez votre question…"
               style={{flex:1,background:C.bg,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"9px 12px",color:C.t,fontSize:12,fontFamily:F.sans,outline:"none"}}/>
             <button onClick={send} disabled={busy||!input.trim()}
               style={btn({background:input.trim()&&!busy?C.gold:C.bdr,color:input.trim()&&!busy?C.bg:C.t2,width:36,height:36,borderRadius:10,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"})}>→</button>
@@ -359,9 +372,9 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
   const pay=()=>{if(!validate())return;setStep(3);setTimeout(()=>setStep(4),2800);};
 
   return(
-    <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(4,8,16,.88)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
+    <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(4,8,16,.88)",display:"flex",alignItems:"center",justifyContent:"center",padding:16,overflowY:"auto"}}
       onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-      <div style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:22,width:"100%",maxWidth:420,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,0,0,.7)"}}>
+      <div style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:22,width:"100%",maxWidth:420,maxHeight:"92vh",overflowY:"auto",overflowX:"hidden",boxShadow:"0 32px 80px rgba(0,0,0,.7)"}}>
 
         {step===1&&<>
           <div style={{background:C.s2,padding:"18px 20px",borderBottom:`1px solid ${C.bdr}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -461,6 +474,7 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
    BOOK DOWNLOAD MODAL
 ═══════════════════════════════════════════════════ */
 export function BookDownloadModal({ onClose }: { onClose: () => void }) {
+  const dialogRef = useDialog(onClose);
   const [form, setForm] = useState({ nom: "", email: "", entreprise: "", poste: "" });
   const [err, setErr] = useState<Partial<typeof form>>({});
   const [step, setStep] = useState<"form" | "loading" | "done">("form");
@@ -490,6 +504,7 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
       setStep("form");
       return;
     }
+    track("lead_magnet_download", { magnet: "ebook-art-de-la-rigueur" });
     setStep("done");
     const a = document.createElement("a");
     a.href = "/L_Art_de_la_Rigueur.pdf";
@@ -515,10 +530,10 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(4,8,16,.88)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+      style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(4,8,16,.88)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 480, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Télécharger le livre blanc" tabIndex={-1} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 480, maxHeight: "92vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}>
 
         {/* Header */}
         <div style={{ background: "linear-gradient(135deg,#0E1A2C,#162438)", borderBottom: `1px solid ${C.bdr}`, padding: "24px 28px 20px" }}>
@@ -531,7 +546,7 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
                 <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>Manifeste pour une gouvernance frugale de la data en Afrique</div>
               </div>
             </div>
-            <button onClick={onClose} style={btn({ background: C.bdr, color: C.t2, width: 30, height: 30, borderRadius: "50%", fontSize: 14, flexShrink: 0 })}>✕</button>
+            <button onClick={onClose} aria-label="Fermer" style={btn({ background: C.bdr, color: C.t2, width: 30, height: 30, borderRadius: "50%", fontSize: 14, flexShrink: 0 })}>✕</button>
           </div>
         </div>
 

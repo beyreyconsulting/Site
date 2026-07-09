@@ -41,12 +41,32 @@ Scripts : `npm run dev` · `npm run build` · `npm run typecheck` · `npm run li
    L'accès à `#admin` passe par une vraie authentification Supabase + contrôle
    `is_admin` (plus de mot de passe en dur).
 
+## Déploiement Netlify (frontend)
+
+Le repo contient un [`netlify.toml`](netlify.toml) prêt à l'emploi (build, fallback
+SPA, en-têtes de sécurité + CSP).
+
+1. Netlify → **Add new site → Import from Git** → ce repo (branche `main`).
+   Build/publish sont déjà lus depuis `netlify.toml` (`npm run build` → `dist`).
+2. **Site settings → Environment variables** — ajouter :
+   ```
+   VITE_SUPABASE_URL=https://<project>.supabase.co
+   VITE_SUPABASE_ANON_KEY=<anon key>
+   ```
+3. Déployer. Le CSP autorise `*.supabase.co` (DB, Auth, Edge Functions, médias
+   signés) et Google Fonts. Si un domaine custom est ajouté, penser à
+   `supabase secrets set ALLOWED_ORIGIN=https://ton-domaine`.
+
 ## Notes de sécurité
 
 - Toute écriture LMS (cours/leçons/quiz/storage) est réservée aux admins par RLS.
-- Le contenu payant n'est plus inscriptible gratuitement côté client :
-  l'inscription passe par la fonction `enroll`. **TODO** : y ajouter la
-  vérification d'un paiement confirmé (webhook Orange/Wave/Stripe) avant
-  d'inscrire.
-- Le paiement mobile money / carte de la landing reste une démonstration
-  (aucun PSP branché).
+- **Paiement = validation manuelle** : le checkout crée une commande (`orders`).
+  Les cours gratuits sont auto-validés ; les cours payants restent `pending`
+  jusqu'à ce qu'un **admin** confirme le paiement mobile money (onglet
+  *Commandes*), ce qui déclenche l'inscription. Le client ne peut pas se
+  déclarer payé (triggers + RLS).
+- **Médias privés** : vidéos/fichiers servis via URLs signées (`sign-media`),
+  jamais par URL publique permanente.
+- **Kalan** : proxy serveur (clé Anthropic cachée) avec rate-limit par IP.
+- À activer côté dashboard Supabase : longueur mini de mot de passe (12) +
+  détection des mots de passe compromis.

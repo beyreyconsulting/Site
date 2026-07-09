@@ -858,8 +858,10 @@ function ContactSection(){
   const [sent,setSent]=useState(false);
   const [sending,setSending]=useState(false);
   const [err,setErr]=useState("");
+  const [hp,setHp]=useState(""); // honeypot — bots fill it, humans never see it
 
   const submit=async()=>{
+    if(hp){setSent(true);setTimeout(()=>setSent(false),4000);return;} // silently drop bots
     if(!form.name.trim()||!form.email.trim()||!form.besoin){setErr("Nom, email et besoin sont requis.");return;}
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)){setErr("Email invalide.");return;}
     setSending(true);setErr("");
@@ -907,6 +909,8 @@ function ContactSection(){
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:14}}>
+              <input tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={e=>setHp(e.target.value)}
+                style={{position:"absolute",left:"-9999px",width:1,height:1,opacity:0}} />
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
                 <div>
                   <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Nom complet *</div>

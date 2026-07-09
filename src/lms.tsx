@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { C, F, btn, clickable, textOn } from "./data.tsx";
-import { supabase } from "./supabase";
+import { supabase, signMedia } from "./supabase";
 
 /* ─────────────── TYPES ─────────────── */
 interface Course { id: string; title: string; subtitle: string; description: string; price: number; original_price: number; category: string; level: string; icon: string; color: string; thumbnail_url: string; is_published: boolean; }
 interface Section { id: string; course_id: string; title: string; position: number; }
 interface Lesson { id: string; section_id: string; course_id: string; title: string; description: string; video_url: string; video_storage_path: string; duration_seconds: number; is_preview: boolean; position: number; }
-interface LessonFile { id: string; lesson_id: string; name: string; file_url: string; size_bytes: number; mime_type: string; }
+interface LessonFile { id: string; lesson_id: string; name: string; file_url: string; storage_path?: string; size_bytes: number; mime_type: string; }
 interface Quiz { id: string; lesson_id: string; title: string; pass_score: number; }
 interface Question { id: string; quiz_id: string; question: string; explanation: string; position: number; options: Option[]; }
 interface Option { id: string; question_id: string; text: string; is_correct: boolean; position: number; }
@@ -105,12 +105,28 @@ function useProgress(user: User | null, courseId: string) {
 }
 
 /* ─────────────── PROTECTED VIDEO PLAYER ─────────────── */
-function ProtectedVideoPlayer({ url, isPreview, onComplete, onProgress }: { url: string; isPreview?: boolean; onComplete?: () => void; onProgress?: (seconds: number) => void }) {
+function ProtectedVideoPlayer({ url, path, isPreview, onComplete, onProgress }: { url: string; path?: string; isPreview?: boolean; onComplete?: () => void; onProgress?: (seconds: number) => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [src, setSrc] = useState("");
+
+  // Private bucket: resolve a short-lived signed URL from the storage path.
+  // Fall back to the stored URL (e.g. external video with no storage path).
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      if (path) {
+        const u = await signMedia("course-videos", path);
+        if (active) setSrc(u || "");
+      } else {
+        setSrc(url || "");
+      }
+    })();
+    return () => { active = false; };
+  }, [path, url]);
 
   const togglePlay = () => {
     if (!videoRef.current) return;
@@ -156,7 +172,7 @@ function ProtectedVideoPlayer({ url, isPreview, onComplete, onProgress }: { url:
 
       <video
         ref={videoRef}
-        src={url}
+        src={src}
         controlsList="nodownload nofullscreen noremoteplayback"
         disablePictureInPicture
         disableRemotePlayback
@@ -185,7 +201,7 @@ function ProtectedVideoPlayer({ url, isPreview, onComplete, onProgress }: { url:
         </div>
       </div>
 
-      {loading && url && (
+      {loading && (path || url) && (
         <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ width: 36, height: 36, border: `3px solid ${C.bdr}`, borderTopColor: C.gold, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
         </div>
@@ -433,12 +449,21 @@ function QASection({ lessonId }: { lessonId: string }) {
 /* ─────────────── FILES SECTION ─────────────── */
 function FilesSection({ lessonId }: { lessonId: string }) {
   const [files, setFiles] = useState<LessonFile[]>([]);
+  const [opening, setOpening] = useState<string | null>(null);
 
   const load = async () => {
     const { data } = await supabase.from("lms_lesson_files").select("*").eq("lesson_id", lessonId);
     setFiles(data || []);
   };
   useEffect(() => { load(); }, [lessonId]);
+
+  // Private bucket: resolve a signed URL (server checks enrollment) before opening.
+  const openFile = async (f: LessonFile) => {
+    setOpening(f.id);
+    const u = f.storage_path ? await signMedia("course-files", f.storage_path) : f.file_url;
+    setOpening(null);
+    if (u) window.open(u, "_blank", "noopener,noreferrer");
+  };
 
   if (files.length === 0) return null;
 
@@ -453,8 +478,8 @@ function FilesSection({ lessonId }: { lessonId: string }) {
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {files.map(f => (
-          <a key={f.id} href={f.file_url} target="_blank" rel="noopener noreferrer" download={f.name}
-            style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, textDecoration: "none", transition: "all .2s" }}
+          <button key={f.id} type="button" onClick={() => openFile(f)} disabled={opening === f.id}
+            style={btn({ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", width: "100%", textAlign: "left", background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, transition: "all .2s" })}
             onMouseEnter={e => { e.currentTarget.style.borderColor = C.gold; e.currentTarget.style.background = `${C.gold}08`; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = C.bdr; e.currentTarget.style.background = C.bg; }}>
             <span style={{ fontSize: 20 }}>{fileIcon(f.mime_type)}</span>
@@ -462,8 +487,8 @@ function FilesSection({ lessonId }: { lessonId: string }) {
               <div style={{ fontSize: 13, fontWeight: 700, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</div>
               <div style={{ fontSize: 10, color: C.t3, fontFamily: F.mono }}>{f.size_bytes ? fmtBytes(f.size_bytes) : "Fichier"}</div>
             </div>
-            <span style={{ fontSize: 18, color: C.gold }}>⬇</span>
-          </a>
+            <span style={{ fontSize: 18, color: C.gold }}>{opening === f.id ? "…" : "⬇"}</span>
+          </button>
         ))}
       </div>
     </div>
@@ -517,7 +542,7 @@ function LessonViewer({ lesson, onBack, onPrevious, onNext, hasQuiz, user, progr
       {/* Content */}
       {tab === "video" && (
         lesson.video_url ? (
-          <ProtectedVideoPlayer url={lesson.video_url} isPreview={lesson.is_preview} onComplete={onComplete} />
+          <ProtectedVideoPlayer url={lesson.video_url} path={lesson.video_storage_path} isPreview={lesson.is_preview} onComplete={onComplete} />
         ) : (
           <div style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 16, padding: 60, textAlign: "center" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🎬</div>

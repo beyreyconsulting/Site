@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { C, F, btn, textOn } from "./data.tsx";
-import { supabase, enrollInCourse } from "./supabase";
+import { supabase, createOrder } from "./supabase";
 import { useDialog } from "./a11y";
 import { staggerContainer, staggerItem } from "./motion";
 
@@ -16,7 +16,7 @@ interface CartItem { id: string; course_id: string; created_at: string; course: 
 /* ─────────────── PASSWORD VALIDATION ─────────────── */
 function validatePassword(password: string): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
-  if (password.length < 8) errors.push("Au moins 8 caracteres");
+  if (password.length < 12) errors.push("Au moins 12 caracteres");
   if (!/[a-zA-Z]/.test(password)) errors.push("Au moins une lettre");
   if (!/[0-9]/.test(password)) errors.push("Au moins un chiffre");
   return { valid: errors.length === 0, errors };
@@ -488,19 +488,22 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
   const { items, loading, removeFromCart, clearCart, total, count } = useCart(user);
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutErr, setCheckoutErr] = useState("");
+  const [result, setResult] = useState<null | "paid" | "pending">(null);
 
   const doCheckout = async () => {
     if (checkingOut || items.length === 0) return;
     setCheckingOut(true); setCheckoutErr("");
-    // NOTE: real payment must be confirmed before enrollment. The `enroll`
-    // Edge Function is the single server-side choke point where that check lives.
+    // Create an order per course. Free = auto-paid (instant), paid = pending
+    // until an admin confirms the mobile-money payment (server enforces this).
+    let anyPending = false;
     for (const it of items) {
-      const r = await enrollInCourse(it.course_id);
-      if (!r.ok) { setCheckoutErr("Échec de l'inscription. Réessayez."); setCheckingOut(false); return; }
+      const r = await createOrder(it.course_id);
+      if (!r.ok) { setCheckoutErr("Une erreur s'est produite. Réessayez."); setCheckingOut(false); return; }
+      if (r.status === "pending") anyPending = true;
     }
     await clearCart();
     setCheckingOut(false);
-    onCheckout();
+    setResult(anyPending ? "pending" : "paid");
   };
 
   return (
@@ -514,6 +517,28 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
           </div>
           <button onClick={onClose} aria-label="Fermer" style={btn({ background: C.bdr, color: C.t2, width: 32, height: 32, borderRadius: "50%", fontSize: 14 })}>✕</button>
         </div>
+        {result ? (
+          <div style={{ padding: 28, textAlign: "center" }}>
+            <div style={{ fontSize: 44, marginBottom: 12 }}>{result === "paid" ? "✅" : "⏳"}</div>
+            {result === "paid" ? (
+              <>
+                <div style={{ fontSize: 16, fontWeight: 800, color: C.grn, marginBottom: 8 }}>Inscription confirmée !</div>
+                <div style={{ fontSize: 13, color: C.t2, marginBottom: 20 }}>Vous avez maintenant accès à vos formations.</div>
+                <button onClick={onCheckout} style={btn({ background: C.gold, color: C.bg, padding: "12px 24px", borderRadius: 10, fontWeight: 800, fontSize: 14 })}>Aller à mon espace →</button>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 16, fontWeight: 800, color: C.gold, marginBottom: 8 }}>Commande enregistrée</div>
+                <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.7, marginBottom: 16, textAlign: "left" }}>
+                  Pour activer votre accès, effectuez le paiement par <strong style={{ color: C.t }}>Orange Money</strong> ou <strong style={{ color: C.t }}>Wave</strong> au :
+                  <div style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", margin: "10px 0", fontFamily: F.mono, fontSize: 16, color: C.gold, textAlign: "center", fontWeight: 700 }}>+223 92 97 66 46</div>
+                  en précisant votre email <strong style={{ color: C.t }}>{user?.email}</strong>. Votre accès sera activé dès confirmation (sous 24h ouvrées).
+                </div>
+                <button onClick={onCheckout} style={btn({ background: C.gold, color: C.bg, padding: "12px 24px", borderRadius: 10, fontWeight: 800, fontSize: 14 })}>J'ai compris</button>
+              </>
+            )}
+          </div>
+        ) : (<>
         <div style={{ padding: 20, maxHeight: 400, overflowY: "auto" }}>
           {loading && <div style={{ textAlign: "center", color: C.t3, padding: 20 }}>Chargement...</div>}
           {!loading && items.length === 0 && (
@@ -546,10 +571,11 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
             </div>
             {checkoutErr && <div style={{ fontSize: 12, color: C.red, marginBottom: 10 }}>{checkoutErr}</div>}
             <button onClick={doCheckout} disabled={checkingOut} style={btn({ width: "100%", background: "linear-gradient(135deg,#C8971A,#E0A820)", color: C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
-              {checkingOut ? "Traitement…" : "Proceder au paiement"}
+              {checkingOut ? "Traitement…" : "Valider ma commande"}
             </button>
           </div>
         )}
+        </>)}
       </div>
     </div>
   );

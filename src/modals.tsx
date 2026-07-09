@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { C, F, fmt, btn, Tag, textOn } from "./data.tsx";
-import { VideoPlayer } from "./components";
+import { VideoPlayer, RichText } from "./components";
 import { useDialog } from "./a11y";
 
 /* ═══════════════════════════════════════════════════
@@ -149,10 +149,6 @@ export function BlogModal({post,onClose}:{post:any,onClose:()=>void}){
     return()=>{document.body.style.overflow="";};
   },[]);
 
-  const fmtBody=(s:string)=>s
-    .replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
-    .replace(/\n/g,"<br>");
-
   return(
     <div style={{position:"fixed",inset:0,zIndex:280,background:"rgba(4,8,16,.88)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
       onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
@@ -176,7 +172,7 @@ export function BlogModal({post,onClose}:{post:any,onClose:()=>void}){
               <div style={{fontSize:11,color:C.t2,fontFamily:F.mono}}>Fondateur · Beyrey Consulting</div>
             </div>
           </div>
-          <div style={{fontSize:15,color:C.t,lineHeight:1.8,fontFamily:F.serif}} dangerouslySetInnerHTML={{__html:fmtBody(post.body)}}/>
+          <div style={{fontSize:15,color:C.t,lineHeight:1.8,fontFamily:F.serif}}><RichText text={post.body}/></div>
         </div>
 
         <div style={{borderTop:`1px solid ${C.bdr}`,padding:"16px 28px",background:C.s2,display:"flex",justifyContent:"space-between",alignItems:"center"}}>

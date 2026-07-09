@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { C, F, btn } from "./data.tsx";
+import { C, F, btn, textOn } from "./data.tsx";
 import { supabase } from "./supabase";
 
 /* ─────────────── TYPES ─────────────── */
@@ -777,11 +777,73 @@ function CourseList({ onManageSections }: { onManageSections: (c: Course) => voi
   );
 }
 
+/* ─────────────── ORDERS MANAGER ─────────────── */
+function OrdersManager() {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"pending" | "paid" | "all">("pending");
+
+  const load = async () => {
+    setLoading(true);
+    const { data } = await supabase.from("orders").select("*, course:course_id(title,icon,color)").order("created_at", { ascending: false });
+    setOrders(data || []);
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, []);
+
+  const setStatus = async (id: string, status: "paid" | "cancelled") => {
+    await supabase.from("orders").update({ status }).eq("id", id);
+    load();
+  };
+
+  const list = filter === "all" ? orders : orders.filter(o => o.status === filter);
+  const badge = (s: string) => s === "paid" ? C.grn : s === "pending" ? C.gold : C.red;
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h2 style={{ fontFamily: F.serif, fontSize: 24, fontWeight: 600, color: "#fff", margin: 0 }}>Commandes</h2>
+          <div style={{ fontSize: 12, color: C.t2 }}>Confirmez les paiements mobile money pour débloquer l'accès.</div>
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {(["pending", "paid", "all"] as const).map(f => (
+            <button key={f} onClick={() => setFilter(f)} style={btn({ background: filter === f ? C.gold : C.s2, color: filter === f ? C.bg : C.t2, border: `1px solid ${filter === f ? C.gold : C.bdr}`, padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>
+              {f === "pending" ? "En attente" : f === "paid" ? "Payées" : "Toutes"}
+            </button>
+          ))}
+        </div>
+      </div>
+      {loading ? <div style={{ color: C.t3, padding: 20 }}>Chargement…</div> :
+        list.length === 0 ? <div style={{ color: C.t3, padding: 20, textAlign: "center" }}>Aucune commande.</div> :
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {list.map(o => (
+              <div key={o.id} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 16, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: `${o.course?.color || C.gold}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>{o.course?.icon || "📚"}</div>
+                <div style={{ flex: 1, minWidth: 180 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: C.t }}>{o.course?.title || o.course_id}</div>
+                  <div style={{ fontSize: 11, color: C.t2, fontFamily: F.mono }}>{o.student_email || o.student_id} · {new Date(o.created_at).toLocaleDateString("fr-FR")}</div>
+                </div>
+                <div style={{ fontFamily: F.serif, fontSize: 16, fontWeight: 600, color: C.gold }}>{(o.amount || 0).toLocaleString("fr-FR")} F</div>
+                <span style={{ fontSize: 10, fontFamily: F.mono, fontWeight: 700, color: badge(o.status), background: `${badge(o.status)}18`, padding: "4px 10px", borderRadius: 6, textTransform: "uppercase" }}>{o.status === "paid" ? "Payée" : o.status === "pending" ? "En attente" : "Annulée"}</span>
+                {o.status === "pending" && (
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={() => setStatus(o.id, "paid")} style={btn({ background: C.grn, color: textOn(C.grn), padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>Marquer payé</button>
+                    <button onClick={() => setStatus(o.id, "cancelled")} style={btn({ background: `${C.red}18`, color: C.red, border: `1px solid ${C.red}30`, padding: "7px 10px", borderRadius: 8, fontSize: 12 })}>Annuler</button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>}
+    </div>
+  );
+}
+
 /* ─────────────── ADMIN PANEL ROOT ─────────────── */
 export function AdminPanel() {
   const [authed, setAuthed] = useState(false);
   const [checking, setChecking] = useState(true);
-  const [page, setPage] = useState<"courses" | "sections">("courses");
+  const [page, setPage] = useState<"courses" | "sections" | "orders">("courses");
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   useEffect(() => {
@@ -822,7 +884,13 @@ export function AdminPanel() {
             </>
           )}
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <button onClick={() => setPage("courses")} style={btn({ background: page !== "orders" ? `${C.gold}18` : "none", color: page !== "orders" ? C.gold : C.t2, border: `1px solid ${page !== "orders" ? C.gold + "30" : C.bdr}`, padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>
+            Formations
+          </button>
+          <button onClick={() => setPage("orders")} style={btn({ background: page === "orders" ? `${C.gold}18` : "none", color: page === "orders" ? C.gold : C.t2, border: `1px solid ${page === "orders" ? C.gold + "30" : C.bdr}`, padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>
+            Commandes
+          </button>
           <a href="#" onClick={e => { e.preventDefault(); window.location.hash = ""; }} style={{ fontSize: 12, color: C.t2, textDecoration: "none", background: C.s2, border: `1px solid ${C.bdr}`, padding: "7px 14px", borderRadius: 8 }}>
             ← Site public
           </a>
@@ -840,6 +908,7 @@ export function AdminPanel() {
         {page === "sections" && selectedCourse && (
           <SectionEditor courseId={selectedCourse.id} onBack={() => setPage("courses")} />
         )}
+        {page === "orders" && <OrdersManager />}
       </div>
     </div>
   );

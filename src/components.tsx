@@ -15,7 +15,7 @@ function renderBold(s:string, keyBase:number){
       : <span key={`${keyBase}-${i}`}>{part}</span>
   );
 }
-function RichText({text}:{text:string}){
+export function RichText({text}:{text:string}){
   const lines=text.split("\n");
   return <>{lines.map((line,i)=>(
     <span key={i}>{renderBold(line,i)}{i<lines.length-1?<br/>:null}</span>

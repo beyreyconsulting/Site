@@ -43,7 +43,45 @@ export function track(event: string, payload: Record<string, unknown> = {}): voi
   });
 }
 
-/** Enroll the current user in a course via the server (service role). */
+/**
+ * Get a short-lived signed URL for a private course video/file.
+ * The server checks enrollment (or preview/admin) before signing.
+ */
+export async function signMedia(bucket: "course-videos" | "course-files", path: string): Promise<string | null> {
+  if (!path) return null;
+  const { data: { session } } = await supabase.auth.getSession();
+  const res = await fetch(`${FUNCTIONS_URL}/sign-media`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      apikey: key,
+      Authorization: `Bearer ${session?.access_token ?? key}`,
+    },
+    body: JSON.stringify({ bucket, path }),
+  });
+  if (!res.ok) return null;
+  const d = await res.json();
+  return d.url ?? null;
+}
+
+/**
+ * Create an order for a course. Free courses are auto-paid (instant enrollment
+ * via DB trigger); paid courses stay 'pending' until an admin confirms payment.
+ * The server (triggers/RLS) forces amount + status — the client cannot self-pay.
+ */
+export async function createOrder(courseId: string): Promise<{ ok: boolean; status?: "pending" | "paid"; error?: string }> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return { ok: false, error: "not authenticated" };
+  const { data, error } = await supabase
+    .from("orders")
+    .insert({ student_id: session.user.id, student_email: session.user.email, course_id: courseId })
+    .select("status")
+    .single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, status: data.status };
+}
+
+/** @deprecated Enrollment now flows through orders (see createOrder). */
 export async function enrollInCourse(courseId: string): Promise<{ ok: boolean; error?: string }> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return { ok: false, error: "not authenticated" };

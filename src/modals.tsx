@@ -19,6 +19,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
     <div style={{position:"fixed",inset:0,zIndex:280,background:"rgba(4,8,16,.88)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
       onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={course.title} tabIndex={-1} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:22,width:"100%",maxWidth:880,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column",boxShadow:"0 32px 80px rgba(0,0,0,.7)"}}>
+        <style>{`@media(max-width:680px){.cd-apercu{grid-template-columns:1fr !important;}.cd-stats{grid-template-columns:repeat(2,1fr) !important;}}`}</style>
 
         {/* Header */}
         <div style={{background:"linear-gradient(135deg,#0E1A2C,#162438)",padding:"20px 24px",borderBottom:`1px solid ${C.bdr}`,display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16}}>
@@ -46,7 +47,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
         {/* Body */}
         <div style={{flex:1,overflowY:"auto",padding:24}}>
           {tab==="apercu"&&<>
-            <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 280px",gap:24,alignItems:"start"}}>
+            <div className="cd-apercu" style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 280px",gap:24,alignItems:"start"}}>
               <div>
                 <p style={{fontSize:14,color:C.t,lineHeight:1.7,marginBottom:18}}>{course.desc}</p>
                 <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".1em",textTransform:"uppercase",marginBottom:10}}>Compétences acquises</div>
@@ -55,7 +56,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
                     <span key={i} style={{background:`${course.color}12`,color:course.color,fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:8,border:`1px solid ${course.color}28`}}>{s}</span>
                   ))}
                 </div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:20}}>
+                <div className="cd-stats" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:20}}>
                   {[
                     {l:"Durée",v:course.dur,icon:"⏱️"},
                     {l:"Vidéos",v:course.vids,icon:"🎬"},

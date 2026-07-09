@@ -1174,7 +1174,7 @@ export default function App() {
         <CartModal onClose={()=>setShowCart(false)} onCheckout={()=>{ setShowCart(false); window.location.hash = "student"; }} />
       )}
 
-      <div style={{position:"fixed",bottom:24,left:24,width:56,height:56,zIndex:1000}}>
+      <div style={{position:"fixed",bottom:24,left:24,width:56,height:56,zIndex:150}}>
         {!reduce&&<motion.span
           aria-hidden
           animate={{scale:[1,1.6],opacity:[0.5,0]}}

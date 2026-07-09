@@ -57,6 +57,14 @@ SPA, en-têtes de sécurité + CSP).
    signés) et Google Fonts. Si un domaine custom est ajouté, penser à
    `supabase secrets set ALLOWED_ORIGIN=https://ton-domaine`.
 
+### Alternative : Vercel
+
+[`vercel.json`](vercel.json) fournit le même comportement (fallback SPA + en-têtes
++ CSP). Import du repo sur Vercel → framework **Vite** auto-détecté, puis ajouter
+les mêmes variables `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` dans
+**Project Settings → Environment Variables**. Utiliser **soit** Netlify **soit**
+Vercel, pas les deux.
+
 ## Notes de sécurité
 
 - Toute écriture LMS (cours/leçons/quiz/storage) est réservée aux admins par RLS.

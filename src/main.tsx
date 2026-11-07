@@ -1,10 +1,20 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { LazyMotion, MotionConfig, domAnimation } from 'framer-motion';
 import App from './App.tsx';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    {/* Les animations framer-motion suivent le réglage « réduire les
+        animations » du système : la règle CSS ne les atteint pas. */}
+    <MotionConfig reducedMotion="user">
+      {/* Version allégée de framer-motion (composants `m.*`). `strict` fait
+          échouer tout `motion.*` complet qui réapparaîtrait : il ramènerait
+          ~30 Ko de plus sur des connexions mobiles lentes. */}
+      <LazyMotion features={domAnimation} strict>
+        <App />
+      </LazyMotion>
+    </MotionConfig>
   </StrictMode>
 );

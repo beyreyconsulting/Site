@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
-import { motion, AnimatePresence, useInView, useReducedMotion } from "framer-motion";
+import { m, AnimatePresence, useInView } from "framer-motion";
 import { C, F, COURSES, POSTS, DIAL, TESTIMONIALS, STATS, fmt, btn, Tag, clickable, textOn } from "./data.tsx";
 import { track, supabase } from "./supabase";
 import { KalanAI, VideoPlayer, BookDownloadModal } from "./components";
@@ -27,7 +27,6 @@ function RouteFallback() {
 function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav:(id:string)=>void; user: any; profile: any; cartCount: number; onShowAuth: ()=>void; onShowCart: ()=>void}){
   const [scrolled,setScrolled]=useState(false);
   const [mobileOpen,setMobileOpen]=useState(false);
-  const [activeSection, setActiveSection] = useState<"consulting" | "kalan">("consulting");
 
   useEffect(()=>{
     const onScroll=()=>setScrolled(window.scrollY>20);
@@ -44,74 +43,19 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
   ];
 
   return(
-    <motion.header
+    <m.header
       initial={{ y: -80 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      style={{position:"fixed",top:0,left:0,right:0,zIndex:100,transition:"all .3s",background:scrolled?"rgba(8,17,30,.95)":"transparent",backdropFilter:scrolled?"blur(16px)":"none",borderBottom:scrolled?`1px solid ${C.bdr}`:"1px solid transparent"}}
+      style={{position:"fixed",top:0,left:0,right:0,zIndex:mobileOpen?300:100,transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)",background:scrolled?"rgba(8,17,30,.95)":"transparent",backdropFilter:scrolled?"blur(16px)":"none",borderBottom:scrolled?`1px solid ${C.bdr}`:"1px solid transparent"}}
     >
-      {/* Brand Switcher Bar */}
-      <AnimatePresence>
-        {scrolled && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            style={{background:"rgba(200,151,26,.08)",borderBottom:`1px solid ${C.bdr}`,overflow:"hidden"}}
-          >
-            <div style={{maxWidth:1200,margin:"0 auto",padding:"0 24px",display:"flex",gap:16}}>
-              <motion.button
-                onClick={() => setActiveSection("consulting")}
-                whileHover={{ backgroundColor: "rgba(200,151,26,.15)" }}
-                style={{
-                  background: activeSection === "consulting" ? `${C.gold}20` : "transparent",
-                  border: "none",
-                  borderBottom: activeSection === "consulting" ? `2px solid ${C.gold}` : "2px solid transparent",
-                  color: activeSection === "consulting" ? C.gold : C.t2,
-                  padding: "8px 16px",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  fontFamily: F.mono,
-                  letterSpacing: ".08em",
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                }}
-              >
-                💼 Consulting Entreprise
-              </motion.button>
-              <motion.button
-                onClick={() => { setActiveSection("kalan"); window.location.hash = "lms"; }}
-                whileHover={{ backgroundColor: "rgba(0,200,150,.15)" }}
-                style={{
-                  background: activeSection === "kalan" ? `${C.grn}15` : "transparent",
-                  border: "none",
-                  borderBottom: activeSection === "kalan" ? `2px solid ${C.grn}` : "2px solid transparent",
-                  color: activeSection === "kalan" ? C.grn : C.t2,
-                  padding: "8px 16px",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  fontFamily: F.mono,
-                  letterSpacing: ".08em",
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                }}
-              >
-                🎓 Académie Kalan
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div style={{maxWidth:1200,margin:"0 auto",padding:"14px 24px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <motion.div
+        <m.div
           onClick={()=>onNav("hero")}
           whileHover={{ scale: 1.02 }}
           style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}
         >
-          <motion.img
+          <m.img
             src="/logo.png"
             alt="Beyrey Consulting"
             style={{width:40,height:40,objectFit:"contain",borderRadius:8}}
@@ -122,11 +66,11 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
             <div style={{fontFamily:F.serif,fontSize:18,fontWeight:600,color:"#fff",lineHeight:1}}>Beyrey</div>
             <div style={{fontFamily:F.mono,fontSize:9,color:C.gold,letterSpacing:".15em",textTransform:"uppercase"}}>Consulting</div>
           </div>
-        </motion.div>
+        </m.div>
 
         <nav aria-label="Navigation principale" style={{display:"flex",gap:28,alignItems:"center"}}>
           {consultingLinks.map((x, i) => (
-            <motion.button
+            <m.button
               key={x.id}
               onClick={()=>onNav(x.id)}
               initial={{ opacity: 0, y: -20 }}
@@ -136,9 +80,9 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
               style={btn({background:"none",color:C.t2,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:"2px solid transparent"})}
             >
               {x.l}
-            </motion.button>
+            </m.button>
           ))}
-          <motion.button
+          <m.button
             onClick={()=>{ window.location.hash = "lms"; }}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -147,44 +91,44 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
             style={btn({background:`${C.gold}12`,border:`1px solid ${C.gold}30`,color:C.gold,fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8})}
           >
             🎓 Kalan
-          </motion.button>
+          </m.button>
         </nav>
 
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
           {user && (
-            <motion.button
+            <m.button
               onClick={onShowCart}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               style={btn({background:C.s2,border:`1px solid ${C.bdr}`,color:C.t,padding:"8px 12px",borderRadius:10,fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6})}
             >
-              🛒 {cartCount > 0 && <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
+              🛒 {cartCount > 0 && <m.span
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
                 style={{background:C.gold,color:C.bg,borderRadius:"50%",width:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11}}
-              >{cartCount}</motion.span>}
-            </motion.button>
+              >{cartCount}</m.span>}
+            </m.button>
           )}
           {user ? (
-            <motion.button
+            <m.button
               onClick={()=>{ window.location.hash = "student"; }}
               whileHover={{ scale: 1.05, backgroundColor: `${C.gold}25` }}
               whileTap={{ scale: 0.95 }}
               style={btn({background:`${C.gold}18`,border:`1px solid ${C.gold}30`,color:C.gold,padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:700})}
             >
               {profile?.full_name?.split(" ")[0] || "Espace"} ▾
-            </motion.button>
+            </m.button>
           ) : (
-            <motion.button
+            <m.button
               onClick={onShowAuth}
               whileHover={{ scale: 1.05, borderColor: C.gold }}
               whileTap={{ scale: 0.95 }}
               style={btn({background:"none",color:C.t2,border:`1px solid ${C.bdr}`,padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:600})}
             >
               Connexion
-            </motion.button>
+            </m.button>
           )}
-          <motion.button
+          <m.button
             onClick={()=>onNav("contact")}
             className="hide-mobile"
             whileHover={{ scale: 1.05, y: -2 }}
@@ -192,65 +136,67 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
             style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"10px 20px",borderRadius:10,fontWeight:700,fontSize:13,boxShadow:"0 4px 16px rgba(200,151,26,.3)"})}
           >
             Nous contacter
-          </motion.button>
-          <motion.button
+          </m.button>
+          <m.button
             onClick={()=>setMobileOpen(true)}
+            aria-label="Ouvrir le menu"
+            aria-expanded={mobileOpen}
             whileHover={{ backgroundColor: C.s3 }}
             whileTap={{ scale: 0.9 }}
             style={btn({display:"none",background:C.s2,color:C.t,border:`1px solid ${C.bdr}`,width:38,height:38,borderRadius:10,fontSize:18})}
             className="mobile-only"
-          >☰</motion.button>
+          >☰</m.button>
         </div>
       </div>
 
       <AnimatePresence>
         {mobileOpen && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             style={{position:"fixed",inset:0,zIndex:200,background:"rgba(4,8,16,.95)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24}}
           >
-            <motion.button
+            <m.button
               onClick={()=>setMobileOpen(false)}
               aria-label="Fermer le menu"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               style={btn({position:"absolute",top:20,right:20,background:C.s2,color:C.t,width:40,height:40,borderRadius:"50%",fontSize:18})}
-            >✕</motion.button>
+            >✕</m.button>
 
-            <motion.div
+            <m.div
               initial="hidden"
               animate="visible"
               variants={staggerContainer}
               style={{display:"flex",flexDirection:"column",alignItems:"center",gap:20}}
             >
               {consultingLinks.map((x) => (
-                <motion.button
+                <m.button
                   key={x.id}
                   variants={staggerItem}
                   onClick={()=>{onNav(x.id);setMobileOpen(false);}}
                   style={btn({background:"none",color:C.t,fontSize:22,fontFamily:F.serif})}
-                >{x.l}</motion.button>
+                >{x.l}</m.button>
               ))}
-              <motion.button
+              <m.button
                 variants={staggerItem}
                 onClick={()=>{ window.location.hash = "lms"; setMobileOpen(false); }}
                 style={btn({background:`${C.gold}18`,border:`1px solid ${C.gold}30`,color:C.gold,padding:"12px 24px",borderRadius:10,fontSize:18,fontFamily:F.serif,fontWeight:700})}
-              >🎓 Académie Kalan</motion.button>
-            </motion.div>
+              >🎓 Académie Kalan</m.button>
+            </m.div>
 
-            <motion.button
+            <m.button
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
               onClick={()=>{onNav("contact");setMobileOpen(false);}}
               style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"14px 32px",borderRadius:10,fontWeight:700,fontSize:15,marginTop:20})}
-            >Nous contacter</motion.button>
-          </motion.div>
+            >Nous contacter</m.button>
+          </m.div>
         )}
       </AnimatePresence>
-    </motion.header>
+    </m.header>
   );
 }
 
@@ -258,57 +204,31 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
    HERO - ROI-FOCUSED CONSULTING LANDING
 ═══════════════════════════════════════════════════ */
 function Hero({onNav}:{onNav:(id:string)=>void}){
-  const reduce=useReducedMotion();
   return(
     <section id="hero" style={{position:"relative",padding:"140px 24px 100px",overflow:"hidden"}}>
-      {/* Animated Background — disabled under prefers-reduced-motion */}
-      <div style={{position:"absolute",inset:0,overflow:"hidden",pointerEvents:"none"}}>
-        {[...Array(reduce?0:28)].map((_,i)=>(
-          <motion.div
-            key={i}
-            animate={{
-              opacity: [0.1, 0.6, 0.1],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 3,
-            }}
-            style={{position:"absolute",width:Math.random()*3+1,height:Math.random()*3+1,borderRadius:"50%",background:C.gold,left:`${Math.random()*100}%`,top:`${Math.random()*100}%`}}
-          />
-        ))}
-        <motion.div
-          animate={reduce?undefined:{ scale: [1, 1.1, 1], opacity: [0.08, 0.12, 0.08] }}
-          transition={{ duration: 8, repeat: Infinity }}
-          style={{position:"absolute",top:"-20%",right:"-10%",width:700,height:700,borderRadius:"50%",background:"radial-gradient(circle,rgba(200,151,26,.1),transparent 70%)"}}
-        />
-        <motion.div
-          animate={reduce?undefined:{ scale: [1, 1.05, 1], opacity: [0.06, 0.1, 0.06] }}
-          transition={{ duration: 10, repeat: Infinity }}
-          style={{position:"absolute",bottom:"-30%",left:"-10%",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,200,150,.08),transparent 70%)"}}
-        />
+      {/* Fond calme : deux halos FIXES. 28 particules et des halos qui
+          respiraient sans fin occupaient le processeur des téléphones
+          d'entrée de gamme pour un effet que l'œil cesse de voir. */}
+      <div aria-hidden style={{position:"absolute",inset:0,overflow:"hidden",pointerEvents:"none"}}>
+        <div style={{position:"absolute",top:"-20%",right:"-10%",width:700,height:700,borderRadius:"50%",background:"radial-gradient(circle,rgba(200,151,26,.1),transparent 70%)",opacity:.1}}/>
+        <div style={{position:"absolute",bottom:"-30%",left:"-10%",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,200,150,.08),transparent 70%)",opacity:.08}}/>
       </div>
 
       <div className="hero-grid" style={{maxWidth:1200,margin:"0 auto",position:"relative",display:"grid",gridTemplateColumns:"1.15fr .85fr",gap:80,alignItems:"center"}}>
         <div>
           {/* Badge */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             style={{display:"inline-flex",alignItems:"center",gap:8,background:`${C.gold}12`,border:`1px solid ${C.gold}28`,borderRadius:24,padding:"8px 16px",marginBottom:28}}
           >
-            <motion.span
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              style={{width:8,height:8,borderRadius:"50%",background:C.grn}}
-            />
+            <span style={{width:8,height:8,borderRadius:"50%",background:C.grn}}/>
             <span style={{fontFamily:F.mono,fontSize:11,color:C.gold,letterSpacing:".1em"}}>CABINET DATA & BI · BAMAKO</span>
-          </motion.div>
+          </m.div>
 
           {/* Headline - ROI Focused */}
-          <motion.h1
+          <m.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -317,10 +237,10 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
           >
             Transformez vos<br/>
             <span style={{color:C.gold,fontStyle:"italic"}}>données en décisions.</span>
-          </motion.h1>
+          </m.h1>
 
           {/* Subheadline */}
-          <motion.p
+          <m.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -328,10 +248,10 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
           >
             <strong style={{color:C.t}}>Beyrey Consulting</strong> aide les entreprises maliennes à exploiter la puissance de leurs données.
             <span style={{color:C.gold,fontWeight:700}}> ROI prouvé, méthodologie éprouvée DIAL™.</span>
-          </motion.p>
+          </m.p>
 
           {/* ROI Stats */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
@@ -342,7 +262,7 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
               { value: "50+", label: "Entreprises formées" },
               { value: "3x", label: "ROI moyen" },
             ].map((stat, i) => (
-              <motion.div
+              <m.div
                 key={i}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -351,44 +271,44 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
               >
                 <span style={{ fontFamily: F.serif, fontSize: 32, fontWeight: 700, color: C.gold }}>{stat.value}</span>
                 <span style={{ fontSize: 11, color: C.t2, fontFamily: F.mono, letterSpacing: ".04em" }}>{stat.label}</span>
-              </motion.div>
+              </m.div>
             ))}
-          </motion.div>
+          </m.div>
 
           {/* CTAs */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
             style={{display:"flex",gap:14,flexWrap:"wrap",alignItems:"center"}}
           >
-            <motion.button
+            <m.button
               onClick={()=>onNav("contact")}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
               style={{background:"linear-gradient(135deg,#C8971A,#E0A820)",border:"none",color:C.bg,padding:"16px 32px",borderRadius:12,fontWeight:800,fontSize:15,boxShadow:"0 8px 32px rgba(200,151,26,.4)",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
             >
               Réserver un appel <span style={{fontSize:18}}>→</span>
-            </motion.button>
-            <motion.button
+            </m.button>
+            <m.button
               onClick={()=>onNav("formations")}
               whileHover={{ scale: 1.05, backgroundColor: C.s3 }}
               whileTap={{ scale: 0.95 }}
               style={{background:C.s2,color:C.t,border:`1px solid ${C.bdr2}`,padding:"16px 28px",borderRadius:12,fontWeight:700,fontSize:15,cursor:"pointer"}}
             >
               Voir nos services
-            </motion.button>
-          </motion.div>
+            </m.button>
+          </m.div>
 
           {/* Trust indicators */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
             style={{display:"flex",gap:24,alignItems:"center",marginTop:24,paddingTop:24,borderTop:`1px solid ${C.bdr}`,flexWrap:"wrap"}}
           >
             {STATS.slice(0,3).map((s,i)=>(
-              <motion.div
+              <m.div
                 key={i}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -396,19 +316,19 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
               >
                 <div style={{fontFamily:F.serif,fontSize:26,fontWeight:700,color:C.t,lineHeight:1}}>{s.n}</div>
                 <div style={{fontSize:10,color:C.t2,fontFamily:F.mono,letterSpacing:".06em",textTransform:"uppercase",marginTop:2}}>{s.l}</div>
-              </motion.div>
+              </m.div>
             ))}
-          </motion.div>
+          </m.div>
         </div>
 
         {/* Hero card — featured course preview with animation */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, x: 40, rotateY: -10 }}
           animate={{ opacity: 1, x: 0, rotateY: 0 }}
           transition={{ delay: 0.4, duration: 0.7 }}
           style={{position:"relative",perspective:"1000px"}}
         >
-          <motion.div
+          <m.div
             whileHover={{ y: -8, boxShadow: "0 40px 100px rgba(0,0,0,.6)" }}
             style={{background:"linear-gradient(160deg,#0E1A2C,#162438)",border:`1px solid ${C.bdr}`,borderRadius:24,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,0,0,.5)"}}
           >
@@ -423,16 +343,16 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
             <div style={{padding:"0 24px 24px"}}>
               <VideoPlayer course={COURSES[0]} enrolled={false} />
             </div>
-          </motion.div>
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
+          </m.div>
+          <m.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.8, type: "spring", stiffness: 300 }}
             style={{position:"absolute",right:-16,top:-16,background:C.gold,color:C.bg,padding:"10px 16px",borderRadius:12,fontSize:12,fontWeight:800,fontFamily:F.mono,transform:"rotate(8deg)",boxShadow:"0 8px 24px rgba(200,151,26,.5)"}}
           >
             -25% LANCEMENT
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       </div>
     </section>
   );
@@ -497,14 +417,14 @@ function TrustBar(){
     <section style={{background:C.s1,borderTop:`1px solid ${C.bdr}`,borderBottom:`1px solid ${C.bdr}`,padding:"36px 24px"}}>
       <div style={{maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:24}}>
         {kpis.map((k,i)=>(
-          <motion.div key={i}
+          <m.div key={i}
             initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.08}}
             style={{textAlign:"center"}}>
             <div style={{fontFamily:F.mono,fontSize:38,fontWeight:500,color:C.gold,lineHeight:1,letterSpacing:"-0.02em"}}>
               <CountUp to={k.to} suffix={k.suffix}/>
             </div>
             <div style={{fontSize:11,color:C.t2,marginTop:8,lineHeight:1.5}}>{k.label}</div>
-          </motion.div>
+          </m.div>
         ))}
       </div>
     </section>
@@ -529,7 +449,7 @@ function LeadMagnet(){
   };
   return(
     <section style={{padding:"40px 24px"}}>
-      <motion.div
+      <m.div
         initial={{opacity:0,y:24}} whileInView={{opacity:1,y:0}} viewport={{once:true,margin:"-100px"}} transition={{duration:0.5}}
         style={{maxWidth:920,margin:"0 auto",background:"linear-gradient(135deg,#0E1A2C,#162438)",border:`1px solid ${C.gold}30`,borderRadius:20,padding:32,display:"grid",gridTemplateColumns:"1.3fr 1fr",gap:28,alignItems:"center"}}
         className="dial-book">
@@ -558,7 +478,7 @@ function LeadMagnet(){
             </div>
           )}
         </div>
-      </motion.div>
+      </m.div>
     </section>
   );
 }
@@ -568,36 +488,36 @@ function LeadMagnet(){
 ═══════════════════════════════════════════════════ */
 function SectionTitle({tag,title,sub,center}:{tag:string,title:React.ReactNode,sub?:string,center?:boolean}){
   return(
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 0.6 }}
       style={{maxWidth:680,margin:center?"0 auto 48px":"0 0 40px",textAlign:center?"center":"left"}}
     >
-      <motion.div
+      <m.div
         initial={{ opacity: 0, x: -20 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.1 }}
         style={{fontFamily:F.mono,fontSize:11,color:C.gold,letterSpacing:".15em",textTransform:"uppercase",marginBottom:12}}
-      >{tag}</motion.div>
-      <motion.h2
+      >{tag}</m.div>
+      <m.h2
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.2 }}
         className="section-title"
         style={{fontFamily:F.serif,fontSize:42,fontWeight:600,color:"#fff",lineHeight:1.15,margin:"0 0 14px",letterSpacing:"-0.01em"}}
-      >{title}</motion.h2>
-      {sub && <motion.p
+      >{title}</m.h2>
+      {sub && <m.p
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         transition={{ delay: 0.3 }}
         style={{fontSize:15,color:C.t2,lineHeight:1.7,margin:0}}
-      >{sub}</motion.p>}
-    </motion.div>
+      >{sub}</m.p>}
+    </m.div>
   );
 }
 
@@ -615,7 +535,7 @@ function CoursesSection({onOpenCourse,onBuy}:{onOpenCourse:(c:any)=>void,onBuy:(
 
       <div style={{display:"flex",gap:8,marginBottom:32,flexWrap:"wrap",justifyContent:"center"}}>
         {cats.map(c=>(
-          <button key={c} onClick={()=>setFilter(c)} style={btn({background:filter===c?C.gold:C.s2,color:filter===c?C.bg:C.t2,border:`1px solid ${filter===c?C.gold:C.bdr}`,padding:"9px 18px",borderRadius:20,fontSize:12,fontWeight:700,transition:"all .2s"})}>
+          <button key={c} onClick={()=>setFilter(c)} style={btn({background:filter===c?C.gold:C.s2,color:filter===c?C.bg:C.t2,border:`1px solid ${filter===c?C.gold:C.bdr}`,padding:"9px 18px",borderRadius:20,fontSize:12,fontWeight:700,transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)"})}>
             {c}
           </button>
         ))}
@@ -625,9 +545,9 @@ function CoursesSection({onOpenCourse,onBuy}:{onOpenCourse:(c:any)=>void,onBuy:(
         {list.map(course=>{
           const discount=Math.round((1-course.price/course.orig)*100);
           return(
-            <div key={course.id} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,overflow:"hidden",transition:"all .3s",display:"flex",flexDirection:"column"}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor=course.color;e.currentTarget.style.transform="translateY(-4px)";e.currentTarget.style.boxShadow=`0 20px 48px rgba(0,0,0,.4)`;}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor=C.bdr;e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="none";}}>
+            <div className="carte" key={course.id} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,overflow:"hidden",transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)",display:"flex",flexDirection:"column"}}
+              
+              >
               <div style={{padding:20,background:`linear-gradient(135deg,${course.color}10,transparent)`,borderBottom:`1px solid ${C.bdr}`}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
                   <div style={{width:48,height:48,borderRadius:12,background:`${course.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24}}>{course.icon}</div>
@@ -684,9 +604,9 @@ function DialSection({onDownload}:{onDownload:()=>void}){
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:20,marginBottom:40}}>
           {DIAL.map((d,i)=>(
-            <div key={i} style={{position:"relative",background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,padding:24,overflow:"hidden",transition:"all .3s"}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor=d.color;e.currentTarget.style.transform="translateY(-4px)";}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor=C.bdr;e.currentTarget.style.transform="none";}}>
+            <div className="carte" key={i} style={{position:"relative",background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,padding:24,overflow:"hidden",transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)"}}
+              
+              >
               <div style={{position:"absolute",top:-20,right:-10,fontFamily:F.serif,fontSize:120,fontWeight:600,color:`${d.color}08`,lineHeight:1}}>{d.letter}</div>
               <div style={{position:"relative",zIndex:1}}>
                 <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
@@ -732,9 +652,9 @@ function TestimonialsSection(){
       <SectionTitle tag="Ils nous font confiance" title={<>Ce que disent <span style={{color:C.gold,fontStyle:"italic"}}>nos clients</span></>} sub="PME, ONG, institutions financières. 465+ professionnels formés au Mali." center/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:20}}>
         {TESTIMONIALS.map((t,i)=>(
-          <div key={i} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,padding:24,position:"relative",transition:"all .3s"}}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor=t.color;}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor=C.bdr;}}>
+          <div className="carte-bord" key={i} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,padding:24,position:"relative",transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)"}}
+            
+            >
             <div style={{fontFamily:F.serif,fontSize:60,color:`${t.color}30`,lineHeight:.5,position:"absolute",top:24,right:20}}>"</div>
             <p style={{fontSize:14,color:C.t,lineHeight:1.7,margin:"0 0 20px",position:"relative",zIndex:1}}>{t.text}</p>
             <div style={{display:"flex",alignItems:"center",gap:12,paddingTop:16,borderTop:`1px solid ${C.bdr}`}}>
@@ -771,9 +691,9 @@ function BlogSection({onOpenPost}:{onOpenPost:(p:any)=>void}){
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(340px,1fr))",gap:20}}>
         {list.map(p=>(
-          <div key={p.id} {...clickable(()=>onOpenPost(p))} aria-label={`Lire : ${p.title}`} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,overflow:"hidden",cursor:"pointer",transition:"all .3s"}}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor=C.gold;e.currentTarget.style.transform="translateY(-4px)";}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor=C.bdr;e.currentTarget.style.transform="none";}}>
+          <div className="carte" key={p.id} {...clickable(()=>onOpenPost(p))} aria-label={`Lire : ${p.title}`} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,overflow:"hidden",cursor:"pointer",transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)"}}
+            
+            >
             <div style={{height:140,background:`linear-gradient(135deg,${C.s2},${C.s3})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:48,position:"relative"}}>
               {p.icon}
               <div style={{position:"absolute",top:14,left:14}}><Tag c={C.gold}>{p.cat}</Tag></div>
@@ -1034,7 +954,6 @@ export default function App() {
 
   const { user, profile, signOut } = useAuth();
   const { addToCart, count: cartCount } = useCart(user);
-  const reduce = useReducedMotion();
 
   // Hash routing
   useEffect(() => {
@@ -1179,13 +1098,8 @@ export default function App() {
       )}
 
       <div style={{position:"fixed",bottom:24,left:24,width:56,height:56,zIndex:150}}>
-        {!reduce&&<motion.span
-          aria-hidden
-          animate={{scale:[1,1.6],opacity:[0.5,0]}}
-          transition={{duration:1.8,repeat:Infinity,ease:"easeOut"}}
-          style={{position:"absolute",inset:0,borderRadius:"50%",background:"#25D366",pointerEvents:"none"}}
-        />}
         <a
+          className="fab"
           href="https://wa.me/22392976646"
           target="_blank"
           rel="noopener noreferrer"
@@ -1202,8 +1116,8 @@ export default function App() {
             boxShadow:"0 6px 20px rgba(37,211,102,.45)",
             transition:"transform .2s ease, box-shadow .2s ease",
           }}
-          onMouseEnter={e=>{e.currentTarget.style.transform="scale(1.1)";e.currentTarget.style.boxShadow="0 8px 28px rgba(37,211,102,.6)";}}
-          onMouseLeave={e=>{e.currentTarget.style.transform="scale(1)";e.currentTarget.style.boxShadow="0 6px 20px rgba(37,211,102,.45)";}}
+          
+          
         >
         <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { C, F, btn, textOn } from "./data.tsx";
 import { supabase, createOrder } from "./supabase";
 import { useDialog } from "./a11y";
@@ -690,107 +690,107 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
   };
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
       style={{ minHeight: "100vh", background: C.bg, fontFamily: F.sans }}
     >
       {/* Top Navigation Bar */}
-      <motion.div
+      <m.div
         initial={{ y: -60 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(8,17,30,.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${C.bdr}` }}
       >
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <motion.div
+          <m.div
             onClick={() => { window.location.hash = ""; }}
             whileHover={{ scale: 1.02 }}
             style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
           >
             <img src="/logo.png" alt="Beyrey Consulting" style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 8 }} />
             <div style={{ fontFamily: F.serif, fontSize: 16, fontWeight: 600, color: "#fff" }}>Beyrey Consulting</div>
-          </motion.div>
+          </m.div>
           <nav style={{ display: "flex", gap: 20, alignItems: "center" }}>
             {[
               { label: "Accueil", hash: "", hoverColor: C.t },
               { label: "Catalogue", hash: "lms", hoverColor: C.gold },
               { label: "Contact", hash: "", hoverColor: C.t },
             ].map((item, i) => (
-              <motion.button
+              <m.button
                 key={i}
                 onClick={() => { window.location.hash = item.hash; }}
                 whileHover={{ y: -2 }}
                 style={{ background: "none", border: "none", color: C.t2, fontSize: 13, fontWeight: 600, padding: "6px 0", cursor: "pointer" }}
               >
                 {item.label}
-              </motion.button>
+              </m.button>
             ))}
           </nav>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Header */}
       <div style={{ background: "linear-gradient(160deg,#0E1A2C,#162438)", borderBottom: `1px solid ${C.bdr}` }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "100px 24px 40px" }}>
           {/* Profile Section */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             style={{ display: "flex", gap: 16, alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap" }}
           >
             <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
+              <m.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                 style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg,#C8971A,#E0A820)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, color: C.bg, fontWeight: 800, flexShrink: 0, boxShadow: "0 8px 32px rgba(200,151,26,.3)" }}
               >
                 {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U"}
-              </motion.div>
+              </m.div>
               <div>
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
                   style={{ fontSize: 28, fontFamily: F.serif, fontWeight: 600, color: "#fff" }}
                 >
                   {profile?.full_name || "Étudiant"}
-                </motion.div>
-                <motion.div
+                </m.div>
+                <m.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
                   style={{ fontSize: 13, color: C.t2, fontFamily: F.mono }}
                 >
                   {user.email}
-                </motion.div>
+                </m.div>
               </div>
             </div>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <motion.button
+              <m.button
                 onClick={() => { window.location.hash = "lms"; }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 style={{ background: C.gold, border: "none", color: C.bg, padding: "12px 20px", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 16px rgba(200,151,26,.3)" }}
               >
                 Explorer les formations
-              </motion.button>
-              <motion.button
+              </m.button>
+              <m.button
                 onClick={onSignOut}
                 whileHover={{ backgroundColor: C.s3 }}
                 whileTap={{ scale: 0.95 }}
                 style={{ background: C.s2, border: `1px solid ${C.bdr}`, color: C.t2, padding: "12px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
               >
                 Se déconnecter
-              </motion.button>
+              </m.button>
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Stats with Animation */}
-          <motion.div
+          <m.div
             initial="hidden"
             animate="visible"
             variants={staggerContainer}
@@ -802,29 +802,29 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
               { label: "Certificats obtenus", value: certificates.length, color: C.blue, icon: "🏆" },
               { label: "Progression globale", value: `${totalProgress}%`, color: C.gold, icon: "📈" },
             ].map((stat, i) => (
-              <motion.div
+              <m.div
                 key={i}
                 variants={staggerItem}
                 whileHover={{ y: -4, boxShadow: `0 12px 40px ${stat.color}20` }}
                 style={{ padding: "20px 24px", background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 16, position: "relative", overflow: "hidden" }}
               >
                 <div style={{ position: "absolute", top: 12, right: 12, fontSize: 24, opacity: 0.3 }}>{stat.icon}</div>
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
+                <m.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.3 + i * 0.1, type: "spring", stiffness: 150 }}
                   style={{ fontFamily: F.serif, fontSize: 36, fontWeight: 700, color: stat.color }}
                 >
                   {stat.value}
-                </motion.div>
+                </m.div>
                 <div style={{ fontSize: 11, color: C.t2, fontFamily: F.mono, letterSpacing: ".06em", textTransform: "uppercase", marginTop: 4 }}>{stat.label}</div>
-              </motion.div>
+              </m.div>
             ))}
-          </motion.div>
+          </m.div>
 
           {/* Overall Progress Bar */}
           {enrollments.length > 0 && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
@@ -835,14 +835,14 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                 <span style={{ fontSize: 14, fontWeight: 800, color: C.gold, fontFamily: F.mono }}>{totalProgress}%</span>
               </div>
               <div style={{ height: 10, background: C.bdr, borderRadius: 5, overflow: "hidden" }}>
-                <motion.div
+                <m.div
                   initial={{ width: 0 }}
                   animate={{ width: `${totalProgress}%` }}
                   transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
                   style={{ height: "100%", background: "linear-gradient(90deg, #C8971A, #E0A820)", borderRadius: 5 }}
                 />
               </div>
-            </motion.div>
+            </m.div>
           )}
         </div>
       </div>
@@ -850,7 +850,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
       {/* Content */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
         {/* Tabs */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
@@ -860,7 +860,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
             { id: "courses", label: "Mes formations", icon: "📚" },
             { id: "certificates", label: `Certificats (${certificates.length})`, icon: "🏆" },
           ].map((t) => (
-            <motion.button
+            <m.button
               key={t.id}
               onClick={() => setTab(t.id as "courses" | "certificates")}
               whileHover={{ y: -2 }}
@@ -881,13 +881,13 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
             >
               <span>{t.icon}</span>
               {t.label}
-            </motion.button>
+            </m.button>
           ))}
-        </motion.div>
+        </m.div>
 
         <AnimatePresence mode="wait">
           {tab === "courses" && (
-            <motion.div
+            <m.div
               key="courses"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -896,7 +896,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
             >
               {enrollLoading ? (
                 <div style={{ textAlign: "center", padding: 60 }}>
-                  <motion.div
+                  <m.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                     style={{ width: 40, height: 40, border: `3px solid ${C.bdr}`, borderTopColor: C.gold, borderRadius: "50%", margin: "0 auto 16px" }}
@@ -904,39 +904,39 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                   <div style={{ color: C.t3 }}>Chargement...</div>
                 </div>
               ) : enrollments.length === 0 ? (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   style={{ textAlign: "center", padding: 60 }}
                 >
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
+                  <m.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
                     transition={{ type: "spring", stiffness: 200 }}
                     style={{ fontSize: 64, marginBottom: 20 }}
-                  >📚</motion.div>
+                  >📚</m.div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: C.t, marginBottom: 10 }}>Aucune formation</div>
                   <div style={{ fontSize: 14, color: C.t2, marginBottom: 24, maxWidth: 400, margin: "0 auto 24px" }}>
                     Explorez notre catalogue et inscrivez-vous à une formation pour commencer votre apprentissage.
                   </div>
-                  <motion.button
+                  <m.button
                     onClick={() => { window.location.hash = "lms"; }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     style={{ background: C.gold, border: "none", color: C.bg, padding: "14px 28px", borderRadius: 12, fontWeight: 700, fontSize: 15, cursor: "pointer", boxShadow: "0 8px 24px rgba(200,151,26,.3)" }}
                   >
                     Découvrir le catalogue
-                  </motion.button>
-                </motion.div>
+                  </m.button>
+                </m.div>
               ) : (
-                <motion.div
+                <m.div
                   initial="hidden"
                   animate="visible"
                   variants={staggerContainer}
                   style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 24 }}
                 >
                   {enrollments.map((en, idx) => (
-                    <motion.div
+                    <m.div
                       key={en.id}
                       variants={staggerItem}
                       whileHover={{ y: -4, boxShadow: "0 16px 48px rgba(0,0,0,.3)" }}
@@ -945,13 +945,13 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                       {/* Card Header */}
                       <div style={{ padding: 24, background: `linear-gradient(135deg,${en.course?.color || C.gold}15,transparent)`, borderBottom: `1px solid ${C.bdr}` }}>
                         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-                          <motion.div
+                          <m.div
                             whileHover={{ rotate: [0, -10, 10, 0] }}
                             transition={{ duration: 0.4 }}
                             style={{ width: 56, height: 56, borderRadius: 14, background: `${en.course?.color || C.gold}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, flexShrink: 0 }}
                           >
                             {en.course?.icon || "📚"}
-                          </motion.div>
+                          </m.div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontSize: 17, fontWeight: 700, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{en.course?.title}</div>
                             <div style={{ display: "flex", gap: 10, marginTop: 6, alignItems: "center" }}>
@@ -968,17 +968,17 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                         <div style={{ marginBottom: 20 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                             <span style={{ fontSize: 12, color: C.t2, fontFamily: F.mono, letterSpacing: ".04em" }}>Progression</span>
-                            <motion.span
+                            <m.span
                               key={en.progress_pct}
                               initial={{ scale: 1.3 }}
                               animate={{ scale: 1 }}
                               style={{ fontSize: 15, fontWeight: 800, color: en.progress_pct >= 100 ? C.grn : C.gold, fontFamily: F.mono }}
                             >
                               {en.progress_pct}%
-                            </motion.span>
+                            </m.span>
                           </div>
                           <div style={{ height: 8, background: C.bdr, borderRadius: 4, overflow: "hidden" }}>
-                            <motion.div
+                            <m.div
                               initial={{ width: 0 }}
                               animate={{ width: `${en.progress_pct}%` }}
                               transition={{ duration: 0.8, delay: idx * 0.1 }}
@@ -989,7 +989,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
 
                         {/* Action Button */}
                         {en.completed_at && hasCertificate(en.course_id) ? (
-                          <motion.button
+                          <m.button
                             onClick={() => {
                               const cert = certificates.find(c => c.course_id === en.course_id);
                               if (cert) setSelectedCert(cert);
@@ -999,36 +999,36 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                             style={{ width: "100%", background: C.grn, border: "none", color: textOn(C.grn), padding: 14, borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
                           >
                             <span>🏆</span> Voir mon certificat
-                          </motion.button>
+                          </m.button>
                         ) : en.progress_pct >= 100 && !hasCertificate(en.course_id) ? (
-                          <motion.button
+                          <m.button
                             onClick={async () => { await generateCertificate(en.course_id); }}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             style={{ width: "100%", background: "linear-gradient(135deg,#C8971A,#E0A820)", border: "none", color: C.bg, padding: 14, borderRadius: 12, fontWeight: 800, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 6px 24px rgba(200,151,26,.3)" }}
                           >
                             <span>🏆</span> Obtenir mon certificat
-                          </motion.button>
+                          </m.button>
                         ) : (
-                          <motion.button
+                          <m.button
                             onClick={() => onViewCourse(en.course_id)}
                             whileHover={{ scale: 1.02, backgroundColor: C.s3 }}
                             whileTap={{ scale: 0.98 }}
                             style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr2}`, color: C.t, padding: 14, borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: "pointer" }}
                           >
                             Continuer la formation →
-                          </motion.button>
+                          </m.button>
                         )}
                       </div>
-                    </motion.div>
+                    </m.div>
                   ))}
-                </motion.div>
+                </m.div>
               )}
-            </motion.div>
+            </m.div>
           )}
 
           {tab === "certificates" && (
-            <motion.div
+            <m.div
               key="certificates"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1036,71 +1036,71 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
               transition={{ duration: 0.3 }}
             >
               {certificates.length === 0 ? (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   style={{ textAlign: "center", padding: 60 }}
                 >
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
+                  <m.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
                     transition={{ type: "spring", stiffness: 200 }}
                     style={{ fontSize: 64, marginBottom: 20 }}
-                  >🏆</motion.div>
-                  <motion.div style={{ fontSize: 20, fontWeight: 700, color: C.t, marginBottom: 10 }}>Aucun certificat</motion.div>
+                  >🏆</m.div>
+                  <m.div style={{ fontSize: 20, fontWeight: 700, color: C.t, marginBottom: 10 }}>Aucun certificat</m.div>
                   <div style={{ fontSize: 14, color: C.t2, maxWidth: 400, margin: "0 auto" }}>
                     Complétez une formation pour obtenir votre premier certificat.
                   </div>
-                </motion.div>
+                </m.div>
               ) : (
-                <motion.div
+                <m.div
                   initial="hidden"
                   animate="visible"
                   variants={staggerContainer}
                   style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 24 }}
                 >
                   {certificates.map((cert, idx) => (
-                    <motion.div
+                    <m.div
                       key={cert.id}
                       variants={staggerItem}
                       whileHover={{ y: -4, boxShadow: "0 16px 48px rgba(200,151,26,.2)" }}
                       style={{ background: "linear-gradient(135deg,#fffdf8,#f5f0e8)", border: `2px solid #C8971A`, borderRadius: 20, padding: 28, textAlign: "center", position: "relative", overflow: "hidden" }}
                     >
                       <div style={{ position: "absolute", top: 16, right: 16, fontSize: 12, fontFamily: F.mono, color: "#8B7355", opacity: 0.5 }}>N° {cert.certificate_number}</div>
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
+                      <m.div
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: idx * 0.1, type: "spring", stiffness: 200 }}
                         style={{ fontSize: 48, marginBottom: 16 }}
-                      >🏆</motion.div>
+                      >🏆</m.div>
                       <div style={{ fontSize: 10, color: "#8B7355", letterSpacing: ".2em", textTransform: "uppercase", fontFamily: F.mono, marginBottom: 8 }}>Certificat de Réussite</div>
                       <div style={{ fontSize: 18, fontWeight: 700, color: "#1a1a1a", fontFamily: F.serif, marginBottom: 12 }}>{cert.course?.title}</div>
                       <div style={{ fontSize: 11, color: "#666", fontFamily: F.mono, marginBottom: 20 }}>
                         Délivré le {new Date(cert.issued_at).toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })}
                       </div>
                       <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                        <motion.button
+                        <m.button
                           onClick={() => setSelectedCert(cert)}
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           style={{ background: C.gold, border: "none", color: C.bg, padding: "10px 18px", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
                         >
                           Voir
-                        </motion.button>
-                        <motion.button
+                        </m.button>
+                        <m.button
                           onClick={() => { shareCertificate(cert); }}
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           style={{ background: C.blue, border: "none", color: "#fff", padding: "10px 18px", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
                         >
                           {copied ? "✓ Copié" : "Partager"}
-                        </motion.button>
+                        </m.button>
                       </div>
-                    </motion.div>
+                    </m.div>
                   ))}
-                </motion.div>
+                </m.div>
               )}
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>
@@ -1115,6 +1115,6 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
           />
         )}
       </AnimatePresence>
-    </motion.div>
+    </m.div>
   );
 }

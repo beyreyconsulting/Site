@@ -313,7 +313,7 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string
                       display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, cursor: submitted ? "default" : "pointer",
                       background: showCorrect ? `${C.grn}12` : isSelected ? (submitted ? `${C.red}12` : `${C.gold}12`) : C.s2,
                       border: `1px solid ${showCorrect ? C.grn : isSelected ? (submitted ? C.red : C.gold) : C.bdr}`,
-                      transition: "all .15s", textAlign: "left" as const,
+                      transition:"background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s cubic-bezier(.23,1,.32,1)", textAlign: "left" as const,
                     }}
                   >
                     <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${showCorrect ? C.grn : isSelected ? (submitted ? C.red : C.gold) : C.bdr}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -474,10 +474,10 @@ function FilesSection({ lessonId }: { lessonId: string }) {
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {files.map(f => (
-          <button key={f.id} type="button" onClick={() => openFile(f)} disabled={opening === f.id}
-            style={btn({ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", width: "100%", textAlign: "left", background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, transition: "all .2s" })}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = C.gold; e.currentTarget.style.background = `${C.gold}08`; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = C.bdr; e.currentTarget.style.background = C.bg; }}>
+          <button className="ligne" key={f.id} type="button" onClick={() => openFile(f)} disabled={opening === f.id}
+            style={btn({ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", width: "100%", textAlign: "left", background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)" })}
+            
+            >
             <span style={{ fontSize: 20 }}>{fileIcon(f.mime_type)}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</div>
@@ -738,12 +738,13 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
           return (
             <div key={sec.id} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 16, marginBottom: 12, overflow: "hidden" }}>
               <div
+                className="ligne-fond"
                 {...clickable(() => { const next = new Set(expandedSections); if (isExpanded) next.delete(sec.id); else next.add(sec.id); setExpandedSections(next); })}
                 aria-expanded={isExpanded}
                 aria-label={`Section : ${sec.title}`}
                 style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", transition: "background .15s" }}
-                onMouseEnter={e => e.currentTarget.style.background = `${C.gold}08`}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                
+                
               >
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: `${course.color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: course.color, flexShrink: 0 }}>
                   {si + 1}
@@ -760,12 +761,12 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
                     const hasQuiz = !!quizzes[les.id];
                     const lessonProg = progress[les.id];
                     return (
-                      <div key={les.id}
+                      <div className="ligne" key={les.id}
                         {...clickable(() => setSelectedLesson(les))}
                         aria-label={`Leçon : ${les.title}`}
-                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", marginTop: li === 0 ? 16 : 8, background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, cursor: "pointer", transition: "all .15s" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = C.gold; e.currentTarget.style.background = `${C.gold}08`; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.bdr; e.currentTarget.style.background = C.bg; }}
+                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", marginTop: li === 0 ? 16 : 8, background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, cursor: "pointer", transition:"background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s cubic-bezier(.23,1,.32,1)" }}
+                        
+                        
                       >
                         <div style={{ width: 28, height: 28, borderRadius: 8, background: lessonProg?.completed_at ? C.grn : les.video_url ? `${C.gold}18` : C.s2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: lessonProg?.completed_at ? "#fff" : les.video_url ? C.gold : C.t3, flexShrink: 0 }}>
                           {lessonProg?.completed_at ? "✓" : les.video_url ? "▶" : li + 1}
@@ -849,10 +850,10 @@ export function CourseCatalog({ onSelectCourse, onBack, user, onAddToCart }: { o
             {courses.map(c => {
               const isEnrolled = enrollmentIds.has(c.id);
               return (
-                <div key={c.id}
-                  style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: "hidden", transition: "all .3s" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = c.color; e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 20px 48px rgba(0,0,0,.4)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.bdr; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
+                <div className="carte" key={c.id}
+                  style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: "hidden", transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)" }}
+                  
+                  >
                   <div style={{ padding: 20, background: `linear-gradient(135deg,${c.color}10,transparent)`, borderBottom: `1px solid ${C.bdr}` }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                       <div style={{ width: 48, height: 48, borderRadius: 12, background: `${c.color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{c.icon}</div>

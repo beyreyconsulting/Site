@@ -1,4 +1,4 @@
-import { motion, Variants, HTMLMotionProps } from "framer-motion";
+import { m, Variants, HTMLMotionProps } from "framer-motion";
 import { ReactNode, Suspense } from "react";
 
 /* ═══════════════════════════════════════════════════
@@ -81,7 +81,7 @@ interface MotionDivProps extends HTMLMotionProps<"div"> {
 
 export function MotionFade({ children, ...props }: MotionDivProps) {
   return (
-    <motion.div
+    <m.div
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-50px" }}
@@ -89,13 +89,13 @@ export function MotionFade({ children, ...props }: MotionDivProps) {
       {...props}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
 export function MotionFadeUp({ children, ...props }: MotionDivProps) {
   return (
-    <motion.div
+    <m.div
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-50px" }}
@@ -103,13 +103,13 @@ export function MotionFadeUp({ children, ...props }: MotionDivProps) {
       {...props}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
 export function MotionStagger({ children, ...props }: MotionDivProps) {
   return (
-    <motion.div
+    <m.div
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-50px" }}
@@ -117,15 +117,15 @@ export function MotionStagger({ children, ...props }: MotionDivProps) {
       {...props}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
 export function MotionItem({ children, ...props }: MotionDivProps) {
   return (
-    <motion.div variants={staggerItem} {...props}>
+    <m.div variants={staggerItem} {...props}>
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -139,14 +139,14 @@ interface MotionButtonProps extends HTMLMotionProps<"button"> {
 
 export function MotionButton({ children, ...props }: MotionButtonProps) {
   return (
-    <motion.button
+    <m.button
       whileHover={hoverScale}
       whileTap={tapScale}
       transition={{ duration: 0.2 }}
       {...props}
     >
       {children}
-    </motion.button>
+    </m.button>
   );
 }
 
@@ -160,7 +160,7 @@ interface MotionCardProps extends MotionDivProps {
 
 export function MotionCard({ children, hoverLift: shouldLift = true, ...props }: MotionCardProps) {
   return (
-    <motion.div
+    <m.div
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-30px" }}
@@ -169,7 +169,7 @@ export function MotionCard({ children, hoverLift: shouldLift = true, ...props }:
       {...props}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -186,14 +186,14 @@ export const pageTransition = {
 
 export function PageTransition({ children }: { children: ReactNode }) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -222,4 +222,4 @@ export function createScrollAnimation(delay: number = 0) {
   };
 }
 
-export { motion };
+export { m };

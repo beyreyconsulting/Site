@@ -149,7 +149,7 @@ function VideoUploader({ lessonId, currentUrl, onSaved }: { lessonId: string; cu
         onDragLeave={() => setDrag(false)}
         onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
-        style={{ border: `2px dashed ${drag ? C.gold : C.bdr}`, borderRadius: 12, padding: "24px 16px", textAlign: "center", cursor: "pointer", background: drag ? `${C.gold}08` : "transparent", transition: "all .2s" }}
+        style={{ border: `2px dashed ${drag ? C.gold : C.bdr}`, borderRadius: 12, padding: "24px 16px", textAlign: "center", cursor: "pointer", background: drag ? `${C.gold}08` : "transparent", transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)" }}
       >
         <div style={{ fontSize: 28, marginBottom: 8 }}>📤</div>
         <div style={{ fontSize: 13, fontWeight: 700, color: C.t, marginBottom: 4 }}>

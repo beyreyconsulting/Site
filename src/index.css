@@ -1,3 +1,29 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── Mouvement (principes Emil Kowalski) ─────────────────────────────────
+   Un seul endroit pour les survols et les retours de pression : les styles
+   inline ne savent exprimer ni :hover, ni :active, ni prefers-reduced-motion.
+   Survols réservés aux pointeurs fins (pas de survol « collé » au doigt). */
+:root {
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --or: #C8971A;
+}
+.carte, .carte-bord, .ligne, .ligne-fond, .fab {
+  transition: transform 200ms var(--ease-out), border-color 150ms ease,
+              box-shadow 200ms ease, background-color 150ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .carte:hover { transform: translateY(-4px); border-color: var(--or) !important;
+                 box-shadow: 0 20px 48px rgba(0, 0, 0, .4); }
+  .carte-bord:hover { border-color: var(--or) !important; }
+  .ligne:hover { border-color: var(--or) !important; background-color: rgba(200, 151, 26, .03) !important; }
+  .ligne-fond:hover { background-color: rgba(200, 151, 26, .03) !important; }
+  .fab:hover { transform: scale(1.06); }
+}
+/* Le bouton répond à la pression (100–160 ms). */
+button:not(:disabled):active { transform: scale(.97); }
+@media (prefers-reduced-motion: reduce) {
+  .carte:hover, .fab:hover, button:not(:disabled):active { transform: none; }
+}

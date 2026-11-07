@@ -241,7 +241,8 @@ function QuizBuilder({ lessonId }: { lessonId: string }) {
     const { data: qz } = await supabase.from("lms_quizzes").select("*").eq("lesson_id", lessonId).maybeSingle();
     setQuiz(qz);
     if (qz) {
-      const { data: qs } = await supabase.from("lms_quiz_questions").select("*,options:lms_quiz_options(*)").eq("quiz_id", qz.id).order("position");
+      // `is_correct` n'est lisible que par admin_quiz_questions() (réservée aux admins).
+      const { data: qs } = await supabase.rpc("admin_quiz_questions", { p_quiz_id: qz.id });
       setQuestions((qs || []).map((q: any) => ({ ...q, options: (q.options || []).sort((a: Option, b: Option) => a.position - b.position) })));
       setQuizForm({ title: qz.title, pass_score: qz.pass_score });
     }

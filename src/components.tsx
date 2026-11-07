@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { C, F, PAY, KALAN_SYS, fmt, btn, Tag } from "./data.tsx";
+import { C, F, PAY, fmt, btn, Tag } from "./data.tsx";
 import { supabase, askKalan, track } from "./supabase";
 import { useDialog } from "./a11y";
 
@@ -46,7 +46,7 @@ export function KalanAI(){
     setMsgs(next);setInput("");setBusy(true);
     try{
       const apiMsgs=next.filter((m,i)=>!(i===0&&m.r==="a")).map(m=>({role:(m.r==="u"?"user":"assistant") as "user"|"assistant",content:m.t}));
-      const text=await askKalan(apiMsgs,KALAN_SYS);
+      const text=await askKalan(apiMsgs);
       setMsgs([...next,{r:"a",t:text||"Désolé, une erreur s'est produite."}]);
     }catch{setMsgs([...next,{r:"a",t:"Une erreur s'est produite. Réessayez dans un instant."}]);}
     finally{setBusy(false);}

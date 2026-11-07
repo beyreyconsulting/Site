@@ -472,8 +472,10 @@ export function useCertificates(user: User | null) {
 
   const generateCertificate = async (courseId: string) => {
     if (!user) return null;
-    const { data, error } = await supabase.from("certificates").insert({ student_id: user.id, course_id: courseId }).select().single();
-    if (error) return null;
+    // Délivré par le serveur (issue_certificate), qui vérifie inscription,
+    // leçons terminées et quiz réussis. L'élève ne se délivre plus rien.
+    const { data, error } = await supabase.rpc("issue_certificate", { p_course_id: courseId });
+    if (error) { alert(`Certificat non délivré : ${error.message}.`); return null; }
     load();
     return data;
   };

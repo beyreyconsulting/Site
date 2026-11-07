@@ -9,7 +9,8 @@ interface Lesson { id: string; section_id: string; course_id: string; title: str
 interface LessonFile { id: string; lesson_id: string; name: string; file_url: string; storage_path?: string; size_bytes: number; mime_type: string; }
 interface Quiz { id: string; lesson_id: string; title: string; pass_score: number; }
 interface Question { id: string; quiz_id: string; question: string; explanation: string; position: number; options: Option[]; }
-interface Option { id: string; question_id: string; text: string; is_correct: boolean; position: number; }
+// `is_correct` n'est plus lisible côté client : la correction vient de submit_quiz().
+interface Option { id: string; question_id: string; text: string; position: number; }
 interface QA { id: string; lesson_id: string; author_name: string; author_email: string; question: string; is_answered: boolean; created_at: string; answers: QAAnswer[]; }
 interface QAAnswer { id: string; qa_id: string; author_name: string; answer: string; is_from_instructor: boolean; created_at: string; }
 interface LessonProgress { lesson_id: string; completed_at?: string; video_progress_seconds: number; quiz_passed: boolean; }
@@ -213,19 +214,22 @@ function ProtectedVideoPlayer({ url, path, isPreview, onComplete, onProgress }: 
 }
 
 /* ─────────────── QUIZ TAKER ─────────────── */
-function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?: string; onComplete?: () => void }) {
+// `userId` ne sert plus : le serveur identifie l'élève par sa session (submit_quiz).
+function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string; onComplete?: () => void }) {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [corrige, setCorrige] = useState<Record<string, string>>({});
+  const [erreur, setErreur] = useState("");
 
   useEffect(() => {
     const load = async () => {
       const { data: qz } = await supabase.from("lms_quizzes").select("*").eq("lesson_id", lessonId).maybeSingle();
       if (!qz) return;
       setQuiz(qz);
-      const { data: qs } = await supabase.from("lms_quiz_questions").select("*,options:lms_quiz_options(*)").eq("quiz_id", qz.id).order("position");
+      const { data: qs } = await supabase.from("lms_quiz_questions").select("*,options:lms_quiz_options(id,question_id,text,position)").eq("quiz_id", qz.id).order("position");
       setQuestions((qs || []).map((q: any) => ({ ...q, options: (q.options || []).sort((a: Option, b: Option) => a.position - b.position) })));
     };
     load();
@@ -238,29 +242,17 @@ function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?
     setAnswers(a => ({ ...a, [qId]: oId }));
   };
 
+  // Noté par le SERVEUR (submit_quiz) : il enregistre la tentative et ne
+  // rend la correction qu'après. Noté ici, l'élève choisissait son score.
   const submit = async () => {
     if (submitted) return;
-    let correct = 0;
-    for (const q of questions) {
-      const chosen = q.options.find(o => o.id === answers[q.id]);
-      if (chosen?.is_correct) correct++;
-    }
-    const pct = Math.round((correct / questions.length) * 100);
-    setScore(pct);
+    setErreur("");
+    const { data, error } = await supabase.rpc("submit_quiz", { p_quiz_id: quiz.id, p_answers: answers });
+    if (error || !data) { setErreur("Le quiz n'a pas pu être corrigé. Vérifiez votre connexion et réessayez."); return; }
+    setScore(data.score);
+    setCorrige(data.correct || {});
     setSubmitted(true);
-
-    // Save attempt
-    if (userId) {
-      await supabase.from("quiz_attempts").insert({
-        student_id: userId,
-        quiz_id: quiz.id,
-        score: pct,
-        passed: pct >= quiz.pass_score,
-        answers: answers,
-      });
-    }
-
-    if (pct >= quiz.pass_score) onComplete?.();
+    if (data.passed) onComplete?.();
   };
 
   const passed = score >= quiz.pass_score;
@@ -296,7 +288,7 @@ function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?
 
       {questions.map((q) => {
         const userAnswer = answers[q.id];
-        const isCorrect = q.options.find(o => o.id === userAnswer)?.is_correct;
+        const isCorrect = !!userAnswer && corrige[q.id] === userAnswer;
 
         return (
           <div key={q.id} style={{ background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 18, marginBottom: 14 }}>
@@ -311,7 +303,7 @@ function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {q.options.map(opt => {
                 const isSelected = userAnswer === opt.id;
-                const showCorrect = submitted && opt.is_correct;
+                const showCorrect = submitted && corrige[q.id] === opt.id;
                 return (
                   <button
                     key={opt.id}
@@ -342,13 +334,14 @@ function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?
         );
       })}
 
+      {erreur && <div role="alert" style={{ fontSize: 12, color: C.red, marginBottom: 10 }}>{erreur}</div>}
       {!submitted ? (
         <button onClick={submit} disabled={Object.keys(answers).length < questions.length}
           style={btn({ width: "100%", background: Object.keys(answers).length >= questions.length ? C.gold : C.bdr, color: Object.keys(answers).length >= questions.length ? C.bg : C.t3, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
           Soumettre le quiz
         </button>
       ) : !passed ? (
-        <button onClick={() => { setSubmitted(false); setAnswers({}); setScore(0); }}
+        <button onClick={() => { setSubmitted(false); setAnswers({}); setScore(0); setCorrige({}); }}
           style={btn({ width: "100%", background: C.gold, color: C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
           Recommencer le quiz
         </button>

@@ -38,7 +38,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
         {/* Tabs */}
         <div style={{display:"flex",gap:0,borderBottom:`1px solid ${C.bdr}`,background:C.s2}}>
           {(["apercu","programme","formateur"] as const).map(t=>(
-            <button key={t} onClick={()=>setTab(t)} style={btn({flex:1,background:tab===t?`${C.gold}10`:"transparent",color:tab===t?C.gold:C.t2,padding:"13px 8px",fontSize:12,fontWeight:700,borderBottom:tab===t?`2px solid ${C.gold}`:"2px solid transparent",transition:"all .2s",textTransform:"capitalize"})}>
+            <button key={t} onClick={()=>setTab(t)} style={btn({flex:1,background:tab===t?`${C.gold}10`:"transparent",color:tab===t?C.gold:C.t2,padding:"13px 8px",fontSize:12,fontWeight:700,borderBottom:tab===t?`2px solid ${C.gold}`:"2px solid transparent",transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)",textTransform:"capitalize"})}>
               {t==="apercu"?"Aperçu":t==="programme"?"Programme":"Formateur"}
             </button>
           ))}

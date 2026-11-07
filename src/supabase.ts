@@ -7,10 +7,10 @@ export const supabase = createClient(url, key);
 
 const FUNCTIONS_URL = `${url}/functions/v1`;
 
-/** Call the Kalan Edge Function (server holds the Anthropic key). */
+/** Call the Kalan Edge Function (server holds the Anthropic key AND the
+ *  system prompt — a client-supplied prompt made it a free model on our key). */
 export async function askKalan(
   messages: { role: "user" | "assistant"; content: string }[],
-  system: string,
 ): Promise<string> {
   const { data: { session } } = await supabase.auth.getSession();
   const res = await fetch(`${FUNCTIONS_URL}/kalan`, {
@@ -20,7 +20,7 @@ export async function askKalan(
       apikey: key,
       Authorization: `Bearer ${session?.access_token ?? key}`,
     },
-    body: JSON.stringify({ messages, system }),
+    body: JSON.stringify({ messages }),
   });
   const d = await res.json();
   if (!res.ok) throw new Error(d?.error || "kalan error");
@@ -79,21 +79,4 @@ export async function createOrder(courseId: string): Promise<{ ok: boolean; stat
     .single();
   if (error) return { ok: false, error: error.message };
   return { ok: true, status: data.status };
-}
-
-/** @deprecated Enrollment now flows through orders (see createOrder). */
-export async function enrollInCourse(courseId: string): Promise<{ ok: boolean; error?: string }> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return { ok: false, error: "not authenticated" };
-  const res = await fetch(`${FUNCTIONS_URL}/enroll`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      apikey: key,
-      Authorization: `Bearer ${session.access_token}`,
-    },
-    body: JSON.stringify({ courseId }),
-  });
-  const d = await res.json();
-  return res.ok ? { ok: true } : { ok: false, error: d?.error };
 }

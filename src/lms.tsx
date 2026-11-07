@@ -9,7 +9,8 @@ interface Lesson { id: string; section_id: string; course_id: string; title: str
 interface LessonFile { id: string; lesson_id: string; name: string; file_url: string; storage_path?: string; size_bytes: number; mime_type: string; }
 interface Quiz { id: string; lesson_id: string; title: string; pass_score: number; }
 interface Question { id: string; quiz_id: string; question: string; explanation: string; position: number; options: Option[]; }
-interface Option { id: string; question_id: string; text: string; is_correct: boolean; position: number; }
+// `is_correct` n'est plus lisible côté client : la correction vient de submit_quiz().
+interface Option { id: string; question_id: string; text: string; position: number; }
 interface QA { id: string; lesson_id: string; author_name: string; author_email: string; question: string; is_answered: boolean; created_at: string; answers: QAAnswer[]; }
 interface QAAnswer { id: string; qa_id: string; author_name: string; answer: string; is_from_instructor: boolean; created_at: string; }
 interface LessonProgress { lesson_id: string; completed_at?: string; video_progress_seconds: number; quiz_passed: boolean; }
@@ -213,19 +214,22 @@ function ProtectedVideoPlayer({ url, path, isPreview, onComplete, onProgress }: 
 }
 
 /* ─────────────── QUIZ TAKER ─────────────── */
-function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?: string; onComplete?: () => void }) {
+// `userId` ne sert plus : le serveur identifie l'élève par sa session (submit_quiz).
+function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string; onComplete?: () => void }) {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [corrige, setCorrige] = useState<Record<string, string>>({});
+  const [erreur, setErreur] = useState("");
 
   useEffect(() => {
     const load = async () => {
       const { data: qz } = await supabase.from("lms_quizzes").select("*").eq("lesson_id", lessonId).maybeSingle();
       if (!qz) return;
       setQuiz(qz);
-      const { data: qs } = await supabase.from("lms_quiz_questions").select("*,options:lms_quiz_options(*)").eq("quiz_id", qz.id).order("position");
+      const { data: qs } = await supabase.from("lms_quiz_questions").select("*,options:lms_quiz_options(id,question_id,text,position)").eq("quiz_id", qz.id).order("position");
       setQuestions((qs || []).map((q: any) => ({ ...q, options: (q.options || []).sort((a: Option, b: Option) => a.position - b.position) })));
     };
     load();
@@ -238,29 +242,17 @@ function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?
     setAnswers(a => ({ ...a, [qId]: oId }));
   };
 
+  // Noté par le SERVEUR (submit_quiz) : il enregistre la tentative et ne
+  // rend la correction qu'après. Noté ici, l'élève choisissait son score.
   const submit = async () => {
     if (submitted) return;
-    let correct = 0;
-    for (const q of questions) {
-      const chosen = q.options.find(o => o.id === answers[q.id]);
-      if (chosen?.is_correct) correct++;
-    }
-    const pct = Math.round((correct / questions.length) * 100);
-    setScore(pct);
+    setErreur("");
+    const { data, error } = await supabase.rpc("submit_quiz", { p_quiz_id: quiz.id, p_answers: answers });
+    if (error || !data) { setErreur("Le quiz n'a pas pu être corrigé. Vérifiez votre connexion et réessayez."); return; }
+    setScore(data.score);
+    setCorrige(data.correct || {});
     setSubmitted(true);
-
-    // Save attempt
-    if (userId) {
-      await supabase.from("quiz_attempts").insert({
-        student_id: userId,
-        quiz_id: quiz.id,
-        score: pct,
-        passed: pct >= quiz.pass_score,
-        answers: answers,
-      });
-    }
-
-    if (pct >= quiz.pass_score) onComplete?.();
+    if (data.passed) onComplete?.();
   };
 
   const passed = score >= quiz.pass_score;
@@ -296,7 +288,7 @@ function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?
 
       {questions.map((q) => {
         const userAnswer = answers[q.id];
-        const isCorrect = q.options.find(o => o.id === userAnswer)?.is_correct;
+        const isCorrect = !!userAnswer && corrige[q.id] === userAnswer;
 
         return (
           <div key={q.id} style={{ background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 18, marginBottom: 14 }}>
@@ -311,7 +303,7 @@ function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {q.options.map(opt => {
                 const isSelected = userAnswer === opt.id;
-                const showCorrect = submitted && opt.is_correct;
+                const showCorrect = submitted && corrige[q.id] === opt.id;
                 return (
                   <button
                     key={opt.id}
@@ -321,7 +313,7 @@ function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?
                       display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, cursor: submitted ? "default" : "pointer",
                       background: showCorrect ? `${C.grn}12` : isSelected ? (submitted ? `${C.red}12` : `${C.gold}12`) : C.s2,
                       border: `1px solid ${showCorrect ? C.grn : isSelected ? (submitted ? C.red : C.gold) : C.bdr}`,
-                      transition: "all .15s", textAlign: "left" as const,
+                      transition:"background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s cubic-bezier(.23,1,.32,1)", textAlign: "left" as const,
                     }}
                   >
                     <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${showCorrect ? C.grn : isSelected ? (submitted ? C.red : C.gold) : C.bdr}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -342,13 +334,14 @@ function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?
         );
       })}
 
+      {erreur && <div role="alert" style={{ fontSize: 12, color: C.red, marginBottom: 10 }}>{erreur}</div>}
       {!submitted ? (
         <button onClick={submit} disabled={Object.keys(answers).length < questions.length}
           style={btn({ width: "100%", background: Object.keys(answers).length >= questions.length ? C.gold : C.bdr, color: Object.keys(answers).length >= questions.length ? C.bg : C.t3, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
           Soumettre le quiz
         </button>
       ) : !passed ? (
-        <button onClick={() => { setSubmitted(false); setAnswers({}); setScore(0); }}
+        <button onClick={() => { setSubmitted(false); setAnswers({}); setScore(0); setCorrige({}); }}
           style={btn({ width: "100%", background: C.gold, color: C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
           Recommencer le quiz
         </button>
@@ -360,28 +353,32 @@ function QuizTaker({ lessonId, userId, onComplete }: { lessonId: string; userId?
 /* ─────────────── Q&A SECTION ─────────────── */
 function QASection({ lessonId }: { lessonId: string }) {
   const [qas, setQas] = useState<QA[]>([]);
-  const [newQuestion, setNewQuestion] = useState({ name: "", email: "", question: "" });
+  // Pas de champ email : le serveur prend celui du compte connecté
+  // (trg_lms_qa_author) et ne le montre plus à personne d'autre que l'admin.
+  const [newQuestion, setNewQuestion] = useState({ name: "", question: "" });
   const [submitting, setSubmitting] = useState(false);
   const [submited, setSubmited] = useState(false);
+  const [erreurQA, setErreurQA] = useState("");
 
   const load = async () => {
-    const { data } = await supabase.from("lms_qa").select("*,answers:lms_qa_answers(*)").eq("lesson_id", lessonId).order("created_at", { ascending: false });
+    const { data } = await supabase.from("lms_qa").select("id,lesson_id,author_name,question,is_answered,created_at,answers:lms_qa_answers(*)").eq("lesson_id", lessonId).order("created_at", { ascending: false });
     setQas((data || []).map((q: any) => ({ ...q, answers: (q.answers || []).sort((a: QAAnswer, b: QAAnswer) => a.created_at.localeCompare(b.created_at)) })));
   };
   useEffect(() => { load(); }, [lessonId]);
 
   const submitQuestion = async () => {
-    if (!newQuestion.name.trim() || !newQuestion.email.trim() || !newQuestion.question.trim()) return;
+    if (!newQuestion.name.trim() || !newQuestion.question.trim()) return;
     setSubmitting(true);
-    await supabase.from("lms_qa").insert({
+    setErreurQA("");
+    const { error } = await supabase.from("lms_qa").insert({
       lesson_id: lessonId,
       author_name: newQuestion.name.trim(),
-      author_email: newQuestion.email.trim(),
       question: newQuestion.question.trim(),
     });
     setSubmitting(false);
+    if (error) { setErreurQA("Connectez-vous avec un compte inscrit à ce cours pour poser une question."); return; }
     setSubmited(true);
-    setNewQuestion({ name: "", email: "", question: "" });
+    setNewQuestion({ name: "", question: "" });
     load();
     setTimeout(() => setSubmited(false), 3000);
   };
@@ -398,16 +395,15 @@ function QASection({ lessonId }: { lessonId: string }) {
 
       <div style={{ background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 16, marginBottom: 20 }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: C.t, marginBottom: 12 }}>Posez votre question</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-          <input value={newQuestion.name} onChange={e => setNewQuestion(q => ({ ...q, name: e.target.value }))} placeholder="Votre nom"
-            style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "10px 12px", color: C.t, fontSize: 13, outline: "none" }} />
-          <input value={newQuestion.email} onChange={e => setNewQuestion(q => ({ ...q, email: e.target.value }))} placeholder="Votre email" type="email"
-            style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "10px 12px", color: C.t, fontSize: 13, outline: "none" }} />
+        <div style={{ marginBottom: 10 }}>
+          <input aria-label="Votre nom" value={newQuestion.name} onChange={e => setNewQuestion(q => ({ ...q, name: e.target.value }))} placeholder="Votre nom"
+            style={{ width: "100%", boxSizing: "border-box", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "10px 12px", color: C.t, fontSize: 13, outline: "none" }} />
         </div>
         <textarea value={newQuestion.question} onChange={e => setNewQuestion(q => ({ ...q, question: e.target.value }))} placeholder="Votre question..." rows={3}
           style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "10px 12px", color: C.t, fontSize: 13, outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 10 }} />
+        {erreurQA && <div role="alert" style={{ fontSize: 12, color: C.red, marginBottom: 10 }}>{erreurQA}</div>}
         {submited && <div style={{ fontSize: 12, color: C.grn, marginBottom: 10 }}>Question envoyee ! Un formateur vous repondra bientot.</div>}
-        <button onClick={submitQuestion} disabled={submitting || !newQuestion.name.trim() || !newQuestion.email.trim() || !newQuestion.question.trim()}
+        <button onClick={submitQuestion} disabled={submitting || !newQuestion.name.trim() || !newQuestion.question.trim()}
           style={btn({ background: submitting || !newQuestion.question.trim() ? C.bdr : C.gold, color: submitting || !newQuestion.question.trim() ? C.t3 : C.bg, padding: "10px 18px", borderRadius: 8, fontWeight: 700, fontSize: 12 })}>
           {submitting ? "Envoi..." : "Envoyer la question"}
         </button>
@@ -478,10 +474,10 @@ function FilesSection({ lessonId }: { lessonId: string }) {
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {files.map(f => (
-          <button key={f.id} type="button" onClick={() => openFile(f)} disabled={opening === f.id}
-            style={btn({ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", width: "100%", textAlign: "left", background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, transition: "all .2s" })}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = C.gold; e.currentTarget.style.background = `${C.gold}08`; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = C.bdr; e.currentTarget.style.background = C.bg; }}>
+          <button className="ligne" key={f.id} type="button" onClick={() => openFile(f)} disabled={opening === f.id}
+            style={btn({ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", width: "100%", textAlign: "left", background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)" })}
+            
+            >
             <span style={{ fontSize: 20 }}>{fileIcon(f.mime_type)}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</div>
@@ -742,12 +738,13 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
           return (
             <div key={sec.id} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 16, marginBottom: 12, overflow: "hidden" }}>
               <div
+                className="ligne-fond"
                 {...clickable(() => { const next = new Set(expandedSections); if (isExpanded) next.delete(sec.id); else next.add(sec.id); setExpandedSections(next); })}
                 aria-expanded={isExpanded}
                 aria-label={`Section : ${sec.title}`}
                 style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", transition: "background .15s" }}
-                onMouseEnter={e => e.currentTarget.style.background = `${C.gold}08`}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                
+                
               >
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: `${course.color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: course.color, flexShrink: 0 }}>
                   {si + 1}
@@ -764,12 +761,12 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
                     const hasQuiz = !!quizzes[les.id];
                     const lessonProg = progress[les.id];
                     return (
-                      <div key={les.id}
+                      <div className="ligne" key={les.id}
                         {...clickable(() => setSelectedLesson(les))}
                         aria-label={`Leçon : ${les.title}`}
-                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", marginTop: li === 0 ? 16 : 8, background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, cursor: "pointer", transition: "all .15s" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = C.gold; e.currentTarget.style.background = `${C.gold}08`; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = C.bdr; e.currentTarget.style.background = C.bg; }}
+                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", marginTop: li === 0 ? 16 : 8, background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, cursor: "pointer", transition:"background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s cubic-bezier(.23,1,.32,1)" }}
+                        
+                        
                       >
                         <div style={{ width: 28, height: 28, borderRadius: 8, background: lessonProg?.completed_at ? C.grn : les.video_url ? `${C.gold}18` : C.s2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: lessonProg?.completed_at ? "#fff" : les.video_url ? C.gold : C.t3, flexShrink: 0 }}>
                           {lessonProg?.completed_at ? "✓" : les.video_url ? "▶" : li + 1}
@@ -853,10 +850,10 @@ export function CourseCatalog({ onSelectCourse, onBack, user, onAddToCart }: { o
             {courses.map(c => {
               const isEnrolled = enrollmentIds.has(c.id);
               return (
-                <div key={c.id}
-                  style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: "hidden", transition: "all .3s" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = c.color; e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 20px 48px rgba(0,0,0,.4)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.bdr; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
+                <div className="carte" key={c.id}
+                  style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: "hidden", transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)" }}
+                  
+                  >
                   <div style={{ padding: 20, background: `linear-gradient(135deg,${c.color}10,transparent)`, borderBottom: `1px solid ${C.bdr}` }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                       <div style={{ width: 48, height: 48, borderRadius: 12, background: `${c.color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{c.icon}</div>

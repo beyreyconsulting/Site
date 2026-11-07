@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { C, F, PAY, KALAN_SYS, fmt, btn, Tag } from "./data.tsx";
+import { m, AnimatePresence } from "framer-motion";
+import { C, F, PAY, fmt, btn, Tag } from "./data.tsx";
 import { supabase, askKalan, track } from "./supabase";
 import { useDialog } from "./a11y";
 
@@ -46,7 +46,7 @@ export function KalanAI(){
     setMsgs(next);setInput("");setBusy(true);
     try{
       const apiMsgs=next.filter((m,i)=>!(i===0&&m.r==="a")).map(m=>({role:(m.r==="u"?"user":"assistant") as "user"|"assistant",content:m.t}));
-      const text=await askKalan(apiMsgs,KALAN_SYS);
+      const text=await askKalan(apiMsgs);
       setMsgs([...next,{r:"a",t:text||"Désolé, une erreur s'est produite."}]);
     }catch{setMsgs([...next,{r:"a",t:"Une erreur s'est produite. Réessayez dans un instant."}]);}
     finally{setBusy(false);}
@@ -54,7 +54,7 @@ export function KalanAI(){
 
   return(
     <>
-      <button onClick={()=>setOpen(o=>!o)} style={{position:"fixed",bottom:24,right:20,zIndex:200,width:56,height:56,borderRadius:"50%",background:"linear-gradient(135deg,#C8971A,#E0A820)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 28px rgba(200,151,26,.45)",fontSize:open?18:22,color:C.bg,fontWeight:open?800:400,transition:"all .25s",transform:open?"rotate(5deg)":"none"}} aria-label="Ouvrir Kalan">
+      <button onClick={()=>setOpen(o=>!o)} style={{position:"fixed",bottom:24,right:20,zIndex:200,width:56,height:56,borderRadius:"50%",background:"linear-gradient(135deg,#C8971A,#E0A820)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 28px rgba(200,151,26,.45)",fontSize:open?18:22,color:C.bg,fontWeight:open?800:400,transition:"background-color .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease, transform .25s cubic-bezier(.23,1,.32,1)",transform:open?"rotate(5deg)":"none"}} aria-label="Ouvrir Kalan">
         {open?"✕":"🤖"}
       </button>
       {open&&(
@@ -140,7 +140,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
   ];
 
   if(!canPlay) return(
-    <motion.div
+    <m.div
       ref={playerRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -151,7 +151,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
         <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:14}}>
           <div style={{position:"absolute",inset:0,overflow:"hidden",opacity:.3}}>
             {[...Array(6)].map((_,i)=>(
-              <motion.div
+              <m.div
                 key={i}
                 animate={{ y: [0, -10, 0], opacity: [0.3, 0.6, 0.3] }}
                 transition={{ duration: 2 + i * 0.3, repeat: Infinity, delay: i * 0.2 }}
@@ -159,13 +159,13 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
               />
             ))}
           </div>
-          <motion.div
+          <m.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2 }}
             style={{width:60,height:60,borderRadius:"50%",background:`${C.bdr}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,border:`2px solid ${C.bdr2}`}}
-          >🔒</motion.div>
-          <motion.div
+          >🔒</m.div>
+          <m.div
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -173,14 +173,14 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
           >
             <div style={{fontFamily:F.serif,fontSize:17,fontWeight:600,color:"#fff",marginBottom:6}}>Contenu verrouillé</div>
             <div style={{fontSize:12,color:C.t2}}>Inscrivez-vous pour accéder aux {totalVids} leçons</div>
-          </motion.div>
+          </m.div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 
   return(
-    <motion.div
+    <m.div
       ref={playerRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -191,17 +191,17 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
       <div style={{position:"relative",paddingBottom:"56.25%",background:"#000"}}>
         <AnimatePresence>
           {!isLoaded && (
-            <motion.div
+            <m.div
               initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               style={{position:"absolute",inset:0,background:"linear-gradient(160deg,#070F1C,#0C1828)",display:"flex",alignItems:"center",justifyContent:"center"}}
             >
-              <motion.div
+              <m.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 style={{width:40,height:40,border:`3px solid ${C.bdr}`,borderTopColor:C.gold,borderRadius:"50%"}}
               />
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
@@ -209,20 +209,20 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
           <div style={{position:"absolute",top:14,left:14,background:"rgba(0,0,0,.6)",borderRadius:6,padding:"3px 10px",fontFamily:F.mono,fontSize:10,color:C.t2}}>
             {course.preview&&!enrolled?"▶ APERÇU GRATUIT":`📖 ${sec?.t}`}
           </div>
-          <motion.button
+          <m.button
             onClick={()=>{setPlaying(p=>!p);if(prog>=100)setProg(0);}}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             style={{width:60,height:60,borderRadius:"50%",background:playing?"rgba(200,151,26,.2)":"linear-gradient(135deg,#C8971A,#E0A820)",border:playing?`2px solid ${C.gold}`:"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:playing?C.gold:C.bg,boxShadow:playing?"none":"0 8px 32px rgba(200,151,26,.4)",cursor:"pointer"}}
           >
             {playing?"⏸":"▶"}
-          </motion.button>
+          </m.button>
         </div>
 
         {/* Progress bar */}
         <div style={{position:"absolute",bottom:0,left:0,right:0}}>
           <div onClick={e=>{const r=e.currentTarget.getBoundingClientRect();setProg(((e.clientX-r.left)/r.width)*100);}} style={{height:4,background:"rgba(255,255,255,.15)",cursor:"pointer"}}>
-            <motion.div
+            <m.div
               style={{height:"100%",background:C.gold}}
               initial={{ width: 0 }}
               animate={{ width: `${prog}%` }}
@@ -230,11 +230,11 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
             />
           </div>
           <div style={{background:"rgba(0,0,0,.85)",padding:"7px 14px",display:"flex",alignItems:"center",gap:12}}>
-            <motion.button
+            <m.button
               onClick={()=>{setPlaying(p=>!p);if(prog>=100)setProg(0);}}
               whileTap={{ scale: 0.9 }}
               style={{background:"none",border:"none",color:"#fff",fontSize:15,cursor:"pointer"}}
-            >{playing?"⏸":"▶"}</motion.button>
+            >{playing?"⏸":"▶"}</m.button>
             <span style={{fontFamily:F.mono,fontSize:10,color:C.t2}}>{timeStr} / 48:00</span>
             <div style={{flex:1}}/>
             <span style={{fontSize:12,color:C.t2}}>⛶</span>
@@ -248,7 +248,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
         {course.curriculum.map((s:any,si:number)=>{
           const base=course.curriculum.slice(0,si).reduce((a:number,c:any)=>a+c.n,0);
           return(
-            <motion.div
+            <m.div
               key={si}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -262,31 +262,31 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
                 const idx=base+li;
                 const isDone=done.includes(idx);
                 return(
-                  <motion.div
+                  <m.div
                     key={li}
                     onClick={()=>{setSel(si);setProg(0);setPlaying(false);setDone(d=>d.includes(idx)?d.filter(x=>x!==idx):[...d,idx]);}}
                     whileHover={{ backgroundColor: `${C.gold}20` }}
                     style={{display:"flex",alignItems:"center",gap:10,padding:"6px 10px",borderRadius:8,cursor:"pointer",marginBottom:3,background:sel===si&&li===0?`${C.gold}15`:isDone?`${C.grn}08`:"transparent"}}
                   >
-                    <motion.div
+                    <m.div
                       animate={{ scale: isDone ? [1, 1.2, 1] : 1 }}
                       transition={{ duration: 0.3 }}
                       style={{width:18,height:18,borderRadius:4,background:isDone?C.grn:C.bdr,border:`1px solid ${isDone?C.grn:C.bdr2}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:isDone?"#fff":C.t3,flexShrink:0}}
                     >
                       {isDone?"✓":li+1}
-                    </motion.div>
+                    </m.div>
                     <span style={{fontSize:11,color:isDone?C.grn:C.t2}}>Leçon {li+1}</span>
-                  </motion.div>
+                  </m.div>
                 );
               })}
-            </motion.div>
+            </m.div>
           );
         })}
       </div>
 
       {/* Resources Section */}
       {enrolled && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           style={{borderTop:`1px solid ${C.bdr}`,padding:16}}
@@ -299,15 +299,15 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
               <span style={{fontSize:18}}>📎</span>
               Ressources de la formation ({resources.length})
             </span>
-            <motion.span
+            <m.span
               animate={{ rotate: showResources ? 180 : 0 }}
               style={{display:"inline-block"}}
-            >▾</motion.span>
+            >▾</m.span>
           </button>
 
           <AnimatePresence>
             {showResources && (
-              <motion.div
+              <m.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
@@ -316,7 +316,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
               >
                 <div style={{paddingTop:12,display:"flex",flexDirection:"column",gap:8}}>
                   {resources.map((res, i) => (
-                    <motion.a
+                    <m.a
                       key={i}
                       href="#"
                       initial={{ opacity: 0, x: -20 }}
@@ -334,22 +334,22 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
                         <div style={{fontSize:13,fontWeight:600,color:C.t,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{res.name}</div>
                         <div style={{fontSize:10,color:C.t2,fontFamily:F.mono,marginTop:2}}>{res.type.toUpperCase()} · {res.size}</div>
                       </div>
-                      <motion.div
+                      <m.div
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         style={{width:32,height:32,borderRadius:8,background:C.gold,color:C.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,flexShrink:0}}
                       >
                         ⬇
-                      </motion.div>
-                    </motion.a>
+                      </m.div>
+                    </m.a>
                   ))}
                 </div>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </m.div>
       )}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -389,7 +389,7 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:18}}>
               {PAY.map(m=>(
                 <button key={m.id} onClick={()=>setMethod(m)}
-                  style={btn({background:method?.id===m.id?`${m.color}18`:C.s2,border:`1px solid ${method?.id===m.id?m.color:C.bdr}`,borderRadius:12,padding:"14px 10px",display:"flex",flexDirection:"column",alignItems:"center",gap:6,transition:"all .2s"})}>
+                  style={btn({background:method?.id===m.id?`${m.color}18`:C.s2,border:`1px solid ${method?.id===m.id?m.color:C.bdr}`,borderRadius:12,padding:"14px 10px",display:"flex",flexDirection:"column",alignItems:"center",gap:6,transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)"})}>
                   <span style={{fontSize:26}}>{m.icon}</span>
                   <span style={{fontSize:11,fontWeight:700,color:method?.id===m.id?m.color:C.t}}>{m.name}</span>
                 </button>
@@ -398,7 +398,7 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
             <div style={{background:`${C.gold}10`,border:`1px solid ${C.gold}25`,borderRadius:10,padding:"9px 14px",fontSize:11,color:C.t,marginBottom:16}}>
               🔒 Paiement sécurisé · Accès immédiat après confirmation
             </div>
-            <button onClick={()=>{if(method)setStep(2);}} style={btn({width:"100%",background:method?C.gold:C.bdr,color:method?C.bg:C.t3,fontWeight:800,fontSize:14,padding:14,borderRadius:10,transition:"all .2s"})}>Continuer →</button>
+            <button onClick={()=>{if(method)setStep(2);}} style={btn({width:"100%",background:method?C.gold:C.bdr,color:method?C.bg:C.t3,fontWeight:800,fontSize:14,padding:14,borderRadius:10,transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)"})}>Continuer →</button>
           </div>
         </>}
 
@@ -442,7 +442,7 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
               </div>
             </>}
             {err && <div style={{color:C.red, fontSize:11, marginBottom:14}}>{err}</div>}
-            <button onClick={pay} style={btn({width:"100%",background:C.gold,color:C.bg,fontWeight:800,fontSize:14,padding:14,borderRadius:10,transition:"all .2s"})}>
+            <button onClick={pay} style={btn({width:"100%",background:C.gold,color:C.bg,fontWeight:800,fontSize:14,padding:14,borderRadius:10,transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)"})}>
                Payer {fmt(course.price)}
             </button>
           </div>

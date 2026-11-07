@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS certificates (
   course_id UUID REFERENCES lms_courses(id) ON DELETE CASCADE NOT NULL,
   issued_at TIMESTAMPTZ DEFAULT NOW(),
   certificate_number TEXT UNIQUE DEFAULT 'CERT-' || to_char(NOW(), 'YYYYMM') || '-' || lpad(nextval('cert_seq')::TEXT, 5, '0'),
-  verification_code TEXT UNIQUE DEFAULT encode(gen_random_bytes(8), 'hex'),
+  verification_code TEXT UNIQUE DEFAULT encode(extensions.gen_random_bytes(8), 'hex'),  -- pgcrypto vit dans le schéma `extensions` chez Supabase
   UNIQUE(student_id, course_id)
 );
 

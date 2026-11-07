@@ -22,15 +22,15 @@ Scripts : `npm run dev` · `npm run build` · `npm run typecheck` · `npm run li
 2. **Edge Functions** :
    ```bash
    supabase functions deploy kalan
-   supabase functions deploy enroll
    supabase functions deploy sign-media
    supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
    # optionnel : verrouille le CORS des fonctions sur ton domaine
    supabase secrets set ALLOWED_ORIGIN=https://beyrey.consulting
    ```
-   `kalan` = proxy de l'assistant IA (clé Anthropic côté serveur, rate-limit par IP).
-   `enroll` = crée les inscriptions côté serveur (service role) — seul point où
-   brancher la vérification de paiement.
+   `kalan` = proxy de l'assistant IA (clé et prompt côté serveur, plafond par IP
+   et plafond journalier global).
+   Les inscriptions naissent d'une commande payée (`orders`, confirmée par un
+   admin) : il n'y a plus de fonction `enroll`, qui inscrivait sans paiement.
    `sign-media` = délivre des URLs signées courtes pour les vidéos/fichiers des
    buckets **privés**, uniquement aux inscrits (ou preview/admin).
 

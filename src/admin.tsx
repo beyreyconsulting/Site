@@ -149,7 +149,7 @@ function VideoUploader({ lessonId, currentUrl, onSaved }: { lessonId: string; cu
         onDragLeave={() => setDrag(false)}
         onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
-        style={{ border: `2px dashed ${drag ? C.gold : C.bdr}`, borderRadius: 12, padding: "24px 16px", textAlign: "center", cursor: "pointer", background: drag ? `${C.gold}08` : "transparent", transition: "all .2s" }}
+        style={{ border: `2px dashed ${drag ? C.gold : C.bdr}`, borderRadius: 12, padding: "24px 16px", textAlign: "center", cursor: "pointer", background: drag ? `${C.gold}08` : "transparent", transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)" }}
       >
         <div style={{ fontSize: 28, marginBottom: 8 }}>📤</div>
         <div style={{ fontSize: 13, fontWeight: 700, color: C.t, marginBottom: 4 }}>
@@ -241,7 +241,8 @@ function QuizBuilder({ lessonId }: { lessonId: string }) {
     const { data: qz } = await supabase.from("lms_quizzes").select("*").eq("lesson_id", lessonId).maybeSingle();
     setQuiz(qz);
     if (qz) {
-      const { data: qs } = await supabase.from("lms_quiz_questions").select("*,options:lms_quiz_options(*)").eq("quiz_id", qz.id).order("position");
+      // `is_correct` n'est lisible que par admin_quiz_questions() (réservée aux admins).
+      const { data: qs } = await supabase.rpc("admin_quiz_questions", { p_quiz_id: qz.id });
       setQuestions((qs || []).map((q: any) => ({ ...q, options: (q.options || []).sort((a: Option, b: Option) => a.position - b.position) })));
       setQuizForm({ title: qz.title, pass_score: qz.pass_score });
     }
@@ -362,7 +363,8 @@ function QAManager({ lessonId }: { lessonId: string }) {
   const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
 
   const load = async () => {
-    const { data } = await supabase.from("lms_qa").select("*,answers:lms_qa_answers(*)").eq("lesson_id", lessonId).order("created_at", { ascending: false });
+    // author_email n'est lisible que par admin_lms_questions() (réservée aux admins).
+    const { data } = await supabase.rpc("admin_lms_questions", { p_lesson_id: lessonId });
     setQas((data || []).map((q: any) => ({ ...q, answers: (q.answers || []).sort((a: QAAnswer, b: QAAnswer) => a.created_at.localeCompare(b.created_at)) })));
   };
   useEffect(() => { load(); }, [lessonId]);

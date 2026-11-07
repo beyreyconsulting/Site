@@ -12,7 +12,9 @@ const SANS = process.argv[3] || ""; // migration à omettre (preuve que les test
 const db = new PGlite({ extensions: { pgcrypto } });
 
 await db.exec(`
-  CREATE EXTENSION pgcrypto;
+  -- Comme chez Supabase : pgcrypto dans le schema extensions, HORS du search_path.
+  -- Un appel non qualifié (gen_random_bytes) y échoue, ici aussi.
+  CREATE SCHEMA extensions; CREATE EXTENSION pgcrypto SCHEMA extensions;
   CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN BYPASSRLS;
   CREATE SCHEMA auth; CREATE SCHEMA storage;
   CREATE TABLE auth.users (id uuid PRIMARY KEY, email text, raw_user_meta_data jsonb DEFAULT '{}');

@@ -353,28 +353,32 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string
 /* ─────────────── Q&A SECTION ─────────────── */
 function QASection({ lessonId }: { lessonId: string }) {
   const [qas, setQas] = useState<QA[]>([]);
-  const [newQuestion, setNewQuestion] = useState({ name: "", email: "", question: "" });
+  // Pas de champ email : le serveur prend celui du compte connecté
+  // (trg_lms_qa_author) et ne le montre plus à personne d'autre que l'admin.
+  const [newQuestion, setNewQuestion] = useState({ name: "", question: "" });
   const [submitting, setSubmitting] = useState(false);
   const [submited, setSubmited] = useState(false);
+  const [erreurQA, setErreurQA] = useState("");
 
   const load = async () => {
-    const { data } = await supabase.from("lms_qa").select("*,answers:lms_qa_answers(*)").eq("lesson_id", lessonId).order("created_at", { ascending: false });
+    const { data } = await supabase.from("lms_qa").select("id,lesson_id,author_name,question,is_answered,created_at,answers:lms_qa_answers(*)").eq("lesson_id", lessonId).order("created_at", { ascending: false });
     setQas((data || []).map((q: any) => ({ ...q, answers: (q.answers || []).sort((a: QAAnswer, b: QAAnswer) => a.created_at.localeCompare(b.created_at)) })));
   };
   useEffect(() => { load(); }, [lessonId]);
 
   const submitQuestion = async () => {
-    if (!newQuestion.name.trim() || !newQuestion.email.trim() || !newQuestion.question.trim()) return;
+    if (!newQuestion.name.trim() || !newQuestion.question.trim()) return;
     setSubmitting(true);
-    await supabase.from("lms_qa").insert({
+    setErreurQA("");
+    const { error } = await supabase.from("lms_qa").insert({
       lesson_id: lessonId,
       author_name: newQuestion.name.trim(),
-      author_email: newQuestion.email.trim(),
       question: newQuestion.question.trim(),
     });
     setSubmitting(false);
+    if (error) { setErreurQA("Connectez-vous avec un compte inscrit à ce cours pour poser une question."); return; }
     setSubmited(true);
-    setNewQuestion({ name: "", email: "", question: "" });
+    setNewQuestion({ name: "", question: "" });
     load();
     setTimeout(() => setSubmited(false), 3000);
   };
@@ -391,16 +395,15 @@ function QASection({ lessonId }: { lessonId: string }) {
 
       <div style={{ background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 16, marginBottom: 20 }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: C.t, marginBottom: 12 }}>Posez votre question</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-          <input value={newQuestion.name} onChange={e => setNewQuestion(q => ({ ...q, name: e.target.value }))} placeholder="Votre nom"
-            style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "10px 12px", color: C.t, fontSize: 13, outline: "none" }} />
-          <input value={newQuestion.email} onChange={e => setNewQuestion(q => ({ ...q, email: e.target.value }))} placeholder="Votre email" type="email"
-            style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "10px 12px", color: C.t, fontSize: 13, outline: "none" }} />
+        <div style={{ marginBottom: 10 }}>
+          <input aria-label="Votre nom" value={newQuestion.name} onChange={e => setNewQuestion(q => ({ ...q, name: e.target.value }))} placeholder="Votre nom"
+            style={{ width: "100%", boxSizing: "border-box", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "10px 12px", color: C.t, fontSize: 13, outline: "none" }} />
         </div>
         <textarea value={newQuestion.question} onChange={e => setNewQuestion(q => ({ ...q, question: e.target.value }))} placeholder="Votre question..." rows={3}
           style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "10px 12px", color: C.t, fontSize: 13, outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 10 }} />
+        {erreurQA && <div role="alert" style={{ fontSize: 12, color: C.red, marginBottom: 10 }}>{erreurQA}</div>}
         {submited && <div style={{ fontSize: 12, color: C.grn, marginBottom: 10 }}>Question envoyee ! Un formateur vous repondra bientot.</div>}
-        <button onClick={submitQuestion} disabled={submitting || !newQuestion.name.trim() || !newQuestion.email.trim() || !newQuestion.question.trim()}
+        <button onClick={submitQuestion} disabled={submitting || !newQuestion.name.trim() || !newQuestion.question.trim()}
           style={btn({ background: submitting || !newQuestion.question.trim() ? C.bdr : C.gold, color: submitting || !newQuestion.question.trim() ? C.t3 : C.bg, padding: "10px 18px", borderRadius: 8, fontWeight: 700, fontSize: 12 })}>
           {submitting ? "Envoi..." : "Envoyer la question"}
         </button>

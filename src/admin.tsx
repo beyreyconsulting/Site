@@ -363,7 +363,8 @@ function QAManager({ lessonId }: { lessonId: string }) {
   const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
 
   const load = async () => {
-    const { data } = await supabase.from("lms_qa").select("*,answers:lms_qa_answers(*)").eq("lesson_id", lessonId).order("created_at", { ascending: false });
+    // author_email n'est lisible que par admin_lms_questions() (réservée aux admins).
+    const { data } = await supabase.rpc("admin_lms_questions", { p_lesson_id: lessonId });
     setQas((data || []).map((q: any) => ({ ...q, answers: (q.answers || []).sort((a: QAAnswer, b: QAAnswer) => a.created_at.localeCompare(b.created_at)) })));
   };
   useEffect(() => { load(); }, [lessonId]);

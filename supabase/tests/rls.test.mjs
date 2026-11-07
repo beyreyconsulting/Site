@@ -143,5 +143,27 @@ verifie("l'admin relit les bonnes réponses", r.ok && r.rows[0].q[0].options.som
 r = await comme("admin", `INSERT INTO lms_quiz_options (question_id, text, is_correct, position) VALUES ($1,'6',false,2)`, [question]);
 verifie("l'admin ajoute toujours des options", r.ok, JSON.stringify(r));
 
+// 5. Contrôle OWASP : questions, statistiques, commandes
+r = await comme(null, `INSERT INTO lms_qa (lesson_id, author_name, author_email, question) VALUES ($1,'Bot','x@y.z','spam')`, [l2]);
+verifie("un visiteur anonyme ne poste pas de question", !r.ok, JSON.stringify(r));
+r = await comme("autre", `INSERT INTO lms_qa (lesson_id, author_name, question) VALUES ($1,'Autre','?')`, [l2]);
+verifie("un non-inscrit ne poste pas sur une leçon payante", !r.ok, JSON.stringify(r));
+r = await comme("eleve", `INSERT INTO lms_qa (lesson_id, author_name, author_email, question) VALUES ($1,'Élève','usurpe@z.ml','Bonne question') RETURNING id`, [l2]);
+verifie("un inscrit pose sa question", r.ok, JSON.stringify(r));
+const email = (await db.query(`SELECT author_email FROM lms_qa WHERE author_name='Élève'`)).rows[0]?.author_email;
+verifie("l'email est celui du compte, pas celui tapé", email === "e@x.ml", email);
+r = await comme(null, `SELECT author_email FROM lms_qa`);
+verifie("les emails des élèves ne se lisent pas", !r.ok, JSON.stringify(r));
+r = await comme(null, `SELECT author_name, question FROM lms_qa`);
+verifie("les questions restent lisibles", r.ok && r.rows.length >= 1, JSON.stringify(r));
+r = await comme("admin", `SELECT admin_lms_questions($1) AS q`, [l2]);
+verifie("l'admin relit les emails", r.ok && r.rows[0].q[0]?.author_email === "e@x.ml", JSON.stringify(r));
+r = await comme(null, `INSERT INTO analytics_events (event, payload) VALUES ('clic', $1)`, [{ x: "a".repeat(5000) }]);
+verifie("une statistique géante est refusée", !r.ok, JSON.stringify(r));
+r = await comme(null, `INSERT INTO analytics_events (event, payload, path) VALUES ('clic', '{"a":1}', '/')`);
+verifie("une statistique normale passe", r.ok, JSON.stringify(r));
+r = await comme("autre", `INSERT INTO orders (student_id, student_email, course_id) VALUES ($1,'faux@z.ml',$2) RETURNING student_email`, [U.autre, payant]);
+verifie("l'email d'une commande est celui du compte", r.ok && r.rows[0]?.student_email === "a@x.ml", JSON.stringify(r));
+
 console.log(echecs ? `\n${echecs} ÉCHEC(S)` : "\nTOUT PASSE");
 process.exit(echecs ? 1 : 0);

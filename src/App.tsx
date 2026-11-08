@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { m, AnimatePresence, useInView } from "framer-motion";
 import { C, F, COURSES, POSTS, DIAL, TESTIMONIALS, STATS, fmt, btn, Tag, clickable, textOn, alpha } from "./data.tsx";
 import { track, supabase } from "./supabase";
+import { CommutateurTheme } from "./theme.tsx";
 import { KalanAI, VideoPlayer, BookDownloadModal } from "./components";
 import { CourseDetailModal, BlogModal } from "./modals";
 import { useAuth, AuthModal, StudentDashboard, CartModal, useCart } from "./student";
@@ -95,6 +96,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
         </nav>
 
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
+          <CommutateurTheme />
           {user && (
             <m.button
               onClick={onShowCart}

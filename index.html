@@ -15,6 +15,21 @@
     <meta property="og:image" content="https://beyrey-site.vercel.app/logo.png" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:image" content="https://beyrey-site.vercel.app/logo.png" />
+    <script>
+      /* Pose le thème AVANT le premier tracé. Sans ce script, la page
+         s'affiche une fraction de seconde dans le mauvais thème au
+         rechargement — un éclair blanc sur un écran de nuit, qui se
+         remarque bien plus que l'absence de mode sombre.
+         « système » n'écrit rien : c'est l'ABSENCE d'attribut qui rend la
+         main à prefers-color-scheme. */
+      (function () {
+        try {
+          var t = localStorage.getItem("beyrey:theme");
+          if (t === "jour" || t === "nuit")
+            document.documentElement.setAttribute("data-theme", t);
+        } catch (e) { /* stockage refusé : on suit le système */ }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

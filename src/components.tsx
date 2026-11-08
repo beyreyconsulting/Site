@@ -54,11 +54,11 @@ export function KalanAI(){
 
   return(
     <>
-      <button onClick={()=>setOpen(o=>!o)} style={{position:"fixed",bottom:24,right:20,zIndex:200,width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},${C.gl})`,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 28px rgba(200,151,26,.45)",fontSize:open?18:22,color:C.bg,fontWeight:open?800:400,transition:"background-color .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease, transform .25s cubic-bezier(.23,1,.32,1)",transform:open?"rotate(5deg)":"none"}} aria-label="Ouvrir Kalan">
+      <button onClick={()=>setOpen(o=>!o)} style={{position:"fixed",bottom:24,insetInlineEnd:20,zIndex:200,width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},${C.gl})`,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 28px rgba(200,151,26,.45)",fontSize:open?18:22,color:C.bg,fontWeight:open?800:400,transition:"background-color .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease, transform .25s cubic-bezier(.23,1,.32,1)",transform:open?"rotate(5deg)":"none"}} aria-label="Ouvrir Kalan">
         {open?"✕":"🤖"}
       </button>
       {open&&(
-        <div style={{position:"fixed",bottom:88,right:16,zIndex:200,width:Math.min(360,window.innerWidth-24),height:Math.min(480,window.innerHeight-120),maxHeight:"calc(100vh - 120px)",background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:20,display:"flex",flexDirection:"column",overflow:"hidden",boxShadow:"0 24px 64px rgba(0,0,0,.7)"}}>
+        <div style={{position:"fixed",bottom:88,insetInlineEnd:16,zIndex:200,width:Math.min(360,window.innerWidth-24),height:Math.min(480,window.innerHeight-120),maxHeight:"calc(100vh - 120px)",background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:20,display:"flex",flexDirection:"column",overflow:"hidden",boxShadow:"0 24px 64px rgba(0,0,0,.7)"}}>
           <div style={{background:C.s2,borderBottom:`1px solid ${C.bdr}`,padding:"12px 16px",display:"flex",alignItems:"center",gap:10}}>
             <div style={{width:36,height:36,borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},${C.gl})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>🤖</div>
             <div style={{flex:1}}>
@@ -155,7 +155,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
                 key={i}
                 animate={{ y: [0, -10, 0], opacity: [0.3, 0.6, 0.3] }}
                 transition={{ duration: 2 + i * 0.3, repeat: Infinity, delay: i * 0.2 }}
-                style={{position:"absolute",width:3,height:3,borderRadius:"50%",background:C.gold,left:`${20+i*12}%`,top:`${30+Math.sin(i)*20}%`}}
+                style={{position:"absolute",width:3,height:3,borderRadius:"50%",background:C.gold,insetInlineStart:`${20+i*12}%`,top:`${30+Math.sin(i)*20}%`}}
               />
             ))}
           </div>
@@ -206,7 +206,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
         </AnimatePresence>
 
         <div style={{position:"absolute",inset:0,background:"linear-gradient(160deg,#070F1C,#0C1828)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <div style={{position:"absolute",top:14,left:14,background:"rgba(0,0,0,.6)",borderRadius:6,padding:"3px 10px",fontFamily:F.mono,fontSize:10,color:C.t2}}>
+          <div style={{position:"absolute",top:14,insetInlineStart:14,background:"rgba(0,0,0,.6)",borderRadius:6,padding:"3px 10px",fontFamily:F.mono,fontSize:10,color:C.t2}}>
             {course.preview&&!enrolled?"▶ APERÇU GRATUIT":`📖 ${sec?.t}`}
           </div>
           <m.button
@@ -220,7 +220,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
         </div>
 
         {/* Progress bar */}
-        <div style={{position:"absolute",bottom:0,left:0,right:0}}>
+        <div style={{position:"absolute",bottom:0,insetInlineStart:0,insetInlineEnd:0}}>
           <div onClick={e=>{const r=e.currentTarget.getBoundingClientRect();setProg(((e.clientX-r.left)/r.width)*100);}} style={{height:4,background:"rgba(255,255,255,.15)",cursor:"pointer"}}>
             <m.div
               style={{height:"100%",background:C.gold}}

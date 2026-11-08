@@ -561,7 +561,7 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
             ) : (
               <>
                 <div style={{ fontSize: 16, fontWeight: 800, color: C.gold, marginBottom: 8 }}>Commande enregistrée</div>
-                <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.7, marginBottom: 16, textAlign: "left" }}>
+                <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.7, marginBottom: 16, textAlign: "start" }}>
                   Pour activer votre accès, effectuez le paiement par <strong style={{ color: C.t }}>Orange Money</strong> ou <strong style={{ color: C.t }}>Wave</strong> au :
                   <div style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", margin: "10px 0", fontFamily: F.mono, fontSize: 16, color: C.gold, textAlign: "center", fontWeight: 700 }}>+223 92 97 66 46</div>
                   en précisant votre email <strong style={{ color: C.t }}>{user?.email}</strong>. Votre accès sera activé dès confirmation (sous 24h ouvrées).
@@ -588,7 +588,7 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
                 <div style={{ fontSize: 13, fontWeight: 700, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.course?.title}</div>
                 <div style={{ fontSize: 11, color: C.t2, fontFamily: F.mono }}>{item.course?.level}</div>
               </div>
-              <div style={{ textAlign: "right", flexShrink: 0 }}>
+              <div style={{ textAlign: "end", flexShrink: 0 }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: C.gold }}>{(item.course?.price || 0).toLocaleString("fr-FR")} F</div>
                 <button onClick={() => removeFromCart(item.id)} style={btn({ background: "none", color: C.t3, fontSize: 10, padding: "2px 4px" })}>Retirer</button>
               </div>
@@ -655,7 +655,7 @@ function CertificateView({ certificate, onClose, onShare }: { certificate: Certi
           </div>
 
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 40, borderTop: "1px solid #e0d5c5", paddingTop: 32, flexWrap: "wrap", gap: 16 }}>
-            <div style={{ textAlign: "left" }}>
+            <div style={{ textAlign: "start" }}>
               <div style={{ fontSize: 10, color: "#999", textTransform: "uppercase", letterSpacing: ".1em" }}>Date</div>
               <div style={{ fontSize: 14, color: "#333", fontWeight: 700 }}>{new Date(certificate.issued_at).toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })}</div>
             </div>
@@ -663,7 +663,7 @@ function CertificateView({ certificate, onClose, onShare }: { certificate: Certi
               <div style={{ fontSize: 10, color: "#999", textTransform: "uppercase", letterSpacing: ".1em" }}>N° Certificat</div>
               <div style={{ fontSize: 14, color: "#333", fontWeight: 700, fontFamily: F.mono }}>{certificate.certificate_number}</div>
             </div>
-            <div style={{ textAlign: "right" }}>
+            <div style={{ textAlign: "end" }}>
               <div style={{ fontSize: 10, color: "#999", textTransform: "uppercase", letterSpacing: ".1em" }}>Code Verification</div>
               <div style={{ fontSize: 14, color: "#333", fontWeight: 700, fontFamily: F.mono }}>{certificate.verification_code}</div>
             </div>
@@ -731,7 +731,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
         initial={{ y: -60 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(8,17,30,.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${C.bdr}` }}
+        style={{ position: "fixed", top: 0, insetInlineStart: 0, insetInlineEnd: 0, zIndex: 100, background: "rgba(8,17,30,.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${C.bdr}` }}
       >
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <m.div
@@ -838,7 +838,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                 whileHover={{ y: -4, boxShadow: `0 12px 40px ${stat.color}20` }}
                 style={{ padding: "20px 24px", background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 16, position: "relative", overflow: "hidden" }}
               >
-                <div style={{ position: "absolute", top: 12, right: 12, fontSize: 24, opacity: 0.3 }}>{stat.icon}</div>
+                <div style={{ position: "absolute", top: 12, insetInlineEnd: 12, fontSize: 24, opacity: 0.3 }}>{stat.icon}</div>
                 <m.div
                   initial={{ scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -1096,7 +1096,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                       whileHover={{ y: -4, boxShadow: "0 16px 48px rgba(200,151,26,.2)" }}
                       style={{ background: "linear-gradient(135deg,#fffdf8,#f5f0e8)", border: `2px solid ${C.gold}`, borderRadius: 20, padding: 28, textAlign: "center", position: "relative", overflow: "hidden" }}
                     >
-                      <div style={{ position: "absolute", top: 16, right: 16, fontSize: 12, fontFamily: F.mono, color: "#8B7355", opacity: 0.5 }}>N° {cert.certificate_number}</div>
+                      <div style={{ position: "absolute", top: 16, insetInlineEnd: 16, fontSize: 12, fontFamily: F.mono, color: "#8B7355", opacity: 0.5 }}>N° {cert.certificate_number}</div>
                       <m.div
                         initial={{ scale: 0.95, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}

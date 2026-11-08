@@ -18,7 +18,7 @@ const genUUID = () => crypto.randomUUID();
 function Toast({ msg, type, onDismiss }: { msg: string; type: "ok" | "err"; onDismiss: () => void }) {
   useEffect(() => { const t = setTimeout(onDismiss, 3500); return () => clearTimeout(t); }, []);
   return (
-    <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: type === "ok" ? C.grn : C.red, color: C.surAccent, padding: "12px 20px", borderRadius: 10, fontSize: 13, fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,.4)", display: "flex", alignItems: "center", gap: 10 }}>
+    <div style={{ position: "fixed", top: 20, insetInlineEnd: 20, zIndex: 9999, background: type === "ok" ? C.grn : C.red, color: C.surAccent, padding: "12px 20px", borderRadius: 10, fontSize: 13, fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,.4)", display: "flex", alignItems: "center", gap: 10 }}>
       {type === "ok" ? "✓" : "✕"} {msg}
     </div>
   );
@@ -408,7 +408,7 @@ function QAManager({ lessonId }: { lessonId: string }) {
           </div>
           <p style={{ fontSize: 13, color: C.t, lineHeight: 1.6, margin: "0 0 12px" }}>{qa.question}</p>
           {qa.answers.map(ans => (
-            <div key={ans.id} style={{ marginLeft: 20, background: ans.is_from_instructor ? `${alpha(C.gold, 6.3)}` : C.bg, border: `1px solid ${ans.is_from_instructor ? alpha(C.gold, 18.8) : C.bdr}`, borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
+            <div key={ans.id} style={{ marginInlineStart: 20, background: ans.is_from_instructor ? `${alpha(C.gold, 6.3)}` : C.bg, border: `1px solid ${ans.is_from_instructor ? alpha(C.gold, 18.8) : C.bdr}`, borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
                 <div style={{ width: 24, height: 24, borderRadius: "50%", background: ans.is_from_instructor ? `${alpha(C.gold, 12.5)}` : C.s2, color: ans.is_from_instructor ? C.gold : C.t2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>
                   {ans.author_name?.[0]?.toUpperCase()}
@@ -419,7 +419,7 @@ function QAManager({ lessonId }: { lessonId: string }) {
               <p style={{ fontSize: 12, color: C.t, lineHeight: 1.6, margin: 0 }}>{ans.answer}</p>
             </div>
           ))}
-          <div style={{ marginLeft: 20, display: "flex", gap: 8, marginTop: 8 }}>
+          <div style={{ marginInlineStart: 20, display: "flex", gap: 8, marginTop: 8 }}>
             <textarea value={replyText[qa.id] || ""} onChange={e => setReplyText(r => ({ ...r, [qa.id]: e.target.value }))}
               placeholder="Votre réponse (formateur)…" rows={2}
               style={{ flex: 1, background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "8px 10px", color: C.t, fontSize: 12, fontFamily: F.sans, outline: "none", resize: "vertical" }} />

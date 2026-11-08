@@ -3,6 +3,7 @@ import { m, AnimatePresence, useInView } from "framer-motion";
 import { C, F, COURSES, POSTS, DIAL, TESTIMONIALS, STATS, fmt, btn, Tag, clickable, textOn, alpha } from "./data.tsx";
 import { track, supabase } from "./supabase";
 import { CommutateurTheme } from "./theme.tsx";
+import { SelecteurLangue, useLangue } from "./i18n.tsx";
 import { KalanAI, VideoPlayer, BookDownloadModal } from "./components";
 import { CourseDetailModal, BlogModal } from "./modals";
 import { useAuth, AuthModal, StudentDashboard, CartModal, useCart } from "./student";
@@ -35,6 +36,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
     return()=>window.removeEventListener("scroll",onScroll);
   },[]);
 
+  const { t } = useLangue();
   const consultingLinks=[
     {l:"Services",id:"formations"},
     {l:"Méthode DIAL™",id:"methode"},
@@ -48,7 +50,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
       initial={{ y: -80 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      style={{position:"fixed",top:0,left:0,right:0,zIndex:mobileOpen?300:100,transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)",background:scrolled?"rgba(8,17,30,.95)":"transparent",backdropFilter:scrolled?"blur(16px)":"none",borderBottom:scrolled?`1px solid ${C.bdr}`:"1px solid transparent"}}
+      style={{position:"fixed",top:0,insetInlineStart:0,insetInlineEnd:0,zIndex:mobileOpen?300:100,transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)",background:scrolled?"rgba(8,17,30,.95)":"transparent",backdropFilter:scrolled?"blur(16px)":"none",borderBottom:scrolled?`1px solid ${C.bdr}`:"1px solid transparent"}}
     >
       <div style={{maxWidth:1200,margin:"0 auto",padding:"14px 24px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <m.div
@@ -69,7 +71,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
           </div>
         </m.div>
 
-        <nav aria-label="Navigation principale" style={{display:"flex",gap:28,alignItems:"center"}}>
+        <nav aria-label={t("Navigation principale")} style={{display:"flex",gap:28,alignItems:"center"}}>
           {consultingLinks.map((x, i) => (
             <m.button
               key={x.id}
@@ -80,7 +82,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
               whileHover={{ y: -2 }}
               style={btn({background:"none",color:C.t2,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:"2px solid transparent"})}
             >
-              {x.l}
+              {t(x.l)}
             </m.button>
           ))}
           <m.button
@@ -96,6 +98,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
         </nav>
 
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
+          <SelecteurLangue />
           <CommutateurTheme />
           {user && (
             <m.button
@@ -127,7 +130,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
               whileTap={{ scale: 0.95 }}
               style={btn({background:"none",color:C.t2,border:`1px solid ${C.bdr}`,padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:600})}
             >
-              Connexion
+              {t("Connexion")}
             </m.button>
           )}
           <m.button
@@ -137,7 +140,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
             whileTap={{ scale: 0.95 }}
             style={btn({background:`linear-gradient(135deg,${C.gold},${C.gl})`,color:C.bg,padding:"10px 20px",borderRadius:10,fontWeight:700,fontSize:13,boxShadow:"0 4px 16px rgba(200,151,26,.3)"})}
           >
-            Nous contacter
+            {t("Nous contacter")}
           </m.button>
           <m.button
             onClick={()=>setMobileOpen(true)}
@@ -164,7 +167,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
               aria-label="Fermer le menu"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              style={btn({position:"absolute",top:20,right:20,background:C.s2,color:C.t,width:40,height:40,borderRadius:"50%",fontSize:18})}
+              style={btn({position:"absolute",top:20,insetInlineEnd:20,background:C.s2,color:C.t,width:40,height:40,borderRadius:"50%",fontSize:18})}
             >✕</m.button>
 
             <m.div
@@ -179,7 +182,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
                   variants={staggerItem}
                   onClick={()=>{onNav(x.id);setMobileOpen(false);}}
                   style={btn({background:"none",color:C.t,fontSize:22,fontFamily:F.serif})}
-                >{x.l}</m.button>
+                >{t(x.l)}</m.button>
               ))}
               <m.button
                 variants={staggerItem}
@@ -194,7 +197,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
               transition={{ delay: 0.3 }}
               onClick={()=>{onNav("contact");setMobileOpen(false);}}
               style={btn({background:`linear-gradient(135deg,${C.gold},${C.gl})`,color:C.bg,padding:"14px 32px",borderRadius:10,fontWeight:700,fontSize:15,marginTop:20})}
-            >Nous contacter</m.button>
+            >{t("Nous contacter")}</m.button>
           </m.div>
         )}
       </AnimatePresence>
@@ -206,14 +209,15 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
    HERO - ROI-FOCUSED CONSULTING LANDING
 ═══════════════════════════════════════════════════ */
 function Hero({onNav}:{onNav:(id:string)=>void}){
+  const { t } = useLangue();
   return(
     <section id="hero" style={{position:"relative",padding:"140px 24px 100px",overflow:"hidden"}}>
       {/* Fond calme : deux halos FIXES. 28 particules et des halos qui
           respiraient sans fin occupaient le processeur des téléphones
           d'entrée de gamme pour un effet que l'œil cesse de voir. */}
       <div aria-hidden style={{position:"absolute",inset:0,overflow:"hidden",pointerEvents:"none"}}>
-        <div style={{position:"absolute",top:"-20%",right:"-10%",width:700,height:700,borderRadius:"50%",background:"radial-gradient(circle,rgba(200,151,26,.1),transparent 70%)",opacity:.1}}/>
-        <div style={{position:"absolute",bottom:"-30%",left:"-10%",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,200,150,.08),transparent 70%)",opacity:.08}}/>
+        <div style={{position:"absolute",top:"-20%",insetInlineEnd:"-10%",width:700,height:700,borderRadius:"50%",background:"radial-gradient(circle,rgba(200,151,26,.1),transparent 70%)",opacity:.1}}/>
+        <div style={{position:"absolute",bottom:"-30%",insetInlineStart:"-10%",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(0,200,150,.08),transparent 70%)",opacity:.08}}/>
       </div>
 
       <div className="hero-grid" style={{maxWidth:1200,margin:"0 auto",position:"relative",display:"grid",gridTemplateColumns:"1.15fr .85fr",gap:80,alignItems:"center"}}>
@@ -237,8 +241,8 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
             className="hero-title"
             style={{fontFamily:F.serif,fontSize:68,fontWeight:600,color:C.tf,lineHeight:1.05,margin:"0 0 24px",letterSpacing:"-0.02em"}}
           >
-            Transformez vos<br/>
-            <span style={{color:C.gold,fontStyle:"italic"}}>données en décisions.</span>
+            {t("Transformez vos")}<br/>
+            <span style={{color:C.gold,fontStyle:"italic"}}>{t("données en décisions.")}</span>
           </m.h1>
 
           {/* Subheadline */}
@@ -290,7 +294,7 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
               whileTap={{ scale: 0.95 }}
               style={{background:`linear-gradient(135deg,${C.gold},${C.gl})`,border:"none",color:C.bg,padding:"16px 32px",borderRadius:12,fontWeight:800,fontSize:15,boxShadow:"0 8px 32px rgba(200,151,26,.4)",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
             >
-              Réserver un appel <span style={{fontSize:18}}>→</span>
+              {t("Réserver un appel")} <span style={{fontSize:18}} aria-hidden="true">→</span>
             </m.button>
             <m.button
               onClick={()=>onNav("formations")}
@@ -298,7 +302,7 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
               whileTap={{ scale: 0.95 }}
               style={{background:C.s2,color:C.t,border:`1px solid ${C.bdr2}`,padding:"16px 28px",borderRadius:12,fontWeight:700,fontSize:15,cursor:"pointer"}}
             >
-              Voir nos services
+              {t("Voir nos services")}
             </m.button>
           </m.div>
 
@@ -350,7 +354,7 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.8, type: "spring", stiffness: 300 }}
-            style={{position:"absolute",right:-16,top:-16,background:C.gold,color:C.bg,padding:"10px 16px",borderRadius:12,fontSize:12,fontWeight:800,fontFamily:F.mono,transform:"rotate(8deg)",boxShadow:"0 8px 24px rgba(200,151,26,.5)"}}
+            style={{position:"absolute",insetInlineEnd:-16,top:-16,background:C.gold,color:C.bg,padding:"10px 16px",borderRadius:12,fontSize:12,fontWeight:800,fontFamily:F.mono,transform:"rotate(8deg)",boxShadow:"0 8px 24px rgba(200,151,26,.5)"}}
           >
             -25% LANCEMENT
           </m.div>
@@ -377,7 +381,7 @@ function ScrollProgress(){
     return()=>{window.removeEventListener("scroll",onScroll);window.removeEventListener("resize",onScroll);};
   },[]);
   return(
-    <div style={{position:"fixed",top:0,left:0,right:0,height:3,zIndex:300,background:"transparent",pointerEvents:"none"}}>
+    <div style={{position:"fixed",top:0,insetInlineStart:0,insetInlineEnd:0,height:3,zIndex:300,background:"transparent",pointerEvents:"none"}}>
       <div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,#A67C2E,${C.gold},${C.gl})`,boxShadow:"0 0 8px rgba(200,151,26,.6)",transition:"width .05s linear"}}/>
     </div>
   );
@@ -609,7 +613,7 @@ function DialSection({onDownload}:{onDownload:()=>void}){
             <div className="carte" key={i} style={{position:"relative",background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,padding:24,overflow:"hidden",transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)"}}
               
               >
-              <div style={{position:"absolute",top:-20,right:-10,fontFamily:F.serif,fontSize:120,fontWeight:600,color:`${d.color}08`,lineHeight:1}}>{d.letter}</div>
+              <div style={{position:"absolute",top:-20,insetInlineEnd:-10,fontFamily:F.serif,fontSize:120,fontWeight:600,color:`${d.color}08`,lineHeight:1}}>{d.letter}</div>
               <div style={{position:"relative",zIndex:1}}>
                 <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
                   <div style={{width:44,height:44,borderRadius:12,background:`${d.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{d.icon}</div>
@@ -637,7 +641,7 @@ function DialSection({onDownload}:{onDownload:()=>void}){
           </div>
           <div style={{position:"relative",height:200,background:C.s2,borderRadius:14,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
             <div style={{fontFamily:F.serif,fontSize:80,fontWeight:600,fontStyle:"italic",color:`${alpha(C.gold, 18.8)}`}}>L'Art</div>
-            <div style={{position:"absolute",bottom:20,left:20,fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".1em"}}>IBRAHIM SEYDOU · 2024</div>
+            <div style={{position:"absolute",bottom:20,insetInlineStart:20,fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".1em"}}>IBRAHIM SEYDOU · 2024</div>
           </div>
         </div>
       </div>
@@ -657,7 +661,7 @@ function TestimonialsSection(){
           <div className="carte-bord" key={i} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,padding:24,position:"relative",transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)"}}
             
             >
-            <div style={{fontFamily:F.serif,fontSize:60,color:`${t.color}30`,lineHeight:.5,position:"absolute",top:24,right:20}}>"</div>
+            <div style={{fontFamily:F.serif,fontSize:60,color:`${t.color}30`,lineHeight:.5,position:"absolute",top:24,insetInlineEnd:20}}>"</div>
             <p style={{fontSize:14,color:C.t,lineHeight:1.7,margin:"0 0 20px",position:"relative",zIndex:1}}>{t.text}</p>
             <div style={{display:"flex",alignItems:"center",gap:12,paddingTop:16,borderTop:`1px solid ${C.bdr}`}}>
               <div style={{width:42,height:42,borderRadius:"50%",background:`${t.color}20`,color:t.color,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:14}}>{t.avatar}</div>
@@ -698,8 +702,8 @@ function BlogSection({onOpenPost}:{onOpenPost:(p:any)=>void}){
             >
             <div style={{height:140,background:`linear-gradient(135deg,${C.s2},${C.s3})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:48,position:"relative"}}>
               {p.icon}
-              <div style={{position:"absolute",top:14,left:14}}><Tag c={C.gold}>{p.cat}</Tag></div>
-              <div style={{position:"absolute",bottom:14,right:14,fontFamily:F.mono,fontSize:10,color:C.t2}}>{p.date}</div>
+              <div style={{position:"absolute",top:14,insetInlineStart:14}}><Tag c={C.gold}>{p.cat}</Tag></div>
+              <div style={{position:"absolute",bottom:14,insetInlineEnd:14,fontFamily:F.mono,fontSize:10,color:C.t2}}>{p.date}</div>
             </div>
             <div style={{padding:20}}>
               <h3 style={{fontFamily:F.serif,fontSize:18,fontWeight:600,color:C.tf,margin:"0 0 10px",lineHeight:1.3}}>{p.title}</h3>
@@ -832,7 +836,7 @@ function ContactSection(){
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:14}}>
               <input tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={e=>setHp(e.target.value)}
-                style={{position:"absolute",left:"-9999px",width:1,height:1,opacity:0}} />
+                style={{position:"absolute",insetInlineStart:"-9999px",width:1,height:1,opacity:0}} />
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
                 <div>
                   <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Nom complet *</div>
@@ -904,7 +908,7 @@ function Footer({onNav}:{onNav:(id:string)=>void}){
         <div>
           <div style={{fontFamily:F.mono,fontSize:10,color:C.gold,letterSpacing:".1em",textTransform:"uppercase",marginBottom:14}}>Navigation</div>
           {[{l:"Formations",id:"formations"},{l:"Méthode DIAL™",id:"methode"},{l:"Témoignages",id:"temoignages"},{l:"Blog",id:"blog"},{l:"À propos",id:"apropos"}].map(x=>(
-            <button key={x.id} onClick={()=>onNav(x.id)} style={btn({display:"block",background:"none",color:C.t2,fontSize:13,padding:"4px 0",textAlign:"left"})}>{x.l}</button>
+            <button key={x.id} onClick={()=>onNav(x.id)} style={btn({display:"block",background:"none",color:C.t2,fontSize:13,padding:"4px 0",textAlign: "start"})}>{x.l}</button>
           ))}
         </div>
         <div>
@@ -1126,7 +1130,7 @@ export default function App() {
         <CartModal onClose={()=>setShowCart(false)} onCheckout={()=>{ setShowCart(false); window.location.hash = "student"; }} />
       )}
 
-      <div style={{position:"fixed",bottom:24,left:24,width:56,height:56,zIndex:150}}>
+      <div style={{position:"fixed",bottom:24,insetInlineStart:24,width:56,height:56,zIndex:150}}>
         <a
           className="fab"
           href="https://wa.me/22392976646"

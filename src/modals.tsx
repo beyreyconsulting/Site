@@ -155,13 +155,13 @@ export function BlogModal({post,onClose}:{post:any,onClose:()=>void}){
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={post.title} tabIndex={-1} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:22,width:"100%",maxWidth:720,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column",boxShadow:"0 32px 80px rgba(0,0,0,.7)"}}>
 
         <div style={{background:`linear-gradient(135deg,${C.s1},${C.s2})`,padding:"24px 28px",borderBottom:`1px solid ${C.bdr}`,position:"relative"}}>
-          <button onClick={onClose} aria-label="Fermer" style={btn({position:"absolute",top:18,right:18,background:C.bdr,color:C.t2,width:32,height:32,borderRadius:"50%",fontSize:14})}>✕</button>
+          <button onClick={onClose} aria-label="Fermer" style={btn({position:"absolute",top:18,insetInlineEnd:18,background:C.bdr,color:C.t2,width:32,height:32,borderRadius:"50%",fontSize:14})}>✕</button>
           <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
             <Tag c={C.gold}>{post.icon} {post.cat}</Tag>
             <Tag c={C.t2}>{post.time} de lecture</Tag>
             <Tag c={C.t3}>{post.date}</Tag>
           </div>
-          <h2 style={{fontFamily:F.serif,fontSize:28,fontWeight:600,color:C.tf,margin:0,lineHeight:1.25,paddingRight:40}}>{post.title}</h2>
+          <h2 style={{fontFamily:F.serif,fontSize:28,fontWeight:600,color:C.tf,margin:0,lineHeight:1.25,paddingInlineEnd:40}}>{post.title}</h2>
         </div>
 
         <div style={{flex:1,overflowY:"auto",padding:"24px 28px"}}>

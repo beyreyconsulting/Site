@@ -166,7 +166,7 @@ function ProtectedVideoPlayer({ url, path, isPreview, onComplete, onProgress }: 
   return (
     <div style={{ background: "#000", borderRadius: 12, overflow: "hidden", position: "relative" }}>
       {isPreview && (
-        <div style={{ position: "absolute", top: 12, left: 12, background: `${alpha(C.grn, 12.5)}`, color: C.grn, padding: "4px 10px", borderRadius: 6, fontSize: 10, fontFamily: F.mono, fontWeight: 700, zIndex: 10, border: `1px solid ${alpha(C.grn, 25.1)}` }}>
+        <div style={{ position: "absolute", top: 12, insetInlineStart: 12, background: `${alpha(C.grn, 12.5)}`, color: C.grn, padding: "4px 10px", borderRadius: 6, fontSize: 10, fontFamily: F.mono, fontWeight: 700, zIndex: 10, border: `1px solid ${alpha(C.grn, 25.1)}` }}>
           APERCU GRATUIT
         </div>
       )}
@@ -186,7 +186,7 @@ function ProtectedVideoPlayer({ url, path, isPreview, onComplete, onProgress }: 
         style={{ width: "100%", display: "block", background: "#000" }}
       />
 
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,.85))", padding: "20px 16px 12px" }}>
+      <div style={{ position: "absolute", bottom: 0, insetInlineStart: 0, insetInlineEnd: 0, background: "linear-gradient(transparent, rgba(0,0,0,.85))", padding: "20px 16px 12px" }}>
         <div onClick={seek} style={{ height: 4, background: "rgba(255,255,255,.15)", borderRadius: 4, cursor: "pointer", marginBottom: 10 }}>
           <div style={{ height: "100%", width: `${(currentTime / duration) * 100 || 0}%`, background: C.gold, borderRadius: 4, transition: "width .05s linear" }} />
         </div>
@@ -264,7 +264,7 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string
           <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".1em" }}>QUIZ</div>
           <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: C.tf }}>{quiz.title}</div>
         </div>
-        <div style={{ textAlign: "right" }}>
+        <div style={{ textAlign: "end" }}>
           <div style={{ fontSize: 10, color: C.t3, fontFamily: F.mono }}>Score minimum</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: C.gold }}>{quiz.pass_score}%</div>
         </div>
@@ -313,14 +313,14 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string
                       display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, cursor: submitted ? "default" : "pointer",
                       background: showCorrect ? `${alpha(C.grn, 7.1)}` : isSelected ? (submitted ? `${alpha(C.red, 7.1)}` : `${alpha(C.gold, 7.1)}`) : C.s2,
                       border: `1px solid ${showCorrect ? C.grn : isSelected ? (submitted ? C.red : C.gold) : C.bdr}`,
-                      transition:"background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s cubic-bezier(.23,1,.32,1)", textAlign: "left" as const,
+                      transition:"background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s cubic-bezier(.23,1,.32,1)", textAlign: "start" as const,
                     }}
                   >
                     <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${showCorrect ? C.grn : isSelected ? (submitted ? C.red : C.gold) : C.bdr}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       {(isSelected || showCorrect) && <div style={{ width: 8, height: 8, borderRadius: "50%", background: showCorrect ? C.grn : submitted ? C.red : C.gold }} />}
                     </div>
                     <span style={{ fontSize: 13, color: showCorrect ? C.grn : isSelected ? C.t : C.t2 }}>{opt.text}</span>
-                    {showCorrect && <span style={{ marginLeft: "auto", fontSize: 12 }}>✓</span>}
+                    {showCorrect && <span style={{ marginInlineStart: "auto", fontSize: 12 }}>✓</span>}
                   </button>
                 );
               })}
@@ -420,12 +420,12 @@ function QASection({ lessonId }: { lessonId: string }) {
               <div style={{ fontSize: 13, fontWeight: 700, color: C.t }}>{qa.author_name}</div>
               <div style={{ fontSize: 10, color: C.t3, fontFamily: F.mono }}>{new Date(qa.created_at).toLocaleDateString("fr-FR")}</div>
             </div>
-            {qa.is_answered && <div style={{ marginLeft: "auto", fontSize: 10, color: C.grn, fontFamily: F.mono, background: `${alpha(C.grn, 8.2)}`, padding: "3px 8px", borderRadius: 4 }}>REPONDU</div>}
+            {qa.is_answered && <div style={{ marginInlineStart: "auto", fontSize: 10, color: C.grn, fontFamily: F.mono, background: `${alpha(C.grn, 8.2)}`, padding: "3px 8px", borderRadius: 4 }}>REPONDU</div>}
           </div>
           <p style={{ fontSize: 13, color: C.t, lineHeight: 1.65, margin: 0 }}>{qa.question}</p>
 
           {qa.answers.map(ans => (
-            <div key={ans.id} style={{ marginTop: 12, marginLeft: 16, padding: 12, background: ans.is_from_instructor ? `${alpha(C.gold, 3.1)}` : C.s1, border: `1px solid ${ans.is_from_instructor ? alpha(C.gold, 18.8) : C.bdr}`, borderRadius: 10 }}>
+            <div key={ans.id} style={{ marginTop: 12, marginInlineStart: 16, padding: 12, background: ans.is_from_instructor ? `${alpha(C.gold, 3.1)}` : C.s1, border: `1px solid ${ans.is_from_instructor ? alpha(C.gold, 18.8) : C.bdr}`, borderRadius: 10 }}>
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
                 <div style={{ width: 24, height: 24, borderRadius: "50%", background: ans.is_from_instructor ? `${alpha(C.gold, 12.5)}` : C.s2, color: ans.is_from_instructor ? C.gold : C.t2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>
                   {ans.author_name?.[0]?.toUpperCase()}
@@ -475,7 +475,7 @@ function FilesSection({ lessonId }: { lessonId: string }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {files.map(f => (
           <button className="ligne" key={f.id} type="button" onClick={() => openFile(f)} disabled={opening === f.id}
-            style={btn({ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", width: "100%", textAlign: "left", background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)" })}
+            style={btn({ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", width: "100%", textAlign: "start", background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)" })}
             
             >
             <span style={{ fontSize: 20 }}>{fileIcon(f.mime_type)}</span>

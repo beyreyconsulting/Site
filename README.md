@@ -34,7 +34,30 @@ Scripts : `npm run dev` · `npm run build` · `npm run typecheck` · `npm run li
    `sign-media` = délivre des URLs signées courtes pour les vidéos/fichiers des
    buckets **privés**, uniquement aux inscrits (ou preview/admin).
 
-3. **Créer un compte admin** : créer l'utilisateur dans Supabase Auth, puis :
+3. **URL d'authentification** (Dashboard → Authentication → URL Configuration) :
+
+   | Champ | Valeur |
+   | --- | --- |
+   | **Site URL** | `https://beyrey.consulting` |
+   | **Redirect URLs** | `https://beyrey.consulting/**` et, pour le dev, `http://localhost:5173/**` |
+
+   **CETTE ÉTAPE A DÉJÀ COÛTÉ DES INSCRIPTIONS.** Supabase n'honore l'URL
+   de retour demandée par le code (`emailRedirectTo`) que si elle figure
+   dans *Redirect URLs*. Hors de cette liste, il l'IGNORE en silence et
+   renvoie vers *Site URL* — resté au défaut, c'est une page de Supabase.
+   L'étudiant clique sur son courriel de confirmation et atterrit chez
+   Supabase au lieu du site, sans que rien ne soit écrit nulle part.
+
+   Les deux doivent être posés : *Site URL* est le repli, *Redirect URLs*
+   est l'autorisation. Le motif `/**` couvre les sous-chemins, et il le
+   faut : le code renvoie vers `/?compte=confirme`.
+
+   Côté code, l'URL de retour ne porte JAMAIS de fragment (`#student`) :
+   Supabase dépose son jeton dans le fragment, et deux fragments dans une
+   URL se mangent l'un l'autre. Voir `RETOUR_COURRIEL` dans
+   `src/student.tsx`.
+
+4. **Créer un compte admin** : créer l'utilisateur dans Supabase Auth, puis :
    ```sql
    INSERT INTO admins (user_id) VALUES ('<uuid-de-l-utilisateur>');
    ```

@@ -23,6 +23,36 @@ function validatePassword(password: string): { valid: boolean; errors: string[] 
 }
 
 /* ─────────────── AUTH CONTEXT ─────────────── */
+/**
+ * URL de retour des courriels d'authentification (confirmation, renvoi,
+ * réinitialisation).
+ *
+ * AUCUN FRAGMENT ICI, et c'est tout le sujet. Le site route par le
+ * fragment (`#student`, `#lms`), si bien que ces trois appels passaient
+ * `origin + "/#student"`. Or Supabase, en flux implicite — celui par
+ * défaut de `createClient` sans option — AJOUTE son propre fragment à
+ * l'URL de retour :
+ *
+ *     https://site/#student  +  #access_token=...&type=signup
+ *     => fragment réel : "student#access_token=...&type=signup"
+ *
+ * Une URL n'a qu'UN fragment. Mesuré : `parseHash()` ne reconnaît plus
+ * "student" et rend l'accueil, et `detectSessionInUrl` ne trouve pas
+ * `access_token` en tête de fragment — donc LA SESSION EST PERDUE.
+ * L'étudiant clique sur son courriel de confirmation et retombe sur
+ * l'accueil, déconnecté.
+ *
+ * L'intention voyage donc dans la REQUÊTE, que Supabase préserve, et
+ * c'est `App` qui navigue une fois la session établie.
+ *
+ * L'autre moitié du problème est hors du code : si cette URL n'est pas
+ * dans les redirections autorisées du projet Supabase, celui-ci l'ignore
+ * en silence et renvoie vers son propre « Site URL » — c'est ce qui
+ * ramenait littéralement chez Supabase. Voir le README.
+ */
+const RETOUR_COURRIEL = (raison: "confirme" | "reinitialisation") =>
+  `${window.location.origin}/?compte=${raison}`;
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<StudentProfile | null>(null);
@@ -105,7 +135,7 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
         password: form.password,
         options: {
           data: { full_name: form.fullName.trim() },
-          emailRedirectTo: window.location.origin + "/#student"
+          emailRedirectTo: RETOUR_COURRIEL("confirme")
         }
       });
 
@@ -188,7 +218,7 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
 
     try {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(form.email.trim().toLowerCase(), {
-        redirectTo: window.location.origin + "/#student?reset=true"
+        redirectTo: RETOUR_COURRIEL("reinitialisation")
       });
 
       if (resetError) throw resetError;
@@ -212,7 +242,7 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
       const { error: resendError } = await supabase.auth.resend({
         type: "signup",
         email: pendingEmail,
-        options: { emailRedirectTo: window.location.origin + "/#student" }
+        options: { emailRedirectTo: RETOUR_COURRIEL("confirme") }
       });
 
       if (resendError) throw resendError;

@@ -967,6 +967,33 @@ export default function App() {
     return () => window.removeEventListener("hashchange", updateRoute);
   }, []);
 
+  // RETOUR D'UN COURRIEL D'AUTHENTIFICATION (confirmation, renvoi,
+  // réinitialisation).
+  //
+  // L'intention voyage dans la REQUÊTE (`?compte=confirme`) et non dans le
+  // fragment : le fragment appartient à Supabase, qui y dépose le jeton
+  // (`#access_token=…`) — y mettre aussi « #student » écrasait le jeton et
+  // perdait la session. Voir `RETOUR_COURRIEL` dans student.tsx.
+  //
+  // ON ATTEND LA SESSION AVANT DE NAVIGUER. Changer le fragment tout de
+  // suite courrait contre `detectSessionInUrl`, qui lit le jeton de façon
+  // asynchrone à l'initialisation du client : on lui aurait retiré l'URL
+  // sous les pieds. `user` ne devient non nul qu'une fois le jeton lu —
+  // c'est donc le signal juste.
+  useEffect(() => {
+    const requete = new URLSearchParams(window.location.search);
+    if (!requete.get("compte")) return;
+    if (!user) return;        // jeton pas encore lu : on repassera
+    window.location.hash = "student";
+    // La requête est consommée : sans ce nettoyage, un rechargement de la
+    // page renverrait indéfiniment vers l'espace étudiant.
+    requete.delete("compte");
+    const reste = requete.toString();
+    window.history.replaceState(
+      {}, "",
+      window.location.pathname + (reste ? `?${reste}` : "") + "#student");
+  }, [user]);
+
   const nav=(id:string)=>{
     const el=document.getElementById(id);
     if(el)el.scrollIntoView({behavior:"smooth"});

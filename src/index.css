@@ -58,6 +58,15 @@
   --texte2-rgb:     168 178 212;
   --texte3-rgb:     126 137 176;
 
+  /* TEXTE POSÉ SUR UNE SURFACE ACCENTUÉE. Il ne suit pas le thème de la
+     même façon que le texte de page : ce qui compte est le contraste avec
+     LA SURFACE, dont la teinte change elle aussi. Le vert est clair la
+     nuit (texte sombre dessus) et profond le jour (texte blanc). Une
+     réponse figée serait fausse d'un côté ; c'est donc un jeton. */
+  --sur-donnee-rgb:  10  20  18;
+  --sur-accent-rgb: 255 255 255;
+  --texte-fort-rgb: 255 255 255;
+
   --ivoire-rgb:     244 239 230;
   --ivoire2-rgb:    232 225 212;
   --encre-rgb:       26  40 64;
@@ -71,14 +80,42 @@
    oubli. L'or passe au laiton profond — le laiton clair ne tient pas ses
    4,5:1 sur du papier.
 
-   PAS ENCORE SERVI AUTOMATIQUEMENT, et c'est voulu : 55 couleurs de texte
-   sont encore écrites « #fff » en dur dans les composants, ce qui donne du
-   blanc sur blanc (constaté à l'écran). Tant qu'elles n'ont pas un jeton
-   de RÔLE — « texte principal », qui s'inverse, contre « texte sur
-   l'accent », qui reste clair dans les deux thèmes — suivre
-   `prefers-color-scheme` livrerait une page illisible à tout visiteur dont
-   le système est en clair. Le jour ne s'obtient donc que par
-   `data-theme="jour"`, en connaissance de cause. */
+   LES 55 BLANCS ONT MAINTENANT UN RÔLE, et c'est ce qui permet de servir
+   ce thème automatiquement : 41 étaient du texte mis en avant sur une
+   surface de page (ils s'inversent, jeton `tf`), 11 du texte posé sur une
+   surface saturée — pastille verte, bandeau d'alerte, bouton bleu — qui
+   reste clair dans les deux thèmes (`surAccent`), et 2 restent écrits en
+   dur avec leur raison : l'anneau de sélection sur une pastille de couleur
+   arbitraire, et le papier du certificat, qui ne doit pas virer au sombre
+   même la nuit. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="nuit"]) {
+    color-scheme: light;
+    --fond-rgb:       242 244 250;
+    --surface1-rgb:   255 255 255;
+    --surface2-rgb:   233 237 247;
+    --surface3-rgb:   221 227 241;
+    --bordure-rgb:    203 211 231;
+    --bordure2-rgb:   174 185 214;
+    --or-rgb:         156  99  22;
+    --or-clair-rgb:   125  78  15;
+    --donnee-rgb:      13 111  98;
+    --alerte-rgb:     185  40  40;
+    --lien-rgb:        32  98 232;
+    --whatsapp-rgb:    21 150  70;
+    --texte-rgb:       18  23  37;
+    --texte2-rgb:      68  80 110;
+    --texte3-rgb:     107 120 154;
+    --sur-donnee-rgb: 255 255 255;
+    --sur-accent-rgb: 255 255 255;
+    --texte-fort-rgb:  10  14  26;
+    --ivoire-rgb:     255 255 255;
+    --ivoire2-rgb:    242 244 250;
+    --encre-rgb:       18  23  37;
+    --encre2-rgb:      68  80 110;
+  }
+}
+
 :root[data-theme="jour"] {
   color-scheme: light;
   --fond-rgb:       242 244 250;
@@ -96,6 +133,9 @@
   --texte-rgb:       18  23  37;
   --texte2-rgb:      68  80 110;
   --texte3-rgb:     107 120 154;
+  --sur-donnee-rgb: 255 255 255;
+  --sur-accent-rgb: 255 255 255;
+  --texte-fort-rgb:  10  14  26;
   --ivoire-rgb:     255 255 255;
   --ivoire2-rgb:    242 244 250;
   --encre-rgb:       18  23  37;

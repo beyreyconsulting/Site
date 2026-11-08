@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { C, F, btn, textOn, alpha } from "./data.tsx";
+import { C, F, btn, alpha } from "./data.tsx";
 import { supabase } from "./supabase";
 
 /* ─────────────── TYPES ─────────────── */
@@ -18,7 +18,7 @@ const genUUID = () => crypto.randomUUID();
 function Toast({ msg, type, onDismiss }: { msg: string; type: "ok" | "err"; onDismiss: () => void }) {
   useEffect(() => { const t = setTimeout(onDismiss, 3500); return () => clearTimeout(t); }, []);
   return (
-    <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: type === "ok" ? C.grn : C.red, color: "#fff", padding: "12px 20px", borderRadius: 10, fontSize: 13, fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,.4)", display: "flex", alignItems: "center", gap: 10 }}>
+    <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: type === "ok" ? C.grn : C.red, color: C.surAccent, padding: "12px 20px", borderRadius: 10, fontSize: 13, fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,.4)", display: "flex", alignItems: "center", gap: 10 }}>
       {type === "ok" ? "✓" : "✕"} {msg}
     </div>
   );
@@ -73,7 +73,7 @@ function AdminLogin({ onAuth }: { onAuth: () => void }) {
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
           <div style={{ width: 44, height: 44, borderRadius: 12, background: `${alpha(C.gold, 9.4)}`, border: `1px solid ${alpha(C.gold, 18.8)}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🔐</div>
           <div>
-            <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: "#fff" }}>Espace Éditeur</div>
+            <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: C.tf }}>Espace Éditeur</div>
             <div style={{ fontSize: 11, color: C.t2, fontFamily: F.mono }}>Beyrey Consulting LMS</div>
           </div>
         </div>
@@ -805,7 +805,7 @@ function OrdersManager() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h2 style={{ fontFamily: F.serif, fontSize: 24, fontWeight: 600, color: "#fff", margin: 0 }}>Commandes</h2>
+          <h2 style={{ fontFamily: F.serif, fontSize: 24, fontWeight: 600, color: C.tf, margin: 0 }}>Commandes</h2>
           <div style={{ fontSize: 12, color: C.t2 }}>Confirmez les paiements mobile money pour débloquer l'accès.</div>
         </div>
         <div style={{ display: "flex", gap: 6 }}>
@@ -830,7 +830,7 @@ function OrdersManager() {
                 <span style={{ fontSize: 10, fontFamily: F.mono, fontWeight: 700, color: badge(o.status), background: `${badge(o.status)}18`, padding: "4px 10px", borderRadius: 6, textTransform: "uppercase" }}>{o.status === "paid" ? "Payée" : o.status === "pending" ? "En attente" : "Annulée"}</span>
                 {o.status === "pending" && (
                   <div style={{ display: "flex", gap: 6 }}>
-                    <button onClick={() => setStatus(o.id, "paid")} style={btn({ background: C.grn, color: textOn(C.grn), padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>Marquer payé</button>
+                    <button onClick={() => setStatus(o.id, "paid")} style={btn({ background: C.grn, color: C.surGrn, padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>Marquer payé</button>
                     <button onClick={() => setStatus(o.id, "cancelled")} style={btn({ background: `${alpha(C.red, 9.4)}`, color: C.red, border: `1px solid ${alpha(C.red, 18.8)}`, padding: "7px 10px", borderRadius: 8, fontSize: 12 })}>Annuler</button>
                   </div>
                 )}
@@ -876,7 +876,7 @@ export function AdminPanel() {
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <img src="/logo.png" alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "contain" }} />
           <div>
-            <div style={{ fontFamily: F.serif, fontSize: 17, fontWeight: 600, color: "#fff", lineHeight: 1 }}>Beyrey LMS</div>
+            <div style={{ fontFamily: F.serif, fontSize: 17, fontWeight: 600, color: C.tf, lineHeight: 1 }}>Beyrey LMS</div>
             <div style={{ fontFamily: F.mono, fontSize: 9, color: C.gold, letterSpacing: ".15em" }}>ESPACE ÉDITEUR</div>
           </div>
           {selectedCourse && page === "sections" && (

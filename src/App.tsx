@@ -63,7 +63,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
             transition={{ duration: 0.4 }}
           />
           <div>
-            <div style={{fontFamily:F.serif,fontSize:18,fontWeight:600,color:"#fff",lineHeight:1}}>Beyrey</div>
+            <div style={{fontFamily:F.serif,fontSize:18,fontWeight:600,color:C.tf,lineHeight:1}}>Beyrey</div>
             <div style={{fontFamily:F.mono,fontSize:9,color:C.gold,letterSpacing:".15em",textTransform:"uppercase"}}>Consulting</div>
           </div>
         </m.div>
@@ -233,7 +233,7 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="hero-title"
-            style={{fontFamily:F.serif,fontSize:68,fontWeight:600,color:"#fff",lineHeight:1.05,margin:"0 0 24px",letterSpacing:"-0.02em"}}
+            style={{fontFamily:F.serif,fontSize:68,fontWeight:600,color:C.tf,lineHeight:1.05,margin:"0 0 24px",letterSpacing:"-0.02em"}}
           >
             Transformez vos<br/>
             <span style={{color:C.gold,fontStyle:"italic"}}>données en décisions.</span>
@@ -337,7 +337,7 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
                 <Tag c={C.gold}>⭐ Formation phare</Tag>
                 <span style={{fontFamily:F.mono,fontSize:10,color:C.t2}}>★ 4.9 · 147 étudiants</span>
               </div>
-              <div style={{fontFamily:F.serif,fontSize:24,fontWeight:600,color:"#fff",marginBottom:8}}>Power BI pour PME Maliennes</div>
+              <div style={{fontFamily:F.serif,fontSize:24,fontWeight:600,color:C.tf,marginBottom:8}}>Power BI pour PME Maliennes</div>
               <div style={{fontSize:13,color:C.t2,marginBottom:20}}>De zéro à votre premier dashboard professionnel</div>
             </div>
             <div style={{padding:"0 24px 24px"}}>
@@ -455,7 +455,7 @@ function LeadMagnet(){
         className="dial-book">
         <div>
           <Tag c={C.gold}>🎁 RESSOURCE GRATUITE</Tag>
-          <h3 style={{fontFamily:F.serif,fontSize:26,fontWeight:600,color:"#fff",margin:"14px 0 10px",lineHeight:1.2}}>Template de Structuration de Département Data & Gouvernance</h3>
+          <h3 style={{fontFamily:F.serif,fontSize:26,fontWeight:600,color:C.tf,margin:"14px 0 10px",lineHeight:1.2}}>Template de Structuration de Département Data & Gouvernance</h3>
           <p style={{fontSize:14,color:C.t2,lineHeight:1.7,margin:0}}>Le cadre exact que nous déployons chez nos clients pour poser une gouvernance data rigoureuse. Téléchargement immédiat.</p>
         </div>
         <div>
@@ -508,7 +508,7 @@ function SectionTitle({tag,title,sub,center}:{tag:string,title:React.ReactNode,s
         viewport={{ once: true }}
         transition={{ delay: 0.2 }}
         className="section-title"
-        style={{fontFamily:F.serif,fontSize:42,fontWeight:600,color:"#fff",lineHeight:1.15,margin:"0 0 14px",letterSpacing:"-0.01em"}}
+        style={{fontFamily:F.serif,fontSize:42,fontWeight:600,color:C.tf,lineHeight:1.15,margin:"0 0 14px",letterSpacing:"-0.01em"}}
       >{title}</m.h2>
       {sub && <m.p
         initial={{ opacity: 0 }}
@@ -556,7 +556,7 @@ function CoursesSection({onOpenCourse,onBuy}:{onOpenCourse:(c:any)=>void,onBuy:(
                     <Tag c={C.t2}>{course.lvl}</Tag>
                   </div>
                 </div>
-                <h3 style={{fontFamily:F.serif,fontSize:20,fontWeight:600,color:"#fff",margin:"0 0 6px",lineHeight:1.25}}>{course.title}</h3>
+                <h3 style={{fontFamily:F.serif,fontSize:20,fontWeight:600,color:C.tf,margin:"0 0 6px",lineHeight:1.25}}>{course.title}</h3>
                 <div style={{fontSize:12,color:C.t2,lineHeight:1.5}}>{course.sub}</div>
               </div>
               <div style={{padding:18,flex:1,display:"flex",flexDirection:"column"}}>
@@ -613,7 +613,7 @@ function DialSection({onDownload}:{onDownload:()=>void}){
                   <div style={{width:44,height:44,borderRadius:12,background:`${d.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{d.icon}</div>
                   <div>
                     <div style={{fontFamily:F.mono,fontSize:10,color:d.color,letterSpacing:".15em"}}>ÉTAPE {i+1}</div>
-                    <div style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:"#fff"}}>{d.title}</div>
+                    <div style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:C.tf}}>{d.title}</div>
                   </div>
                 </div>
                 <p style={{fontSize:13,color:C.t2,lineHeight:1.7,margin:0}}>{d.desc}</p>
@@ -625,7 +625,7 @@ function DialSection({onDownload}:{onDownload:()=>void}){
         <div className="dial-book" style={{background:`linear-gradient(135deg,${C.s1},${C.s2})`,border:`1px solid ${C.bdr}`,borderRadius:20,padding:32,display:"grid",gridTemplateColumns:"1fr 1fr",gap:32,alignItems:"center"}}>
           <div>
             <Tag c={C.gold}>📚 LIVRE BLANC</Tag>
-            <h3 style={{fontFamily:F.serif,fontSize:28,fontWeight:600,color:"#fff",margin:"14px 0 12px",lineHeight:1.2}}>L'Art de la Rigueur</h3>
+            <h3 style={{fontFamily:F.serif,fontSize:28,fontWeight:600,color:C.tf,margin:"14px 0 12px",lineHeight:1.2}}>L'Art de la Rigueur</h3>
             <p style={{fontSize:14,color:C.t2,lineHeight:1.7,margin:"0 0 20px"}}>
               Manifeste pour une gouvernance frugale de la data en Afrique. Écrit par Ibrahim Seydou après 5 ans de terrain à Bamako. Disponible en téléchargement gratuit.
             </p>
@@ -660,7 +660,7 @@ function TestimonialsSection(){
             <div style={{display:"flex",alignItems:"center",gap:12,paddingTop:16,borderTop:`1px solid ${C.bdr}`}}>
               <div style={{width:42,height:42,borderRadius:"50%",background:`${t.color}20`,color:t.color,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:14}}>{t.avatar}</div>
               <div>
-                <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>{t.name}</div>
+                <div style={{fontSize:13,fontWeight:700,color:C.tf}}>{t.name}</div>
                 <div style={{fontSize:11,color:C.t2,fontFamily:F.mono}}>{t.role}</div>
               </div>
             </div>
@@ -700,7 +700,7 @@ function BlogSection({onOpenPost}:{onOpenPost:(p:any)=>void}){
               <div style={{position:"absolute",bottom:14,right:14,fontFamily:F.mono,fontSize:10,color:C.t2}}>{p.date}</div>
             </div>
             <div style={{padding:20}}>
-              <h3 style={{fontFamily:F.serif,fontSize:18,fontWeight:600,color:"#fff",margin:"0 0 10px",lineHeight:1.3}}>{p.title}</h3>
+              <h3 style={{fontFamily:F.serif,fontSize:18,fontWeight:600,color:C.tf,margin:"0 0 10px",lineHeight:1.3}}>{p.title}</h3>
               <p style={{fontSize:13,color:C.t2,lineHeight:1.6,margin:"0 0 14px"}}>{p.excerpt}</p>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11,color:C.t3,fontFamily:F.mono}}>
                 <span>{p.time} de lecture</span>
@@ -743,7 +743,7 @@ function AboutSection(){
             <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
               <img src="/tof.jpg" alt="Ibrahim Seydou" style={{width:72,height:72,borderRadius:"50%",objectFit:"cover",border:`2px solid ${C.gold}`}}/>
               <div>
-                <div style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:"#fff"}}>Ibrahim Seydou</div>
+                <div style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:C.tf}}>Ibrahim Seydou</div>
                 <div style={{fontSize:12,color:C.gold,fontFamily:F.mono}}>Fondateur · Consultant Principal</div>
               </div>
             </div>
@@ -823,8 +823,8 @@ function ContactSection(){
         <div style={{padding:40,background:C.s1}}>
           {sent?(
             <div style={{height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,textAlign:"center"}}>
-              <div style={{width:60,height:60,borderRadius:"50%",background:C.grn,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,color:"#fff"}}>✓</div>
-              <div style={{fontSize:18,fontWeight:800,color:"#fff"}}>Message envoyé !</div>
+              <div style={{width:60,height:60,borderRadius:"50%",background:C.grn,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,color:C.surAccent}}>✓</div>
+              <div style={{fontSize:18,fontWeight:800,color:C.tf}}>Message envoyé !</div>
               <div style={{fontSize:13,color:C.t2}}>Nous vous répondrons sous 24h.</div>
             </div>
           ):(
@@ -886,7 +886,7 @@ function Footer({onNav}:{onNav:(id:string)=>void}){
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
             <img src="/logo.png" alt="Beyrey Consulting" style={{width:36,height:36,objectFit:"contain",borderRadius:8}}/>
             <div>
-              <div style={{fontFamily:F.serif,fontSize:18,fontWeight:600,color:"#fff",lineHeight:1}}>Beyrey</div>
+              <div style={{fontFamily:F.serif,fontSize:18,fontWeight:600,color:C.tf,lineHeight:1}}>Beyrey</div>
               <div style={{fontFamily:F.mono,fontSize:9,color:C.gold,letterSpacing:".15em",textTransform:"uppercase"}}>Consulting</div>
             </div>
           </div>
@@ -1146,7 +1146,7 @@ export default function App() {
           
           
         >
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill={C.surAccent}>
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
         </svg>
         </a>

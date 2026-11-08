@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { m, AnimatePresence } from "framer-motion";
-import { C, F, btn, textOn, alpha } from "./data.tsx";
+import { C, F, btn, alpha } from "./data.tsx";
 import { supabase, createOrder } from "./supabase";
 import { useDialog } from "./a11y";
 import { staggerContainer, staggerItem } from "./motion";
@@ -261,7 +261,7 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
         <div style={{ background: `linear-gradient(135deg,${C.s1},${C.s2})`, padding: "24px 28px", borderBottom: `1px solid ${C.bdr}` }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <div style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 600, color: "#fff" }}>
+              <div style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 600, color: C.tf }}>
                 {mode === "login" ? "Connexion" : mode === "register" ? "Creer un compte" : mode === "forgot" ? "Mot de passe oublie" : "Confirmation email"}
               </div>
               <div style={{ fontSize: 12, color: C.t2, marginTop: 4 }}>
@@ -544,7 +544,7 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Votre panier" tabIndex={-1} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 480, maxHeight: "92vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}>
         <div style={{ background: `linear-gradient(135deg,${C.s1},${C.s2})`, padding: "20px 24px", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: "#fff" }}>Panier</div>
+            <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: C.tf }}>Panier</div>
             <div style={{ fontSize: 12, color: C.t2 }}>{count} formation{count > 1 ? "s" : ""}</div>
           </div>
           <button onClick={onClose} aria-label="Fermer" style={btn({ background: C.bdr, color: C.t2, width: 32, height: 32, borderRadius: "50%", fontSize: 14 })}>✕</button>
@@ -650,7 +650,7 @@ function CertificateView({ certificate, onClose, onShare }: { certificate: Certi
 
           <div style={{ fontSize: 14, color: "#666", marginBottom: 28 }}>a suivi avec succes la formation</div>
 
-          <div style={{ display: "inline-block", padding: "12px 32px", background: `linear-gradient(135deg,${C.gold},${C.gl})`, color: "#fff", fontFamily: F.serif, fontSize: 22, fontWeight: 600, borderRadius: 4, marginBottom: 28 }}>
+          <div style={{ display: "inline-block", padding: "12px 32px", background: `linear-gradient(135deg,${C.gold},${C.gl})`, color: C.tf, fontFamily: F.serif, fontSize: 22, fontWeight: 600, borderRadius: 4, marginBottom: 28 }}>
             {course?.title}
           </div>
 
@@ -675,7 +675,7 @@ function CertificateView({ certificate, onClose, onShare }: { certificate: Certi
           <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 8 }}>Lien de verification</div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <input value={verifyUrl} readOnly style={{ flex: 1, background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 6, padding: "8px 12px", fontSize: 12, color: C.t, fontFamily: F.mono }} />
-            <button onClick={copyLink} style={btn({ background: copied ? C.grn : C.gold, color: copied ? "#fff" : C.bg, padding: "8px 14px", borderRadius: 6, fontWeight: 700, fontSize: 12, whiteSpace: "nowrap" })}>
+            <button onClick={copyLink} style={btn({ background: copied ? C.grn : C.gold, color: copied ? C.surAccent : C.bg, padding: "8px 14px", borderRadius: 6, fontWeight: 700, fontSize: 12, whiteSpace: "nowrap" })}>
               {copied ? "✓ Copié !" : "Copier"}
             </button>
           </div>
@@ -683,7 +683,7 @@ function CertificateView({ certificate, onClose, onShare }: { certificate: Certi
 
         <div style={{ padding: 16, background: C.s1, display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={onShare} style={btn({ background: C.blue, color: "#fff", padding: "10px 20px", borderRadius: 8, fontWeight: 700, fontSize: 13 })}>
+            <button onClick={onShare} style={btn({ background: C.blue, color: C.surAccent, padding: "10px 20px", borderRadius: 8, fontWeight: 700, fontSize: 13 })}>
               📤 Partager
             </button>
             <button onClick={() => window.print()} style={btn({ background: C.s2, color: C.t, border: `1px solid ${C.bdr}`, padding: "10px 20px", borderRadius: 8, fontWeight: 700, fontSize: 13 })}>
@@ -740,7 +740,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
             style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
           >
             <img src="/logo.png" alt="Beyrey Consulting" style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 8 }} />
-            <div style={{ fontFamily: F.serif, fontSize: 16, fontWeight: 600, color: "#fff" }}>Beyrey Consulting</div>
+            <div style={{ fontFamily: F.serif, fontSize: 16, fontWeight: 600, color: C.tf }}>Beyrey Consulting</div>
           </m.div>
           <nav style={{ display: "flex", gap: 20, alignItems: "center" }}>
             {[
@@ -785,7 +785,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
-                  style={{ fontSize: 28, fontFamily: F.serif, fontWeight: 600, color: "#fff" }}
+                  style={{ fontSize: 28, fontFamily: F.serif, fontWeight: 600, color: C.tf }}
                 >
                   {profile?.full_name || "Étudiant"}
                 </m.div>
@@ -1026,7 +1026,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                             }}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            style={{ width: "100%", background: C.grn, border: "none", color: textOn(C.grn), padding: 14, borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                            style={{ width: "100%", background: C.grn, border: "none", color: C.surGrn, padding: 14, borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
                           >
                             <span>🏆</span> Voir mon certificat
                           </m.button>
@@ -1121,7 +1121,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                           onClick={() => { shareCertificate(cert); }}
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          style={{ background: C.blue, border: "none", color: "#fff", padding: "10px 18px", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+                          style={{ background: C.blue, border: "none", color: C.surAccent, padding: "10px 18px", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
                         >
                           {copied ? "✓ Copié" : "Partager"}
                         </m.button>

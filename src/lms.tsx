@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { C, F, btn, clickable, textOn, alpha } from "./data.tsx";
+import { C, F, btn, clickable, alpha } from "./data.tsx";
 import { supabase, signMedia } from "./supabase";
 
 /* ─────────────── TYPES ─────────────── */
@@ -191,7 +191,7 @@ function ProtectedVideoPlayer({ url, path, isPreview, onComplete, onProgress }: 
           <div style={{ height: "100%", width: `${(currentTime / duration) * 100 || 0}%`, background: C.gold, borderRadius: 4, transition: "width .05s linear" }} />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={togglePlay} style={btn({ background: "none", color: "#fff", fontSize: 18, padding: 4 })}>
+          <button onClick={togglePlay} style={btn({ background: "none", color: C.tf, fontSize: 18, padding: 4 })}>
             {playing ? "⏸" : "▶"}
           </button>
           <span style={{ fontFamily: F.mono, fontSize: 11, color: "rgba(255,255,255,.7)" }}>
@@ -262,7 +262,7 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <div>
           <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".1em" }}>QUIZ</div>
-          <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: "#fff" }}>{quiz.title}</div>
+          <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: C.tf }}>{quiz.title}</div>
         </div>
         <div style={{ textAlign: "right" }}>
           <div style={{ fontSize: 10, color: C.t3, fontFamily: F.mono }}>Score minimum</div>
@@ -272,7 +272,7 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string
 
       {submitted && (
         <div style={{ background: passed ? `${alpha(C.grn, 8.2)}` : `${alpha(C.red, 8.2)}`, border: `1px solid ${passed ? C.grn : C.red}30`, borderRadius: 12, padding: 16, marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 44, height: 44, borderRadius: "50%", background: passed ? C.grn : C.red, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: "#fff" }}>
+          <div style={{ width: 44, height: 44, borderRadius: "50%", background: passed ? C.grn : C.red, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: C.surAccent }}>
             {passed ? "✓" : "✕"}
           </div>
           <div>
@@ -389,7 +389,7 @@ function QASection({ lessonId }: { lessonId: string }) {
         <div style={{ fontSize: 22 }}>💬</div>
         <div>
           <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".1em" }}>QUESTIONS & REPONSES</div>
-          <div style={{ fontFamily: F.serif, fontSize: 18, fontWeight: 600, color: "#fff" }}>Zone de discussion</div>
+          <div style={{ fontFamily: F.serif, fontSize: 18, fontWeight: 600, color: C.tf }}>Zone de discussion</div>
         </div>
       </div>
 
@@ -469,7 +469,7 @@ function FilesSection({ lessonId }: { lessonId: string }) {
         <div style={{ fontSize: 22 }}>📁</div>
         <div>
           <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".1em" }}>RESSOURCES</div>
-          <div style={{ fontFamily: F.serif, fontSize: 18, fontWeight: 600, color: "#fff" }}>Fichiers du cours</div>
+          <div style={{ fontFamily: F.serif, fontSize: 18, fontWeight: 600, color: C.tf }}>Fichiers du cours</div>
         </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -684,7 +684,7 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
                 <span style={{ fontSize: 10, color: course.color, fontFamily: F.mono, background: `${course.color}18`, padding: "3px 8px", borderRadius: 4 }}>{course.category}</span>
                 <span style={{ fontSize: 10, color: C.t2, fontFamily: F.mono, background: C.s2, padding: "3px 8px", borderRadius: 4 }}>{course.level}</span>
               </div>
-              <h1 style={{ fontFamily: F.serif, fontSize: 28, fontWeight: 600, color: "#fff", margin: "0 0 6px", lineHeight: 1.2 }}>{course.title}</h1>
+              <h1 style={{ fontFamily: F.serif, fontSize: 28, fontWeight: 600, color: C.tf, margin: "0 0 6px", lineHeight: 1.2 }}>{course.title}</h1>
               {course.subtitle && <div style={{ fontSize: 14, color: C.t2, marginBottom: 12 }}>{course.subtitle}</div>}
               <div style={{ display: "flex", gap: 20, fontSize: 11, color: C.t3, fontFamily: F.mono, flexWrap: "wrap", alignItems: "center" }}>
                 <span>📚 {totalLessons} lecons</span>
@@ -768,7 +768,7 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
                         
                         
                       >
-                        <div style={{ width: 28, height: 28, borderRadius: 8, background: lessonProg?.completed_at ? C.grn : les.video_url ? `${alpha(C.gold, 9.4)}` : C.s2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: lessonProg?.completed_at ? "#fff" : les.video_url ? C.gold : C.t3, flexShrink: 0 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: 8, background: lessonProg?.completed_at ? C.grn : les.video_url ? `${alpha(C.gold, 9.4)}` : C.s2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: lessonProg?.completed_at ? C.surAccent : les.video_url ? C.gold : C.t3, flexShrink: 0 }}>
                           {lessonProg?.completed_at ? "✓" : les.video_url ? "▶" : li + 1}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -832,7 +832,7 @@ export function CourseCatalog({ onSelectCourse, onBack, user, onAddToCart }: { o
           <button onClick={onBack} style={btn({ background: C.s2, border: `1px solid ${C.bdr}`, color: C.t2, padding: "8px 14px", borderRadius: 8, fontSize: 12, marginBottom: 20 })}>
             ← Retour au site
           </button>
-          <h1 style={{ fontFamily: F.serif, fontSize: 36, fontWeight: 600, color: "#fff", margin: 0 }}>Catalogue des formations</h1>
+          <h1 style={{ fontFamily: F.serif, fontSize: 36, fontWeight: 600, color: C.tf, margin: 0 }}>Catalogue des formations</h1>
           <p style={{ fontSize: 15, color: C.t2, marginTop: 8 }}>Explorez nos formations disponibles et lancez-vous.</p>
         </div>
       </div>
@@ -862,7 +862,7 @@ export function CourseCatalog({ onSelectCourse, onBack, user, onAddToCart }: { o
                         <span style={{ fontSize: 10, color: C.t2, fontFamily: F.mono }}>{c.level}</span>
                       </div>
                     </div>
-                    <h3 style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: "#fff", margin: "0 0 6px", lineHeight: 1.25 }}>{c.title}</h3>
+                    <h3 style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: C.tf, margin: "0 0 6px", lineHeight: 1.25 }}>{c.title}</h3>
                     {c.subtitle && <div style={{ fontSize: 12, color: C.t2, lineHeight: 1.5 }}>{c.subtitle}</div>}
                   </div>
                   <div style={{ padding: 18 }}>
@@ -876,7 +876,7 @@ export function CourseCatalog({ onSelectCourse, onBack, user, onAddToCart }: { o
                       </div>
                     </div>
                     {isEnrolled ? (
-                      <button onClick={() => onSelectCourse(c.id)} style={btn({ width: "100%", background: C.grn, color: textOn(C.grn), padding: 12, borderRadius: 10, fontWeight: 700, fontSize: 13 })}>
+                      <button onClick={() => onSelectCourse(c.id)} style={btn({ width: "100%", background: C.grn, color: C.surGrn, padding: 12, borderRadius: 10, fontWeight: 700, fontSize: 13 })}>
                         Continuer la formation
                       </button>
                     ) : user && onAddToCart ? (

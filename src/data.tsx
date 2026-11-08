@@ -14,6 +14,9 @@
  */
 const jeton = (nom: string) => `rgb(var(--${nom}-rgb))`;
 
+/** Blanc dans les deux thèmes : texte posé sur une surface saturée. */
+export const TEXTE_SUR_ACCENT = jeton("sur-accent");
+
 export const C = {
   bg: jeton("fond"), s1: jeton("surface1"), s2: jeton("surface2"),
   s3: jeton("surface3"),
@@ -26,6 +29,13 @@ export const C = {
   t: jeton("texte"), t2: jeton("texte2"), t3: jeton("texte3"),
   iv: jeton("ivoire"), iv2: jeton("ivoire2"),
   tl: jeton("encre"), tl2: jeton("encre2"),
+  // Texte MIS EN AVANT sur une surface de page : blanc la nuit,
+  // presque noir le jour. Distinct de `t`, qui est l'ivoire courant.
+  tf: jeton("texte-fort"),
+  // Texte sur la pastille verte : sombre la nuit (le vert y est
+  // clair), blanc le jour (le vert y est profond).
+  surGrn: jeton("sur-donnee"),
+  surAccent: jeton("sur-accent"),
   // Voiles historiques, conservés pour les appels existants.
   gp: "rgb(var(--or-rgb) / 12%)",
   gp2: "rgb(var(--donnee-rgb) / 10%)",
@@ -324,7 +334,30 @@ export const btn = (style:React.CSSProperties={}) => ({cursor:"pointer",fontFami
 const _lin = (c:number) => { const s=c/255; return s<=0.03928 ? s/12.92 : Math.pow((s+0.055)/1.055,2.4); };
 export const lum = (hex:string) => { const h=hex.replace("#",""); return 0.2126*_lin(parseInt(h.slice(0,2),16))+0.7152*_lin(parseInt(h.slice(2,4),16))+0.0722*_lin(parseInt(h.slice(4,6),16)); };
 // Pick dark or white text for best contrast on a colored background (WCAG AA).
-export const textOn = (bg:string) => { const L=lum(bg); const cWhite=1.05/(L+0.05); const cDark=(L+0.05)/(lum(C.bg)+0.05); return cWhite>=cDark ? "#fff" : C.bg; };
+/** Texte lisible sur un fond DONNÉ EN HEXADÉCIMAL (couleurs de contenu :
+ * catégories de cours, marques de paiement). Ces couleurs-là ne suivent pas
+ * le thème, et c'est bien pour cela qu'on peut calculer leur contraste.
+ *
+ * NE PAS LUI PASSER UN JETON. `lum()` parse « #rrggbb » : sur
+ * « rgb(var(--donnee-rgb)) » il rend NaN, toutes les comparaisons
+ * deviennent fausses, et la fonction renvoyait la mauvaise couleur sans
+ * rien signaler. Pour un fond accentué du thème, il existe un jeton de
+ * contraste — `C.surGrn` — qui sait, lui, que le vert est clair la nuit et
+ * profond le jour.
+ */
+export const textOn = (bg:string) => {
+  if (!/^#[0-9a-f]{6}$/i.test(bg)) {
+    // Jeton ou couleur exotique : on ne devine pas. Le blanc est le choix
+    // sûr sur les fonds saturés, et le cas se voit en relecture.
+    return TEXTE_SUR_ACCENT;
+  }
+  const L = lum(bg);
+  const cWhite = 1.05 / (L + 0.05);
+  // Référence sombre LITTÉRALE : le sol de nuit. L'ancienne version lisait
+  // `C.bg`, devenu un jeton — donc NaN.
+  const cDark = (L + 0.05) / (lum("#0F1226") + 0.05);
+  return cWhite >= cDark ? TEXTE_SUR_ACCENT : "#0F1226";
+};
 // Spread onto a clickable <div> to make it keyboard-operable (Enter/Space).
 export const clickable = (onActivate:()=>void) => ({
   role:"button" as const, tabIndex:0, onClick:onActivate,

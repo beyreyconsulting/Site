@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { C, F, fmt, btn, Tag, textOn, alpha } from "./data.tsx";
+import { C, F, fmt, btn, Tag, alpha } from "./data.tsx";
 import { VideoPlayer, RichText } from "./components";
 import { useDialog } from "./a11y";
 
@@ -29,7 +29,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
               <Tag c={C.t2}>{course.lvl}</Tag>
               {course.preview&&<Tag c={C.grn}>▶ Aperçu gratuit</Tag>}
             </div>
-            <h2 style={{fontFamily:F.serif,fontSize:26,fontWeight:600,color:"#fff",margin:0,lineHeight:1.2}}>{course.title}</h2>
+            <h2 style={{fontFamily:F.serif,fontSize:26,fontWeight:600,color:C.tf,margin:0,lineHeight:1.2}}>{course.title}</h2>
             <div style={{fontSize:13,color:C.t2,marginTop:6}}>{course.sub}</div>
           </div>
           <button onClick={onClose} aria-label="Fermer" style={btn({background:C.bdr,color:C.t2,width:32,height:32,borderRadius:"50%",fontSize:14,flexShrink:0})}>✕</button>
@@ -65,7 +65,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
                   ].map((x,i)=>(
                     <div key={i} style={{background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 10px",textAlign:"center"}}>
                       <div style={{fontSize:18,marginBottom:4}}>{x.icon}</div>
-                      <div style={{fontSize:14,fontWeight:800,color:"#fff"}}>{x.v}</div>
+                      <div style={{fontSize:14,fontWeight:800,color:C.tf}}>{x.v}</div>
                       <div style={{fontSize:9,color:C.t2,textTransform:"uppercase",letterSpacing:".08em",fontFamily:F.mono}}>{x.l}</div>
                     </div>
                   ))}
@@ -100,7 +100,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
             <div style={{display:"flex",gap:20,alignItems:"flex-start",marginBottom:20}}>
               <div style={{width:80,height:80,borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},${C.gl})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,flexShrink:0}}>👨‍🏫</div>
               <div>
-                <div style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:"#fff",marginBottom:4}}>Ibrahim Seydou</div>
+                <div style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:C.tf,marginBottom:4}}>Ibrahim Seydou</div>
                 <div style={{fontSize:12,color:C.gold,marginBottom:8}}>Fondateur · Beyrey Consulting</div>
                 <div style={{fontSize:13,color:C.t2,lineHeight:1.6}}>Consultant Data & BI avec 5 ans de terrain au Mali. A audité plus de 40 PME maliennes et formé 465+ étudiants. Auteur de "L'Art de la Rigueur".</div>
               </div>
@@ -125,7 +125,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
             <div style={{fontSize:10,color:C.t2,fontFamily:F.mono,marginTop:2}}>Accès à vie · Certification incluse</div>
           </div>
           {enrolled?(
-            <button onClick={()=>onEnroll(course.id)} style={btn({background:C.grn,color:textOn(C.grn),padding:"13px 28px",borderRadius:10,fontWeight:800,fontSize:14,boxShadow:"0 6px 24px rgba(0,200,150,.3)"})}>
+            <button onClick={()=>onEnroll(course.id)} style={btn({background:C.grn,color:C.surGrn,padding:"13px 28px",borderRadius:10,fontWeight:800,fontSize:14,boxShadow:"0 6px 24px rgba(0,200,150,.3)"})}>
               ✓ Vous êtes inscrit · Accéder
             </button>
           ):(
@@ -161,14 +161,14 @@ export function BlogModal({post,onClose}:{post:any,onClose:()=>void}){
             <Tag c={C.t2}>{post.time} de lecture</Tag>
             <Tag c={C.t3}>{post.date}</Tag>
           </div>
-          <h2 style={{fontFamily:F.serif,fontSize:28,fontWeight:600,color:"#fff",margin:0,lineHeight:1.25,paddingRight:40}}>{post.title}</h2>
+          <h2 style={{fontFamily:F.serif,fontSize:28,fontWeight:600,color:C.tf,margin:0,lineHeight:1.25,paddingRight:40}}>{post.title}</h2>
         </div>
 
         <div style={{flex:1,overflowY:"auto",padding:"24px 28px"}}>
           <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20,paddingBottom:18,borderBottom:`1px solid ${C.bdr}`}}>
             <div style={{width:44,height:44,borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},${C.gl})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:C.bg,fontWeight:800}}>IS</div>
             <div>
-              <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>Ibrahim Seydou</div>
+              <div style={{fontSize:13,fontWeight:700,color:C.tf}}>Ibrahim Seydou</div>
               <div style={{fontSize:11,color:C.t2,fontFamily:F.mono}}>Fondateur · Beyrey Consulting</div>
             </div>
           </div>

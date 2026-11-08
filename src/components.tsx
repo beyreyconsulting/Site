@@ -62,7 +62,7 @@ export function KalanAI(){
           <div style={{background:C.s2,borderBottom:`1px solid ${C.bdr}`,padding:"12px 16px",display:"flex",alignItems:"center",gap:10}}>
             <div style={{width:36,height:36,borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},${C.gl})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>🤖</div>
             <div style={{flex:1}}>
-              <div style={{fontWeight:800,fontSize:14,color:"#fff"}}>Kalan</div>
+              <div style={{fontWeight:800,fontSize:14,color:C.tf}}>Kalan</div>
               <div style={{fontSize:10,color:C.grn,fontFamily:F.mono}}>● Assistant IA · Beyrey Consulting</div>
             </div>
           </div>
@@ -171,7 +171,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
             transition={{ delay: 0.3 }}
             style={{textAlign:"center",position:"relative",zIndex:1}}
           >
-            <div style={{fontFamily:F.serif,fontSize:17,fontWeight:600,color:"#fff",marginBottom:6}}>Contenu verrouillé</div>
+            <div style={{fontFamily:F.serif,fontSize:17,fontWeight:600,color:C.tf,marginBottom:6}}>Contenu verrouillé</div>
             <div style={{fontSize:12,color:C.t2}}>Inscrivez-vous pour accéder aux {totalVids} leçons</div>
           </m.div>
         </div>
@@ -233,7 +233,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
             <m.button
               onClick={()=>{setPlaying(p=>!p);if(prog>=100)setProg(0);}}
               whileTap={{ scale: 0.9 }}
-              style={{background:"none",border:"none",color:"#fff",fontSize:15,cursor:"pointer"}}
+              style={{background:"none",border:"none",color:C.tf,fontSize:15,cursor:"pointer"}}
             >{playing?"⏸":"▶"}</m.button>
             <span style={{fontFamily:F.mono,fontSize:10,color:C.t2}}>{timeStr} / 48:00</span>
             <div style={{flex:1}}/>
@@ -271,7 +271,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
                     <m.div
                       animate={{ scale: isDone ? [1, 1.2, 1] : 1 }}
                       transition={{ duration: 0.3 }}
-                      style={{width:18,height:18,borderRadius:4,background:isDone?C.grn:C.bdr,border:`1px solid ${isDone?C.grn:C.bdr2}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:isDone?"#fff":C.t3,flexShrink:0}}
+                      style={{width:18,height:18,borderRadius:4,background:isDone?C.grn:C.bdr,border:`1px solid ${isDone?C.grn:C.bdr2}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:isDone?C.surAccent:C.t3,flexShrink:0}}
                     >
                       {isDone?"✓":li+1}
                     </m.div>
@@ -379,7 +379,7 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
         {step===1&&<>
           <div style={{background:C.s2,padding:"18px 20px",borderBottom:`1px solid ${C.bdr}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div>
-              <div style={{fontSize:15,fontWeight:800,color:"#fff"}}>Choisir le paiement</div>
+              <div style={{fontSize:15,fontWeight:800,color:C.tf}}>Choisir le paiement</div>
               <div style={{fontFamily:F.mono,fontSize:11,color:C.gold}}>{fmt(course.price)} · {course.title.substring(0,30)}{course.title.length>30?"…":""}</div>
             </div>
             <button onClick={onClose} style={btn({background:C.bdr,color:C.t2,width:30,height:30,borderRadius:"50%",fontSize:14})}>✕</button>
@@ -406,7 +406,7 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
           <div style={{background:C.s2,padding:"14px 18px",borderBottom:`1px solid ${C.bdr}`,display:"flex",gap:10,alignItems:"center"}}>
             <button onClick={()=>setStep(1)} style={btn({background:C.bdr,color:C.t2,width:30,height:30,borderRadius:"50%",fontSize:14})}>←</button>
             <div>
-              <div style={{fontSize:14,fontWeight:800,color:"#fff"}}>{method?.icon} {method?.name}</div>
+              <div style={{fontSize:14,fontWeight:800,color:C.tf}}>{method?.icon} {method?.name}</div>
               <div style={{fontFamily:F.mono,fontSize:10,color:C.gold}}>{fmt(course.price)}</div>
             </div>
           </div>
@@ -455,9 +455,9 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
         </div>}
 
         {step===4&&<div style={{padding:40,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,textAlign:"center"}}>
-           <div style={{width:60,height:60,borderRadius:"50%",background:C.grn,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,color:"#fff"}}>✓</div>
+           <div style={{width:60,height:60,borderRadius:"50%",background:C.grn,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,color:C.surAccent}}>✓</div>
            <div>
-             <div style={{fontSize:18,fontWeight:800,color:"#fff",marginBottom:6}}>Paiement réussi !</div>
+             <div style={{fontSize:18,fontWeight:800,color:C.tf,marginBottom:6}}>Paiement réussi !</div>
              <div style={{fontSize:12,color:C.t2,marginBottom:20}}>Vous avez maintenant accès à la formation.</div>
              <button onClick={()=>{onSuccess();onClose();}} style={btn({background:C.gold,color:C.bg,padding:"10px 20px",borderRadius:8,fontWeight:700})}>
                Commencer la formation
@@ -542,7 +542,7 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
               <div style={{ width: 52, height: 52, borderRadius: 12, background: `${alpha(C.gold, 9.4)}`, border: `1px solid ${alpha(C.gold, 18.8)}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>📖</div>
               <div>
                 <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 4 }}>Livre blanc · Gratuit</div>
-                <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: "#fff", lineHeight: 1.2 }}>L'Art de la Rigueur</div>
+                <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: C.tf, lineHeight: 1.2 }}>L'Art de la Rigueur</div>
                 <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>Manifeste pour une gouvernance frugale de la data en Afrique</div>
               </div>
             </div>
@@ -609,9 +609,9 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
 
         {step === "done" && (
           <div style={{ padding: "28px 28px 36px", display: "flex", flexDirection: "column", alignItems: "center", gap: 14, textAlign: "center" }}>
-            <div style={{ width: 64, height: 64, borderRadius: "50%", background: C.grn, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, color: "#fff", boxShadow: `0 8px 24px ${alpha(C.grn, 31.4)}` }}>✓</div>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: C.grn, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, color: C.surAccent, boxShadow: `0 8px 24px ${alpha(C.grn, 31.4)}` }}>✓</div>
             <div>
-              <div style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 600, color: "#fff", marginBottom: 8 }}>Votre téléchargement a démarré !</div>
+              <div style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 600, color: C.tf, marginBottom: 8 }}>Votre téléchargement a démarré !</div>
               <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.65, maxWidth: 340 }}>
                 Si le téléchargement ne démarre pas automatiquement,{" "}
                 <a href="/L_Art_de_la_Rigueur.pdf" download="L_Art_de_la_Rigueur_Beyrey_Consulting.pdf" style={{ color: C.gold, textDecoration: "underline" }}>cliquez ici</a>.

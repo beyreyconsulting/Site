@@ -1,17 +1,56 @@
 /* ═══════════════════════════════════════════════════
    DESIGN TOKENS — "Nuit de Bamako" (continuité V2)
 ═══════════════════════════════════════════════════ */
+/** Un jeton : la couleur pleine, écrite de façon à rester composable.
+ *
+ * Chaque valeur est `rgb(var(--x-rgb))`, et non un hexadécimal. C'est ce
+ * qui permet au mode jour d'exister sans toucher aux ~1 090 lectures de
+ * jeton : le CSS redéfinit le triplet derrière, et tout suit (`index.css`).
+ *
+ * POUR UNE COULEUR SEMI-TRANSPARENTE, passer par `alpha()` ci-dessous et
+ * JAMAIS par une concaténation. Le site écrivait `${alpha(C.gold, 18.8)}` — coller
+ * une paire hexadécimale à un `rgb(…)` donne du CSS invalide, qu'aucun
+ * navigateur ne signale : la bordure disparaît, simplement.
+ */
+const jeton = (nom: string) => `rgb(var(--${nom}-rgb))`;
+
 export const C = {
-  bg:"#08111E", s1:"#0E1A2C", s2:"#162438", s3:"#1E3054",
-  bdr:"#1E3254", bdr2:"#263D6A",
-  gold:"#C8971A", gl:"#E0A820", gp:"rgba(200,151,26,.12)",
-  grn:"#00C896", gp2:"rgba(0,200,150,.10)",
-  red:"#E84040", rdp:"rgba(232,64,64,.10)",
-  blue:"#2062E8", blp:"rgba(32,98,232,.10)",
-  wa:"#25D366",
-  t:"#E6E1D8", t2:"#8A9CBE", t3:"#7789A6",
-  iv:"#F4EFE6", iv2:"#E8E1D4", tl:"#1A2840", tl2:"#4A5E78",
+  bg: jeton("fond"), s1: jeton("surface1"), s2: jeton("surface2"),
+  s3: jeton("surface3"),
+  bdr: jeton("bordure"), bdr2: jeton("bordure2"),
+  gold: jeton("or"), gl: jeton("or-clair"),
+  grn: jeton("donnee"),
+  red: jeton("alerte"),
+  blue: jeton("lien"),
+  wa: jeton("whatsapp"),
+  t: jeton("texte"), t2: jeton("texte2"), t3: jeton("texte3"),
+  iv: jeton("ivoire"), iv2: jeton("ivoire2"),
+  tl: jeton("encre"), tl2: jeton("encre2"),
+  // Voiles historiques, conservés pour les appels existants.
+  gp: "rgb(var(--or-rgb) / 12%)",
+  gp2: "rgb(var(--donnee-rgb) / 10%)",
+  rdp: "rgb(var(--alerte-rgb) / 10%)",
+  blp: "rgb(var(--lien-rgb) / 10%)",
 };
+
+/** La même couleur, semi-transparente.
+ *
+ * `opacite` se donne en pourcentage (0 à 100) ou en fraction (0 à 1) —
+ * les deux s'écrivent naturellement selon le site d'appel.
+ *
+ * Remplace les concaténations `${alpha(C.gold, 18.8)}`, qui produisaient du CSS
+ * invalide dès que le jeton a cessé d'être un hexadécimal.
+ */
+export function alpha(couleur: string, opacite: number): string {
+  const pourcent = opacite <= 1 ? opacite * 100 : opacite;
+  const arrondi = Math.round(pourcent * 10) / 10;
+  if (couleur.startsWith("rgb(") && couleur.endsWith(")")) {
+    return `${couleur.slice(0, -1)} / ${arrondi}%)`;
+  }
+  // Couleur littérale (hexadécimal ou nom) : rendue telle quelle plutôt
+  // que de fabriquer du CSS douteux.
+  return couleur;
+}
 export const F = {
   serif:"'Cormorant Garamond',Georgia,serif",
   sans:"'Plus Jakarta Sans',system-ui,sans-serif",
@@ -285,7 +324,7 @@ export const btn = (style:React.CSSProperties={}) => ({cursor:"pointer",fontFami
 const _lin = (c:number) => { const s=c/255; return s<=0.03928 ? s/12.92 : Math.pow((s+0.055)/1.055,2.4); };
 export const lum = (hex:string) => { const h=hex.replace("#",""); return 0.2126*_lin(parseInt(h.slice(0,2),16))+0.7152*_lin(parseInt(h.slice(2,4),16))+0.0722*_lin(parseInt(h.slice(4,6),16)); };
 // Pick dark or white text for best contrast on a colored background (WCAG AA).
-export const textOn = (bg:string) => { const L=lum(bg); const cWhite=1.05/(L+0.05); const cDark=(L+0.05)/(lum("#08111E")+0.05); return cWhite>=cDark ? "#fff" : "#08111E"; };
+export const textOn = (bg:string) => { const L=lum(bg); const cWhite=1.05/(L+0.05); const cDark=(L+0.05)/(lum(C.bg)+0.05); return cWhite>=cDark ? "#fff" : C.bg; };
 // Spread onto a clickable <div> to make it keyboard-operable (Enter/Space).
 export const clickable = (onActivate:()=>void) => ({
   role:"button" as const, tabIndex:0, onClick:onActivate,

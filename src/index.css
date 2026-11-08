@@ -2,13 +2,133 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════════════════
+   JETONS DE COULEUR — deux thèmes, une seule source
+   ═══════════════════════════════════════════════════════════════════════
+
+   POURQUOI DES TRIPLETS RGB et non des couleurs complètes. Le site écrit
+   83 fois une couleur semi-transparente en collant une paire hexadécimale
+   au jeton : `${C.gold}30`. Avec un jeton valant « var(--or) », cela
+   produirait « var(--or)30 » — du CSS invalide, ignoré SANS erreur : 83
+   bordures et fonds auraient disparu en silence.
+
+   En gardant le triplet nu (« 224 163 58 »), le jeton s'emploie des deux
+   façons :
+
+       rgb(var(--or-rgb))              la couleur pleine
+       rgb(var(--or-rgb) / 19%)        la même, semi-transparente
+
+   Cette syntaxe est comprise depuis 2017, bien plus largement que
+   `color-mix()` — ce qui compte quand la cible est un téléphone d'entrée
+   de gamme dont le WebView a quelques années.
+
+   LE MODE JOUR EXISTE SANS TOUCHER AU JAVASCRIPT : les ~1 090 endroits
+   qui lisent un jeton continuent de lire la même chaîne, et c'est
+   l'attribut `data-theme` sur la racine qui change ce qu'elle désigne.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  color-scheme: dark;
+
+  /* ----- NUIT (défaut) : indigo, pas bleu marine -------------------------
+     Le fond garde une pointe de violet, celle de l'indigo fermenté — le
+     Mali teignait à l'indigo bien avant d'avoir des tableaux de bord. Un
+     bleu marine tire vers le noir et aplatit tout ; l'indigo garde de la
+     couleur dans l'ombre, et les surfaces s'en détachent. */
+  --fond-rgb:       15 18 38;
+  --surface1-rgb:   23 27 56;
+  --surface2-rgb:   31 36 74;
+  --surface3-rgb:   42 48 96;
+  --bordure-rgb:    51 58 114;
+  --bordure2-rgb:   71 79 147;
+
+  /* L'accent doit tenir sur LES DEUX sols : c'est la contrainte dure d'un
+     double thème, et elle écarte l'or jaune, illisible sur du clair. */
+  --or-rgb:         224 163 58;
+  --or-clair-rgb:   242 192 106;
+
+  /* Seconde voix, réservée aux DONNÉES et au positif — jamais aux
+     actions. Sarcelle : l'autre bain de teinture du bogolan. */
+  --donnee-rgb:     63 194 168;
+  --alerte-rgb:     232 94 84;
+  --lien-rgb:       124 156 240;
+  --whatsapp-rgb:   37 211 102;
+
+  --texte-rgb:      242 239 232;
+  --texte2-rgb:     168 178 212;
+  --texte3-rgb:     126 137 176;
+
+  --ivoire-rgb:     244 239 230;
+  --ivoire2-rgb:    232 225 212;
+  --encre-rgb:       26  40 64;
+  --encre2-rgb:      74  94 120;
+}
+
+/* ----- JOUR -------------------------------------------------------------
+   Le papier n'est pas crème : il a de l'indigo dans l'eau. C'est ce qui le
+   rattache au thème de nuit et lui évite le beige de catalogue. Les gris
+   sont biaisés vers l'indigo, jamais neutres : un gris pur a l'air d'un
+   oubli. L'or passe au laiton profond — le laiton clair ne tient pas ses
+   4,5:1 sur du papier.
+
+   PAS ENCORE SERVI AUTOMATIQUEMENT, et c'est voulu : 55 couleurs de texte
+   sont encore écrites « #fff » en dur dans les composants, ce qui donne du
+   blanc sur blanc (constaté à l'écran). Tant qu'elles n'ont pas un jeton
+   de RÔLE — « texte principal », qui s'inverse, contre « texte sur
+   l'accent », qui reste clair dans les deux thèmes — suivre
+   `prefers-color-scheme` livrerait une page illisible à tout visiteur dont
+   le système est en clair. Le jour ne s'obtient donc que par
+   `data-theme="jour"`, en connaissance de cause. */
+:root[data-theme="jour"] {
+  color-scheme: light;
+  --fond-rgb:       242 244 250;
+  --surface1-rgb:   255 255 255;
+  --surface2-rgb:   233 237 247;
+  --surface3-rgb:   221 227 241;
+  --bordure-rgb:    203 211 231;
+  --bordure2-rgb:   174 185 214;
+  --or-rgb:         156  99  22;
+  --or-clair-rgb:   125  78  15;
+  --donnee-rgb:      13 111  98;
+  --alerte-rgb:     185  40  40;
+  --lien-rgb:        32  98 232;
+  --whatsapp-rgb:    21 150  70;
+  --texte-rgb:       18  23  37;
+  --texte2-rgb:      68  80 110;
+  --texte3-rgb:     107 120 154;
+  --ivoire-rgb:     255 255 255;
+  --ivoire2-rgb:    242 244 250;
+  --encre-rgb:       18  23  37;
+  --encre2-rgb:      68  80 110;
+}
+
+html, body {
+  background: rgb(var(--fond-rgb));
+  color: rgb(var(--texte-rgb));
+}
+
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Les nombres qui changent ne doivent pas frémir : prix, compteurs,
+   progressions. */
+.chiffre, .prix, .compteur { font-variant-numeric: tabular-nums; }
+
 /* ── Mouvement (principes Emil Kowalski) ─────────────────────────────────
    Un seul endroit pour les survols et les retours de pression : les styles
    inline ne savent exprimer ni :hover, ni :active, ni prefers-reduced-motion.
    Survols réservés aux pointeurs fins (pas de survol « collé » au doigt). */
 :root {
   --ease-out: cubic-bezier(.23, 1, .32, 1);
-  --or: #C8971A;
+  /* DÉRIVE DU JETON : écrit en dur, cet or serait resté l'ancien pendant
+     que tout le reste passait au laiton — un survol d'une couleur, une
+     bordure d'une autre. */
+  --or: rgb(var(--or-rgb));
 }
 .carte, .carte-bord, .ligne, .ligne-fond, .fab {
   transition: transform 200ms var(--ease-out), border-color 150ms ease,
@@ -18,12 +138,25 @@
   .carte:hover { transform: translateY(-4px); border-color: var(--or) !important;
                  box-shadow: 0 20px 48px rgba(0, 0, 0, .4); }
   .carte-bord:hover { border-color: var(--or) !important; }
-  .ligne:hover { border-color: var(--or) !important; background-color: rgba(200, 151, 26, .03) !important; }
-  .ligne-fond:hover { background-color: rgba(200, 151, 26, .03) !important; }
+  .ligne:hover { border-color: var(--or) !important;
+                 background-color: rgb(var(--or-rgb) / 3%) !important; }
+  .ligne-fond:hover { background-color: rgb(var(--or-rgb) / 3%) !important; }
   .fab:hover { transform: scale(1.06); }
 }
 /* Le bouton répond à la pression (100–160 ms). */
 button:not(:disabled):active { transform: scale(.97); }
+
+/* Le délai de ~300 ms que le navigateur garde pour voir venir un
+   double-tap se paie à chaque geste sur téléphone. */
+a, button, label[for], select, summary, [role="button"] {
+  touch-action: manipulation;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .carte:hover, .fab:hover, button:not(:disabled):active { transform: none; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
 }

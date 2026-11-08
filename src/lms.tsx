@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { C, F, btn, clickable, textOn } from "./data.tsx";
+import { C, F, btn, clickable, textOn, alpha } from "./data.tsx";
 import { supabase, signMedia } from "./supabase";
 
 /* ─────────────── TYPES ─────────────── */
@@ -166,7 +166,7 @@ function ProtectedVideoPlayer({ url, path, isPreview, onComplete, onProgress }: 
   return (
     <div style={{ background: "#000", borderRadius: 12, overflow: "hidden", position: "relative" }}>
       {isPreview && (
-        <div style={{ position: "absolute", top: 12, left: 12, background: `${C.grn}20`, color: C.grn, padding: "4px 10px", borderRadius: 6, fontSize: 10, fontFamily: F.mono, fontWeight: 700, zIndex: 10, border: `1px solid ${C.grn}40` }}>
+        <div style={{ position: "absolute", top: 12, left: 12, background: `${alpha(C.grn, 12.5)}`, color: C.grn, padding: "4px 10px", borderRadius: 6, fontSize: 10, fontFamily: F.mono, fontWeight: 700, zIndex: 10, border: `1px solid ${alpha(C.grn, 25.1)}` }}>
           APERCU GRATUIT
         </div>
       )}
@@ -271,7 +271,7 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string
       </div>
 
       {submitted && (
-        <div style={{ background: passed ? `${C.grn}15` : `${C.red}15`, border: `1px solid ${passed ? C.grn : C.red}30`, borderRadius: 12, padding: 16, marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ background: passed ? `${alpha(C.grn, 8.2)}` : `${alpha(C.red, 8.2)}`, border: `1px solid ${passed ? C.grn : C.red}30`, borderRadius: 12, padding: 16, marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 44, height: 44, borderRadius: "50%", background: passed ? C.grn : C.red, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: "#fff" }}>
             {passed ? "✓" : "✕"}
           </div>
@@ -295,7 +295,7 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: C.t }}>{q.question}</div>
               {submitted && (
-                <div style={{ background: isCorrect ? `${C.grn}20` : `${C.red}20`, color: isCorrect ? C.grn : C.red, padding: "3px 8px", borderRadius: 6, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+                <div style={{ background: isCorrect ? `${alpha(C.grn, 12.5)}` : `${alpha(C.red, 12.5)}`, color: isCorrect ? C.grn : C.red, padding: "3px 8px", borderRadius: 6, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
                   {isCorrect ? "Correct" : "Incorrect"}
                 </div>
               )}
@@ -311,7 +311,7 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string
                     disabled={submitted}
                     style={{
                       display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, cursor: submitted ? "default" : "pointer",
-                      background: showCorrect ? `${C.grn}12` : isSelected ? (submitted ? `${C.red}12` : `${C.gold}12`) : C.s2,
+                      background: showCorrect ? `${alpha(C.grn, 7.1)}` : isSelected ? (submitted ? `${alpha(C.red, 7.1)}` : `${alpha(C.gold, 7.1)}`) : C.s2,
                       border: `1px solid ${showCorrect ? C.grn : isSelected ? (submitted ? C.red : C.gold) : C.bdr}`,
                       transition:"background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s cubic-bezier(.23,1,.32,1)", textAlign: "left" as const,
                     }}
@@ -326,7 +326,7 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string
               })}
             </div>
             {submitted && q.explanation && (
-              <div style={{ marginTop: 10, padding: "10px 12px", background: `${C.blue}10`, borderRadius: 8, fontSize: 12, color: C.t2, lineHeight: 1.6 }}>
+              <div style={{ marginTop: 10, padding: "10px 12px", background: `${alpha(C.blue, 6.3)}`, borderRadius: 8, fontSize: 12, color: C.t2, lineHeight: 1.6 }}>
                 <strong style={{ color: C.blue }}>Explication :</strong> {q.explanation}
               </div>
             )}
@@ -413,25 +413,25 @@ function QASection({ lessonId }: { lessonId: string }) {
       {qas.map(qa => (
         <div key={qa.id} style={{ background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 16, marginBottom: 12 }}>
           <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", background: `${C.blue}20`, color: C.blue, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0 }}>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", background: `${alpha(C.blue, 12.5)}`, color: C.blue, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0 }}>
               {qa.author_name?.[0]?.toUpperCase() || "?"}
             </div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: C.t }}>{qa.author_name}</div>
               <div style={{ fontSize: 10, color: C.t3, fontFamily: F.mono }}>{new Date(qa.created_at).toLocaleDateString("fr-FR")}</div>
             </div>
-            {qa.is_answered && <div style={{ marginLeft: "auto", fontSize: 10, color: C.grn, fontFamily: F.mono, background: `${C.grn}15`, padding: "3px 8px", borderRadius: 4 }}>REPONDU</div>}
+            {qa.is_answered && <div style={{ marginLeft: "auto", fontSize: 10, color: C.grn, fontFamily: F.mono, background: `${alpha(C.grn, 8.2)}`, padding: "3px 8px", borderRadius: 4 }}>REPONDU</div>}
           </div>
           <p style={{ fontSize: 13, color: C.t, lineHeight: 1.65, margin: 0 }}>{qa.question}</p>
 
           {qa.answers.map(ans => (
-            <div key={ans.id} style={{ marginTop: 12, marginLeft: 16, padding: 12, background: ans.is_from_instructor ? `${C.gold}08` : C.s1, border: `1px solid ${ans.is_from_instructor ? C.gold + "30" : C.bdr}`, borderRadius: 10 }}>
+            <div key={ans.id} style={{ marginTop: 12, marginLeft: 16, padding: 12, background: ans.is_from_instructor ? `${alpha(C.gold, 3.1)}` : C.s1, border: `1px solid ${ans.is_from_instructor ? alpha(C.gold, 18.8) : C.bdr}`, borderRadius: 10 }}>
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
-                <div style={{ width: 24, height: 24, borderRadius: "50%", background: ans.is_from_instructor ? `${C.gold}20` : C.s2, color: ans.is_from_instructor ? C.gold : C.t2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>
+                <div style={{ width: 24, height: 24, borderRadius: "50%", background: ans.is_from_instructor ? `${alpha(C.gold, 12.5)}` : C.s2, color: ans.is_from_instructor ? C.gold : C.t2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>
                   {ans.author_name?.[0]?.toUpperCase()}
                 </div>
                 <span style={{ fontSize: 11, fontWeight: 700, color: ans.is_from_instructor ? C.gold : C.t }}>{ans.author_name}</span>
-                {ans.is_from_instructor && <span style={{ fontSize: 9, color: C.gold, fontFamily: F.mono, background: `${C.gold}18`, padding: "2px 6px", borderRadius: 4 }}>FORMATEUR</span>}
+                {ans.is_from_instructor && <span style={{ fontSize: 9, color: C.gold, fontFamily: F.mono, background: `${alpha(C.gold, 9.4)}`, padding: "2px 6px", borderRadius: 4 }}>FORMATEUR</span>}
               </div>
               <p style={{ fontSize: 12, color: C.t, lineHeight: 1.6, margin: 0 }}>{ans.answer}</p>
             </div>
@@ -507,7 +507,7 @@ function LessonViewer({ lesson, onBack, onPrevious, onNext, hasQuiz, user, progr
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ fontSize: 18, fontWeight: 700, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lesson.title}</div>
-            {isComplete && <span style={{ background: `${C.grn}20`, color: C.grn, padding: "2px 8px", borderRadius: 6, fontSize: 10, fontFamily: F.mono, fontWeight: 700 }}>✓ Terminee</span>}
+            {isComplete && <span style={{ background: `${alpha(C.grn, 12.5)}`, color: C.grn, padding: "2px 8px", borderRadius: 6, fontSize: 10, fontFamily: F.mono, fontWeight: 700 }}>✓ Terminee</span>}
           </div>
           {lesson.duration_seconds > 0 && <div style={{ fontSize: 11, color: C.t3, fontFamily: F.mono }}>{fmtSecs(lesson.duration_seconds)}</div>}
         </div>
@@ -670,7 +670,7 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
   return (
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: F.sans }}>
       {/* Header */}
-      <div style={{ background: "linear-gradient(160deg,#0E1A2C,#162438)", borderBottom: `1px solid ${C.bdr}` }}>
+      <div style={{ background: `linear-gradient(160deg,${C.s1},${C.s2})`, borderBottom: `1px solid ${C.bdr}` }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "100px 24px 32px" }}>
           <button onClick={onBack} style={btn({ background: C.s2, border: `1px solid ${C.bdr}`, color: C.t2, padding: "8px 14px", borderRadius: 8, fontSize: 12, marginBottom: 20 })}>
             ← Retour
@@ -768,7 +768,7 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
                         
                         
                       >
-                        <div style={{ width: 28, height: 28, borderRadius: 8, background: lessonProg?.completed_at ? C.grn : les.video_url ? `${C.gold}18` : C.s2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: lessonProg?.completed_at ? "#fff" : les.video_url ? C.gold : C.t3, flexShrink: 0 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: 8, background: lessonProg?.completed_at ? C.grn : les.video_url ? `${alpha(C.gold, 9.4)}` : C.s2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: lessonProg?.completed_at ? "#fff" : les.video_url ? C.gold : C.t3, flexShrink: 0 }}>
                           {lessonProg?.completed_at ? "✓" : les.video_url ? "▶" : li + 1}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -827,7 +827,7 @@ export function CourseCatalog({ onSelectCourse, onBack, user, onAddToCart }: { o
   return (
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: F.sans }}>
       {/* Header */}
-      <div style={{ background: "linear-gradient(160deg,#0E1A2C,#162438)", borderBottom: `1px solid ${C.bdr}` }}>
+      <div style={{ background: `linear-gradient(160deg,${C.s1},${C.s2})`, borderBottom: `1px solid ${C.bdr}` }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "100px 24px 32px" }}>
           <button onClick={onBack} style={btn({ background: C.s2, border: `1px solid ${C.bdr}`, color: C.t2, padding: "8px 14px", borderRadius: 8, fontSize: 12, marginBottom: 20 })}>
             ← Retour au site

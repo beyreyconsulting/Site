@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { m, AnimatePresence } from "framer-motion";
-import { C, F, btn, textOn } from "./data.tsx";
+import { C, F, btn, textOn, alpha } from "./data.tsx";
 import { supabase, createOrder } from "./supabase";
 import { useDialog } from "./a11y";
 import { staggerContainer, staggerItem } from "./motion";
@@ -258,7 +258,7 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
     <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(4,8,16,.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Connexion / Inscription" tabIndex={-1} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 440, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)", maxHeight: "90vh", overflowY: "auto" }}>
-        <div style={{ background: "linear-gradient(135deg,#0E1A2C,#162438)", padding: "24px 28px", borderBottom: `1px solid ${C.bdr}` }}>
+        <div style={{ background: `linear-gradient(135deg,${C.s1},${C.s2})`, padding: "24px 28px", borderBottom: `1px solid ${C.bdr}` }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 600, color: "#fff" }}>
@@ -273,8 +273,8 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
         </div>
 
         <div style={{ padding: "24px 28px 28px" }}>
-          {success && <div style={{ fontSize: 13, color: C.grn, marginBottom: 14, padding: 10, background: `${C.grn}10`, borderRadius: 8, border: `1px solid ${C.grn}30` }}>{success}</div>}
-          {error && <div style={{ fontSize: 12, color: C.red, marginBottom: 14, padding: 10, background: `${C.red}10`, borderRadius: 8, border: `1px solid ${C.red}30` }}>{error}</div>}
+          {success && <div style={{ fontSize: 13, color: C.grn, marginBottom: 14, padding: 10, background: `${alpha(C.grn, 6.3)}`, borderRadius: 8, border: `1px solid ${alpha(C.grn, 18.8)}` }}>{success}</div>}
+          {error && <div style={{ fontSize: 12, color: C.red, marginBottom: 14, padding: 10, background: `${alpha(C.red, 6.3)}`, borderRadius: 8, border: `1px solid ${alpha(C.red, 18.8)}` }}>{error}</div>}
 
           {/* LOGIN MODE */}
           {mode === "login" && (
@@ -292,7 +292,7 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
                   placeholder="••••••••" type="password" />
               </div>
               <button onClick={handleLogin} disabled={loading || !form.email || !form.password}
-                style={btn({ width: "100%", background: loading || !form.email || !form.password ? C.bdr : "linear-gradient(135deg,#C8971A,#E0A820)", color: loading || !form.email || !form.password ? C.t3 : C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14, marginBottom: 12 })}>
+                style={btn({ width: "100%", background: loading || !form.email || !form.password ? C.bdr : `linear-gradient(135deg,${C.gold},${C.gl})`, color: loading || !form.email || !form.password ? C.t3 : C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14, marginBottom: 12 })}>
                 {loading ? "Connexion..." : "Se connecter"}
               </button>
               <div style={{ textAlign: "center" }}>
@@ -344,7 +344,7 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
                   placeholder="Retapez le mot de passe" type="password" />
               </div>
               <button onClick={handleRegister} disabled={loading || !form.email || !form.password || !form.fullName || !form.confirmPassword}
-                style={btn({ width: "100%", background: loading || !form.email || !form.password || !form.fullName || !form.confirmPassword ? C.bdr : "linear-gradient(135deg,#C8971A,#E0A820)", color: loading ? C.t3 : C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
+                style={btn({ width: "100%", background: loading || !form.email || !form.password || !form.fullName || !form.confirmPassword ? C.bdr : `linear-gradient(135deg,${C.gold},${C.gl})`, color: loading ? C.t3 : C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
                 {loading ? "Creation..." : "Creer mon compte"}
               </button>
               <div style={{ marginTop: 16, textAlign: "center", fontSize: 13, color: C.t2 }}>
@@ -366,7 +366,7 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
                   placeholder="vous@exemple.com" type="email" />
               </div>
               <button onClick={handleForgotPassword} disabled={loading || !form.email}
-                style={btn({ width: "100%", background: loading || !form.email ? C.bdr : "linear-gradient(135deg,#C8971A,#E0A820)", color: loading || !form.email ? C.t3 : C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14, marginBottom: 12 })}>
+                style={btn({ width: "100%", background: loading || !form.email ? C.bdr : `linear-gradient(135deg,${C.gold},${C.gl})`, color: loading || !form.email ? C.t3 : C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14, marginBottom: 12 })}>
                 {loading ? "Envoi..." : "Envoyer le lien"}
               </button>
               <div style={{ textAlign: "center" }}>
@@ -542,7 +542,7 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
     <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(4,8,16,.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Votre panier" tabIndex={-1} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 480, maxHeight: "92vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}>
-        <div style={{ background: "linear-gradient(135deg,#0E1A2C,#162438)", padding: "20px 24px", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ background: `linear-gradient(135deg,${C.s1},${C.s2})`, padding: "20px 24px", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: "#fff" }}>Panier</div>
             <div style={{ fontSize: 12, color: C.t2 }}>{count} formation{count > 1 ? "s" : ""}</div>
@@ -602,7 +602,7 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
               <span style={{ fontFamily: F.serif, fontSize: 24, fontWeight: 600, color: C.gold }}>{total.toLocaleString("fr-FR")} FCFA</span>
             </div>
             {checkoutErr && <div style={{ fontSize: 12, color: C.red, marginBottom: 10 }}>{checkoutErr}</div>}
-            <button onClick={doCheckout} disabled={checkingOut} style={btn({ width: "100%", background: "linear-gradient(135deg,#C8971A,#E0A820)", color: C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
+            <button onClick={doCheckout} disabled={checkingOut} style={btn({ width: "100%", background: `linear-gradient(135deg,${C.gold},${C.gl})`, color: C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
               {checkingOut ? "Traitement…" : "Valider ma commande"}
             </button>
           </div>
@@ -633,12 +633,12 @@ function CertificateView({ certificate, onClose, onShare }: { certificate: Certi
         {/* Certificate Content */}
         <div style={{ padding: "48px 56px", background: "#fffdf8", position: "relative", textAlign: "center" }}>
           {/* Border decorations */}
-          <div style={{ position: "absolute", inset: 16, border: "3px solid #C8971A", borderRadius: 4, pointerEvents: "none" }} />
-          <div style={{ position: "absolute", inset: 24, border: "1px solid #C8971A", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", inset: 16, border: `3px solid ${C.gold}`, borderRadius: 4, pointerEvents: "none" }} />
+          <div style={{ position: "absolute", inset: 24, border: `1px solid ${C.gold}`, pointerEvents: "none" }} />
 
           <div style={{ fontSize: 12, color: "#8B7355", letterSpacing: ".3em", textTransform: "uppercase", fontFamily: F.mono }}>Certificat de Reussite</div>
 
-          <div style={{ fontSize: 48, fontFamily: F.serif, color: "#C8971A", margin: "20px 0", fontWeight: 600, fontStyle: "italic" }}>
+          <div style={{ fontSize: 48, fontFamily: F.serif, color: C.gold, margin: "20px 0", fontWeight: 600, fontStyle: "italic" }}>
             Beyrey Consulting
           </div>
 
@@ -650,7 +650,7 @@ function CertificateView({ certificate, onClose, onShare }: { certificate: Certi
 
           <div style={{ fontSize: 14, color: "#666", marginBottom: 28 }}>a suivi avec succes la formation</div>
 
-          <div style={{ display: "inline-block", padding: "12px 32px", background: "linear-gradient(135deg,#C8971A,#E0A820)", color: "#fff", fontFamily: F.serif, fontSize: 22, fontWeight: 600, borderRadius: 4, marginBottom: 28 }}>
+          <div style={{ display: "inline-block", padding: "12px 32px", background: `linear-gradient(135deg,${C.gold},${C.gl})`, color: "#fff", fontFamily: F.serif, fontSize: 22, fontWeight: 600, borderRadius: 4, marginBottom: 28 }}>
             {course?.title}
           </div>
 
@@ -762,7 +762,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
       </m.div>
 
       {/* Header */}
-      <div style={{ background: "linear-gradient(160deg,#0E1A2C,#162438)", borderBottom: `1px solid ${C.bdr}` }}>
+      <div style={{ background: `linear-gradient(160deg,${C.s1},${C.s2})`, borderBottom: `1px solid ${C.bdr}` }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "100px 24px 40px" }}>
           {/* Profile Section */}
           <m.div
@@ -776,7 +776,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg,#C8971A,#E0A820)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, color: C.bg, fontWeight: 800, flexShrink: 0, boxShadow: "0 8px 32px rgba(200,151,26,.3)" }}
+                style={{ width: 72, height: 72, borderRadius: "50%", background: `linear-gradient(135deg,${C.gold},${C.gl})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, color: C.bg, fontWeight: 800, flexShrink: 0, boxShadow: "0 8px 32px rgba(200,151,26,.3)" }}
               >
                 {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "U"}
               </m.div>
@@ -869,7 +869,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                   initial={{ width: 0 }}
                   animate={{ width: `${totalProgress}%` }}
                   transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
-                  style={{ height: "100%", background: "linear-gradient(90deg, #C8971A, #E0A820)", borderRadius: 5 }}
+                  style={{ height: "100%", background: `linear-gradient(90deg, ${C.gold}, ${C.gl})`, borderRadius: 5 }}
                 />
               </div>
             </m.div>
@@ -1012,7 +1012,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                               initial={{ width: 0 }}
                               animate={{ width: `${en.progress_pct}%` }}
                               transition={{ duration: 0.8, delay: idx * 0.1 }}
-                              style={{ height: "100%", background: en.progress_pct >= 100 ? `linear-gradient(90deg, ${C.grn}, #4ade80)` : `linear-gradient(90deg, ${C.gold}, #E0A820)`, borderRadius: 4 }}
+                              style={{ height: "100%", background: en.progress_pct >= 100 ? `linear-gradient(90deg, ${C.grn}, #4ade80)` : `linear-gradient(90deg, ${C.gold}, ${C.gl})`, borderRadius: 4 }}
                             />
                           </div>
                         </div>
@@ -1035,7 +1035,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                             onClick={async () => { await generateCertificate(en.course_id); }}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            style={{ width: "100%", background: "linear-gradient(135deg,#C8971A,#E0A820)", border: "none", color: C.bg, padding: 14, borderRadius: 12, fontWeight: 800, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 6px 24px rgba(200,151,26,.3)" }}
+                            style={{ width: "100%", background: `linear-gradient(135deg,${C.gold},${C.gl})`, border: "none", color: C.bg, padding: 14, borderRadius: 12, fontWeight: 800, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 6px 24px rgba(200,151,26,.3)" }}
                           >
                             <span>🏆</span> Obtenir mon certificat
                           </m.button>
@@ -1094,7 +1094,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                       key={cert.id}
                       variants={staggerItem}
                       whileHover={{ y: -4, boxShadow: "0 16px 48px rgba(200,151,26,.2)" }}
-                      style={{ background: "linear-gradient(135deg,#fffdf8,#f5f0e8)", border: `2px solid #C8971A`, borderRadius: 20, padding: 28, textAlign: "center", position: "relative", overflow: "hidden" }}
+                      style={{ background: "linear-gradient(135deg,#fffdf8,#f5f0e8)", border: `2px solid ${C.gold}`, borderRadius: 20, padding: 28, textAlign: "center", position: "relative", overflow: "hidden" }}
                     >
                       <div style={{ position: "absolute", top: 16, right: 16, fontSize: 12, fontFamily: F.mono, color: "#8B7355", opacity: 0.5 }}>N° {cert.certificate_number}</div>
                       <m.div

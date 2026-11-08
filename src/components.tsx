@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { m, AnimatePresence } from "framer-motion";
-import { C, F, PAY, fmt, btn, Tag } from "./data.tsx";
+import { C, F, PAY, fmt, btn, Tag, alpha } from "./data.tsx";
 import { supabase, askKalan, track } from "./supabase";
 import { useDialog } from "./a11y";
 
@@ -54,13 +54,13 @@ export function KalanAI(){
 
   return(
     <>
-      <button onClick={()=>setOpen(o=>!o)} style={{position:"fixed",bottom:24,right:20,zIndex:200,width:56,height:56,borderRadius:"50%",background:"linear-gradient(135deg,#C8971A,#E0A820)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 28px rgba(200,151,26,.45)",fontSize:open?18:22,color:C.bg,fontWeight:open?800:400,transition:"background-color .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease, transform .25s cubic-bezier(.23,1,.32,1)",transform:open?"rotate(5deg)":"none"}} aria-label="Ouvrir Kalan">
+      <button onClick={()=>setOpen(o=>!o)} style={{position:"fixed",bottom:24,right:20,zIndex:200,width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},${C.gl})`,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 28px rgba(200,151,26,.45)",fontSize:open?18:22,color:C.bg,fontWeight:open?800:400,transition:"background-color .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease, transform .25s cubic-bezier(.23,1,.32,1)",transform:open?"rotate(5deg)":"none"}} aria-label="Ouvrir Kalan">
         {open?"✕":"🤖"}
       </button>
       {open&&(
         <div style={{position:"fixed",bottom:88,right:16,zIndex:200,width:Math.min(360,window.innerWidth-24),height:Math.min(480,window.innerHeight-120),maxHeight:"calc(100vh - 120px)",background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:20,display:"flex",flexDirection:"column",overflow:"hidden",boxShadow:"0 24px 64px rgba(0,0,0,.7)"}}>
           <div style={{background:C.s2,borderBottom:`1px solid ${C.bdr}`,padding:"12px 16px",display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#C8971A,#E0A820)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>🤖</div>
+            <div style={{width:36,height:36,borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},${C.gl})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>🤖</div>
             <div style={{flex:1}}>
               <div style={{fontWeight:800,fontSize:14,color:"#fff"}}>Kalan</div>
               <div style={{fontSize:10,color:C.grn,fontFamily:F.mono}}>● Assistant IA · Beyrey Consulting</div>
@@ -147,7 +147,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
       transition={{ duration: 0.5 }}
       style={{background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:16,overflow:"hidden"}}
     >
-      <div style={{position:"relative",paddingBottom:"56.25%",background:"linear-gradient(135deg,#08111E,#0E1A2C)"}}>
+      <div style={{position:"relative",paddingBottom:"56.25%",background:`linear-gradient(135deg,${C.bg},${C.s1})`}}>
         <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:14}}>
           <div style={{position:"absolute",inset:0,overflow:"hidden",opacity:.3}}>
             {[...Array(6)].map((_,i)=>(
@@ -213,7 +213,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
             onClick={()=>{setPlaying(p=>!p);if(prog>=100)setProg(0);}}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
-            style={{width:60,height:60,borderRadius:"50%",background:playing?"rgba(200,151,26,.2)":"linear-gradient(135deg,#C8971A,#E0A820)",border:playing?`2px solid ${C.gold}`:"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:playing?C.gold:C.bg,boxShadow:playing?"none":"0 8px 32px rgba(200,151,26,.4)",cursor:"pointer"}}
+            style={{width:60,height:60,borderRadius:"50%",background:playing?"rgba(200,151,26,.2)":`linear-gradient(135deg,${C.gold},${C.gl})`,border:playing?`2px solid ${C.gold}`:"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:playing?C.gold:C.bg,boxShadow:playing?"none":"0 8px 32px rgba(200,151,26,.4)",cursor:"pointer"}}
           >
             {playing?"⏸":"▶"}
           </m.button>
@@ -265,8 +265,8 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
                   <m.div
                     key={li}
                     onClick={()=>{setSel(si);setProg(0);setPlaying(false);setDone(d=>d.includes(idx)?d.filter(x=>x!==idx):[...d,idx]);}}
-                    whileHover={{ backgroundColor: `${C.gold}20` }}
-                    style={{display:"flex",alignItems:"center",gap:10,padding:"6px 10px",borderRadius:8,cursor:"pointer",marginBottom:3,background:sel===si&&li===0?`${C.gold}15`:isDone?`${C.grn}08`:"transparent"}}
+                    whileHover={{ backgroundColor: `${alpha(C.gold, 12.5)}` }}
+                    style={{display:"flex",alignItems:"center",gap:10,padding:"6px 10px",borderRadius:8,cursor:"pointer",marginBottom:3,background:sel===si&&li===0?`${alpha(C.gold, 8.2)}`:isDone?`${alpha(C.grn, 3.1)}`:"transparent"}}
                   >
                     <m.div
                       animate={{ scale: isDone ? [1, 1.2, 1] : 1 }}
@@ -322,12 +322,12 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      whileHover={{ backgroundColor: `${C.gold}15`, x: 4 }}
+                      whileHover={{ backgroundColor: `${alpha(C.gold, 8.2)}`, x: 4 }}
                       style={{
                         display:"flex",alignItems:"center",gap:12,padding:"12px 14px",background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:10,textDecoration:"none",cursor:"pointer"
                       }}
                     >
-                      <div style={{width:40,height:40,borderRadius:8,background:`${C.gold}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
+                      <div style={{width:40,height:40,borderRadius:8,background:`${alpha(C.gold, 7.1)}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
                         {res.icon}
                       </div>
                       <div style={{flex:1,minWidth:0}}>
@@ -395,7 +395,7 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
                 </button>
               ))}
             </div>
-            <div style={{background:`${C.gold}10`,border:`1px solid ${C.gold}25`,borderRadius:10,padding:"9px 14px",fontSize:11,color:C.t,marginBottom:16}}>
+            <div style={{background:`${alpha(C.gold, 6.3)}`,border:`1px solid ${alpha(C.gold, 14.5)}`,borderRadius:10,padding:"9px 14px",fontSize:11,color:C.t,marginBottom:16}}>
               🔒 Paiement sécurisé · Accès immédiat après confirmation
             </div>
             <button onClick={()=>{if(method)setStep(2);}} style={btn({width:"100%",background:method?C.gold:C.bdr,color:method?C.bg:C.t3,fontWeight:800,fontSize:14,padding:14,borderRadius:10,transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)"})}>Continuer →</button>
@@ -536,10 +536,10 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Télécharger le livre blanc" tabIndex={-1} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 480, maxHeight: "92vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}>
 
         {/* Header */}
-        <div style={{ background: "linear-gradient(135deg,#0E1A2C,#162438)", borderBottom: `1px solid ${C.bdr}`, padding: "24px 28px 20px" }}>
+        <div style={{ background: `linear-gradient(135deg,${C.s1},${C.s2})`, borderBottom: `1px solid ${C.bdr}`, padding: "24px 28px 20px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-              <div style={{ width: 52, height: 52, borderRadius: 12, background: `${C.gold}18`, border: `1px solid ${C.gold}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>📖</div>
+              <div style={{ width: 52, height: 52, borderRadius: 12, background: `${alpha(C.gold, 9.4)}`, border: `1px solid ${alpha(C.gold, 18.8)}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>📖</div>
               <div>
                 <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 4 }}>Livre blanc · Gratuit</div>
                 <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: "#fff", lineHeight: 1.2 }}>L'Art de la Rigueur</div>
@@ -586,14 +586,14 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
             </div>
 
             {submitErr && (
-              <div style={{ marginTop: 14, background: `${C.red}12`, border: `1px solid ${C.red}30`, borderRadius: 8, padding: "9px 14px", fontSize: 12, color: C.red }}>{submitErr}</div>
+              <div style={{ marginTop: 14, background: `${alpha(C.red, 7.1)}`, border: `1px solid ${alpha(C.red, 18.8)}`, borderRadius: 8, padding: "9px 14px", fontSize: 12, color: C.red }}>{submitErr}</div>
             )}
 
-            <div style={{ background: `${C.gold}10`, border: `1px solid ${C.gold}25`, borderRadius: 10, padding: "9px 14px", fontSize: 11, color: C.t, margin: "18px 0 0" }}>
+            <div style={{ background: `${alpha(C.gold, 6.3)}`, border: `1px solid ${alpha(C.gold, 14.5)}`, borderRadius: 10, padding: "9px 14px", fontSize: 11, color: C.t, margin: "18px 0 0" }}>
               🔒 Vos données sont confidentielles. Aucune revente, aucun spam.
             </div>
 
-            <button onClick={submit} style={btn({ width: "100%", background: "linear-gradient(135deg,#C8971A,#E0A820)", color: C.bg, fontWeight: 800, fontSize: 14, padding: 14, borderRadius: 10, marginTop: 14, boxShadow: "0 6px 24px rgba(200,151,26,.3)" })}>
+            <button onClick={submit} style={btn({ width: "100%", background: `linear-gradient(135deg,${C.gold},${C.gl})`, color: C.bg, fontWeight: 800, fontSize: 14, padding: 14, borderRadius: 10, marginTop: 14, boxShadow: "0 6px 24px rgba(200,151,26,.3)" })}>
               Télécharger gratuitement →
             </button>
           </div>
@@ -609,7 +609,7 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
 
         {step === "done" && (
           <div style={{ padding: "28px 28px 36px", display: "flex", flexDirection: "column", alignItems: "center", gap: 14, textAlign: "center" }}>
-            <div style={{ width: 64, height: 64, borderRadius: "50%", background: C.grn, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, color: "#fff", boxShadow: `0 8px 24px ${C.grn}50` }}>✓</div>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: C.grn, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, color: "#fff", boxShadow: `0 8px 24px ${alpha(C.grn, 31.4)}` }}>✓</div>
             <div>
               <div style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 600, color: "#fff", marginBottom: 8 }}>Votre téléchargement a démarré !</div>
               <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.65, maxWidth: 340 }}>

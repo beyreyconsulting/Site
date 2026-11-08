@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { C, F, fmt, btn, Tag, textOn } from "./data.tsx";
+import { C, F, fmt, btn, Tag, textOn, alpha } from "./data.tsx";
 import { VideoPlayer, RichText } from "./components";
 import { useDialog } from "./a11y";
 
@@ -22,7 +22,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
         <style>{`@media(max-width:680px){.cd-apercu{grid-template-columns:1fr !important;}.cd-stats{grid-template-columns:repeat(2,1fr) !important;}}`}</style>
 
         {/* Header */}
-        <div style={{background:"linear-gradient(135deg,#0E1A2C,#162438)",padding:"20px 24px",borderBottom:`1px solid ${C.bdr}`,display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16}}>
+        <div style={{background:`linear-gradient(135deg,${C.s1},${C.s2})`,padding:"20px 24px",borderBottom:`1px solid ${C.bdr}`,display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:16}}>
           <div style={{flex:1}}>
             <div style={{display:"flex",gap:8,marginBottom:10,flexWrap:"wrap"}}>
               <Tag c={course.color}>{course.icon} {course.cat}</Tag>
@@ -38,7 +38,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
         {/* Tabs */}
         <div style={{display:"flex",gap:0,borderBottom:`1px solid ${C.bdr}`,background:C.s2}}>
           {(["apercu","programme","formateur"] as const).map(t=>(
-            <button key={t} onClick={()=>setTab(t)} style={btn({flex:1,background:tab===t?`${C.gold}10`:"transparent",color:tab===t?C.gold:C.t2,padding:"13px 8px",fontSize:12,fontWeight:700,borderBottom:tab===t?`2px solid ${C.gold}`:"2px solid transparent",transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)",textTransform:"capitalize"})}>
+            <button key={t} onClick={()=>setTab(t)} style={btn({flex:1,background:tab===t?`${alpha(C.gold, 6.3)}`:"transparent",color:tab===t?C.gold:C.t2,padding:"13px 8px",fontSize:12,fontWeight:700,borderBottom:tab===t?`2px solid ${C.gold}`:"2px solid transparent",transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)",textTransform:"capitalize"})}>
               {t==="apercu"?"Aperçu":t==="programme"?"Programme":"Formateur"}
             </button>
           ))}
@@ -98,7 +98,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
 
           {tab==="formateur"&&<>
             <div style={{display:"flex",gap:20,alignItems:"flex-start",marginBottom:20}}>
-              <div style={{width:80,height:80,borderRadius:"50%",background:"linear-gradient(135deg,#C8971A,#E0A820)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,flexShrink:0}}>👨‍🏫</div>
+              <div style={{width:80,height:80,borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},${C.gl})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,flexShrink:0}}>👨‍🏫</div>
               <div>
                 <div style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:"#fff",marginBottom:4}}>Ibrahim Seydou</div>
                 <div style={{fontSize:12,color:C.gold,marginBottom:8}}>Fondateur · Beyrey Consulting</div>
@@ -129,7 +129,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
               ✓ Vous êtes inscrit · Accéder
             </button>
           ):(
-            <button onClick={onBuy} style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"13px 28px",borderRadius:10,fontWeight:800,fontSize:14,boxShadow:"0 6px 24px rgba(200,151,26,.4)"})}>
+            <button onClick={onBuy} style={btn({background:`linear-gradient(135deg,${C.gold},${C.gl})`,color:C.bg,padding:"13px 28px",borderRadius:10,fontWeight:800,fontSize:14,boxShadow:"0 6px 24px rgba(200,151,26,.4)"})}>
               Acheter cette formation →
             </button>
           )}
@@ -154,7 +154,7 @@ export function BlogModal({post,onClose}:{post:any,onClose:()=>void}){
       onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={post.title} tabIndex={-1} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:22,width:"100%",maxWidth:720,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column",boxShadow:"0 32px 80px rgba(0,0,0,.7)"}}>
 
-        <div style={{background:"linear-gradient(135deg,#0E1A2C,#162438)",padding:"24px 28px",borderBottom:`1px solid ${C.bdr}`,position:"relative"}}>
+        <div style={{background:`linear-gradient(135deg,${C.s1},${C.s2})`,padding:"24px 28px",borderBottom:`1px solid ${C.bdr}`,position:"relative"}}>
           <button onClick={onClose} aria-label="Fermer" style={btn({position:"absolute",top:18,right:18,background:C.bdr,color:C.t2,width:32,height:32,borderRadius:"50%",fontSize:14})}>✕</button>
           <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
             <Tag c={C.gold}>{post.icon} {post.cat}</Tag>
@@ -166,7 +166,7 @@ export function BlogModal({post,onClose}:{post:any,onClose:()=>void}){
 
         <div style={{flex:1,overflowY:"auto",padding:"24px 28px"}}>
           <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20,paddingBottom:18,borderBottom:`1px solid ${C.bdr}`}}>
-            <div style={{width:44,height:44,borderRadius:"50%",background:"linear-gradient(135deg,#C8971A,#E0A820)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:C.bg,fontWeight:800}}>IS</div>
+            <div style={{width:44,height:44,borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},${C.gl})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:C.bg,fontWeight:800}}>IS</div>
             <div>
               <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>Ibrahim Seydou</div>
               <div style={{fontSize:11,color:C.t2,fontFamily:F.mono}}>Fondateur · Beyrey Consulting</div>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { m, AnimatePresence, useInView } from "framer-motion";
-import { C, F, COURSES, POSTS, DIAL, TESTIMONIALS, STATS, fmt, btn, Tag, clickable, textOn } from "./data.tsx";
+import { C, F, COURSES, POSTS, DIAL, TESTIMONIALS, STATS, fmt, btn, Tag, clickable, textOn, alpha } from "./data.tsx";
 import { track, supabase } from "./supabase";
 import { KalanAI, VideoPlayer, BookDownloadModal } from "./components";
 import { CourseDetailModal, BlogModal } from "./modals";
@@ -88,7 +88,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: consultingLinks.length * 0.05 }}
             whileHover={{ y: -2, color: C.gold }}
-            style={btn({background:`${C.gold}12`,border:`1px solid ${C.gold}30`,color:C.gold,fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8})}
+            style={btn({background:`${alpha(C.gold, 7.1)}`,border:`1px solid ${alpha(C.gold, 18.8)}`,color:C.gold,fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8})}
           >
             🎓 Kalan
           </m.button>
@@ -112,9 +112,9 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
           {user ? (
             <m.button
               onClick={()=>{ window.location.hash = "student"; }}
-              whileHover={{ scale: 1.05, backgroundColor: `${C.gold}25` }}
+              whileHover={{ scale: 1.05, backgroundColor: `${alpha(C.gold, 14.5)}` }}
               whileTap={{ scale: 0.95 }}
-              style={btn({background:`${C.gold}18`,border:`1px solid ${C.gold}30`,color:C.gold,padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:700})}
+              style={btn({background:`${alpha(C.gold, 9.4)}`,border:`1px solid ${alpha(C.gold, 18.8)}`,color:C.gold,padding:"8px 14px",borderRadius:10,fontSize:13,fontWeight:700})}
             >
               {profile?.full_name?.split(" ")[0] || "Espace"} ▾
             </m.button>
@@ -133,7 +133,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
             className="hide-mobile"
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
-            style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"10px 20px",borderRadius:10,fontWeight:700,fontSize:13,boxShadow:"0 4px 16px rgba(200,151,26,.3)"})}
+            style={btn({background:`linear-gradient(135deg,${C.gold},${C.gl})`,color:C.bg,padding:"10px 20px",borderRadius:10,fontWeight:700,fontSize:13,boxShadow:"0 4px 16px rgba(200,151,26,.3)"})}
           >
             Nous contacter
           </m.button>
@@ -182,7 +182,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
               <m.button
                 variants={staggerItem}
                 onClick={()=>{ window.location.hash = "lms"; setMobileOpen(false); }}
-                style={btn({background:`${C.gold}18`,border:`1px solid ${C.gold}30`,color:C.gold,padding:"12px 24px",borderRadius:10,fontSize:18,fontFamily:F.serif,fontWeight:700})}
+                style={btn({background:`${alpha(C.gold, 9.4)}`,border:`1px solid ${alpha(C.gold, 18.8)}`,color:C.gold,padding:"12px 24px",borderRadius:10,fontSize:18,fontFamily:F.serif,fontWeight:700})}
               >🎓 Académie Kalan</m.button>
             </m.div>
 
@@ -191,7 +191,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
               onClick={()=>{onNav("contact");setMobileOpen(false);}}
-              style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"14px 32px",borderRadius:10,fontWeight:700,fontSize:15,marginTop:20})}
+              style={btn({background:`linear-gradient(135deg,${C.gold},${C.gl})`,color:C.bg,padding:"14px 32px",borderRadius:10,fontWeight:700,fontSize:15,marginTop:20})}
             >Nous contacter</m.button>
           </m.div>
         )}
@@ -221,7 +221,7 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            style={{display:"inline-flex",alignItems:"center",gap:8,background:`${C.gold}12`,border:`1px solid ${C.gold}28`,borderRadius:24,padding:"8px 16px",marginBottom:28}}
+            style={{display:"inline-flex",alignItems:"center",gap:8,background:`${alpha(C.gold, 7.1)}`,border:`1px solid ${alpha(C.gold, 15.7)}`,borderRadius:24,padding:"8px 16px",marginBottom:28}}
           >
             <span style={{width:8,height:8,borderRadius:"50%",background:C.grn}}/>
             <span style={{fontFamily:F.mono,fontSize:11,color:C.gold,letterSpacing:".1em"}}>CABINET DATA & BI · BAMAKO</span>
@@ -286,7 +286,7 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
               onClick={()=>onNav("contact")}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              style={{background:"linear-gradient(135deg,#C8971A,#E0A820)",border:"none",color:C.bg,padding:"16px 32px",borderRadius:12,fontWeight:800,fontSize:15,boxShadow:"0 8px 32px rgba(200,151,26,.4)",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
+              style={{background:`linear-gradient(135deg,${C.gold},${C.gl})`,border:"none",color:C.bg,padding:"16px 32px",borderRadius:12,fontWeight:800,fontSize:15,boxShadow:"0 8px 32px rgba(200,151,26,.4)",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
             >
               Réserver un appel <span style={{fontSize:18}}>→</span>
             </m.button>
@@ -330,7 +330,7 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
         >
           <m.div
             whileHover={{ y: -8, boxShadow: "0 40px 100px rgba(0,0,0,.6)" }}
-            style={{background:"linear-gradient(160deg,#0E1A2C,#162438)",border:`1px solid ${C.bdr}`,borderRadius:24,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,0,0,.5)"}}
+            style={{background:`linear-gradient(160deg,${C.s1},${C.s2})`,border:`1px solid ${C.bdr}`,borderRadius:24,overflow:"hidden",boxShadow:"0 32px 80px rgba(0,0,0,.5)"}}
           >
             <div style={{padding:24,paddingBottom:0}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
@@ -376,7 +376,7 @@ function ScrollProgress(){
   },[]);
   return(
     <div style={{position:"fixed",top:0,left:0,right:0,height:3,zIndex:300,background:"transparent",pointerEvents:"none"}}>
-      <div style={{height:"100%",width:`${pct}%`,background:"linear-gradient(90deg,#A67C2E,#C8971A,#E0A820)",boxShadow:"0 0 8px rgba(200,151,26,.6)",transition:"width .05s linear"}}/>
+      <div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,#A67C2E,${C.gold},${C.gl})`,boxShadow:"0 0 8px rgba(200,151,26,.6)",transition:"width .05s linear"}}/>
     </div>
   );
 }
@@ -451,7 +451,7 @@ function LeadMagnet(){
     <section style={{padding:"40px 24px"}}>
       <m.div
         initial={{opacity:0,y:24}} whileInView={{opacity:1,y:0}} viewport={{once:true,margin:"-100px"}} transition={{duration:0.5}}
-        style={{maxWidth:920,margin:"0 auto",background:"linear-gradient(135deg,#0E1A2C,#162438)",border:`1px solid ${C.gold}30`,borderRadius:20,padding:32,display:"grid",gridTemplateColumns:"1.3fr 1fr",gap:28,alignItems:"center"}}
+        style={{maxWidth:920,margin:"0 auto",background:`linear-gradient(135deg,${C.s1},${C.s2})`,border:`1px solid ${alpha(C.gold, 18.8)}`,borderRadius:20,padding:32,display:"grid",gridTemplateColumns:"1.3fr 1fr",gap:28,alignItems:"center"}}
         className="dial-book">
         <div>
           <Tag c={C.gold}>🎁 RESSOURCE GRATUITE</Tag>
@@ -472,7 +472,7 @@ function LeadMagnet(){
                 style={{width:"100%",background:C.s2,border:`1px solid ${state==="err"?C.red:C.bdr}`,borderRadius:10,padding:"13px 14px",color:C.t,fontSize:14,fontFamily:F.sans,outline:"none",boxSizing:"border-box"}}/>
               {state==="err"&&<div style={{fontSize:11,color:C.red}}>Email invalide. Réessayez.</div>}
               <button onClick={submit} disabled={state==="loading"}
-                style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"13px",borderRadius:10,fontWeight:800,fontSize:14})}>
+                style={btn({background:`linear-gradient(135deg,${C.gold},${C.gl})`,color:C.bg,padding:"13px",borderRadius:10,fontWeight:800,fontSize:14})}>
                 {state==="loading"?"Envoi…":"Recevoir le template →"}
               </button>
             </div>
@@ -622,19 +622,19 @@ function DialSection({onDownload}:{onDownload:()=>void}){
           ))}
         </div>
 
-        <div className="dial-book" style={{background:"linear-gradient(135deg,#0E1A2C,#162438)",border:`1px solid ${C.bdr}`,borderRadius:20,padding:32,display:"grid",gridTemplateColumns:"1fr 1fr",gap:32,alignItems:"center"}}>
+        <div className="dial-book" style={{background:`linear-gradient(135deg,${C.s1},${C.s2})`,border:`1px solid ${C.bdr}`,borderRadius:20,padding:32,display:"grid",gridTemplateColumns:"1fr 1fr",gap:32,alignItems:"center"}}>
           <div>
             <Tag c={C.gold}>📚 LIVRE BLANC</Tag>
             <h3 style={{fontFamily:F.serif,fontSize:28,fontWeight:600,color:"#fff",margin:"14px 0 12px",lineHeight:1.2}}>L'Art de la Rigueur</h3>
             <p style={{fontSize:14,color:C.t2,lineHeight:1.7,margin:"0 0 20px"}}>
               Manifeste pour une gouvernance frugale de la data en Afrique. Écrit par Ibrahim Seydou après 5 ans de terrain à Bamako. Disponible en téléchargement gratuit.
             </p>
-            <button onClick={onDownload} style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"12px 24px",borderRadius:10,fontWeight:700,fontSize:13})}>
+            <button onClick={onDownload} style={btn({background:`linear-gradient(135deg,${C.gold},${C.gl})`,color:C.bg,padding:"12px 24px",borderRadius:10,fontWeight:700,fontSize:13})}>
               📖 Télécharger gratuitement
             </button>
           </div>
           <div style={{position:"relative",height:200,background:C.s2,borderRadius:14,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <div style={{fontFamily:F.serif,fontSize:80,fontWeight:600,fontStyle:"italic",color:`${C.gold}30`}}>L'Art</div>
+            <div style={{fontFamily:F.serif,fontSize:80,fontWeight:600,fontStyle:"italic",color:`${alpha(C.gold, 18.8)}`}}>L'Art</div>
             <div style={{position:"absolute",bottom:20,left:20,fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".1em"}}>IBRAHIM SEYDOU · 2024</div>
           </div>
         </div>
@@ -739,9 +739,9 @@ function AboutSection(){
           </div>
         </div>
         <div style={{position:"relative"}}>
-          <div style={{background:"linear-gradient(160deg,#0E1A2C,#162438)",border:`1px solid ${C.bdr}`,borderRadius:20,padding:28}}>
+          <div style={{background:`linear-gradient(160deg,${C.s1},${C.s2})`,border:`1px solid ${C.bdr}`,borderRadius:20,padding:28}}>
             <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
-              <img src="/tof.jpg" alt="Ibrahim Seydou" style={{width:72,height:72,borderRadius:"50%",objectFit:"cover",border:"2px solid #C8971A"}}/>
+              <img src="/tof.jpg" alt="Ibrahim Seydou" style={{width:72,height:72,borderRadius:"50%",objectFit:"cover",border:`2px solid ${C.gold}`}}/>
               <div>
                 <div style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:"#fff"}}>Ibrahim Seydou</div>
                 <div style={{fontSize:12,color:C.gold,fontFamily:F.mono}}>Fondateur · Consultant Principal</div>
@@ -799,7 +799,7 @@ function ContactSection(){
 
   return(
     <section id="contact" style={{padding:"80px 24px",maxWidth:1200,margin:"0 auto"}}>
-      <div style={{background:"linear-gradient(135deg,#0E1A2C,#162438)",border:`1px solid ${C.bdr}`,borderRadius:24,overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr"}} className="contact-grid">
+      <div style={{background:`linear-gradient(135deg,${C.s1},${C.s2})`,border:`1px solid ${C.bdr}`,borderRadius:24,overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr"}} className="contact-grid">
         <div style={{padding:40}}>
           <SectionTitle tag="Travaillons ensemble" title={<>Un projet data ?<br/><span style={{color:C.gold,fontStyle:"italic"}}>Parlons-en.</span></>}/>
           <p style={{fontSize:14,color:C.t2,lineHeight:1.7,margin:"0 0 24px"}}>
@@ -807,15 +807,15 @@ function ContactSection(){
           </p>
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
             <div style={{display:"flex",alignItems:"center",gap:12,color:C.t2,fontSize:13}}>
-              <span style={{width:36,height:36,borderRadius:10,background:`${C.gold}18`,color:C.gold,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>📍</span>
+              <span style={{width:36,height:36,borderRadius:10,background:`${alpha(C.gold, 9.4)}`,color:C.gold,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>📍</span>
               Bamako, Mali · ACI 2000
             </div>
             <div style={{display:"flex",alignItems:"center",gap:12,color:C.t2,fontSize:13}}>
-              <span style={{width:36,height:36,borderRadius:10,background:`${C.grn}18`,color:C.grn,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>✉️</span>
+              <span style={{width:36,height:36,borderRadius:10,background:`${alpha(C.grn, 9.4)}`,color:C.grn,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>✉️</span>
               contact@beyrey.consulting
             </div>
             <div style={{display:"flex",alignItems:"center",gap:12,color:C.t2,fontSize:13}}>
-              <span style={{width:36,height:36,borderRadius:10,background:`${C.wa}18`,color:C.wa,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>💬</span>
+              <span style={{width:36,height:36,borderRadius:10,background:`${alpha(C.wa, 9.4)}`,color:C.wa,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>💬</span>
               +223 92 97 66 46
             </div>
           </div>
@@ -864,7 +864,7 @@ function ContactSection(){
                   style={{...fieldStyle,resize:"vertical"}}/>
               </div>
               {err&&<div style={{fontSize:12,color:C.red}}>{err}</div>}
-              <button onClick={submit} disabled={sending} style={btn({background:"linear-gradient(135deg,#C8971A,#E0A820)",color:C.bg,padding:"14px",borderRadius:10,fontWeight:800,fontSize:14,boxShadow:"0 6px 24px rgba(200,151,26,.3)"})}>
+              <button onClick={submit} disabled={sending} style={btn({background:`linear-gradient(135deg,${C.gold},${C.gl})`,color:C.bg,padding:"14px",borderRadius:10,fontWeight:800,fontSize:14,boxShadow:"0 6px 24px rgba(200,151,26,.3)"})}>
                 {sending?"Envoi…":"Réserver mon diagnostic data →"}
               </button>
             </div>
@@ -1136,7 +1136,7 @@ export default function App() {
             position:"absolute",
             inset:0,
             borderRadius:"50%",
-            background:"#25D366",
+            background:C.wa,
             display:"flex",
             alignItems:"center",
             justifyContent:"center",

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { C, F, btn, textOn } from "./data.tsx";
+import { C, F, btn, textOn, alpha } from "./data.tsx";
 import { supabase } from "./supabase";
 
 /* ─────────────── TYPES ─────────────── */
@@ -27,7 +27,7 @@ const fmtBytes = (b: number) => b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` :
 const fmtSecs = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 const LEVELS = ["Débutant", "Intermédiaire", "Expert"];
 const CATS = ["Power BI", "Excel", "Gouvernance", "Python", "SQL", "Data Analytics"];
-const COLORS = ["#C8971A", "#00C896", "#2062E8", "#E060C0", "#F08040", "#00B884"];
+const COLORS = [C.gold, C.grn, C.blue, "#E060C0", "#F08040", "#00B884"];
 const ICONS = ["📊", "📗", "🏛️", "🐍", "🗄️", "🎯", "📈", "🔍", "⚙️", "🎓", "📋", "💡"];
 
 /* ─────────────── INPUT COMPONENT ─────────────── */
@@ -71,7 +71,7 @@ function AdminLogin({ onAuth }: { onAuth: () => void }) {
     <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 20, padding: 40, width: 360, boxShadow: "0 24px 64px rgba(0,0,0,.6)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: `${C.gold}18`, border: `1px solid ${C.gold}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🔐</div>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: `${alpha(C.gold, 9.4)}`, border: `1px solid ${alpha(C.gold, 18.8)}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🔐</div>
           <div>
             <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: "#fff" }}>Espace Éditeur</div>
             <div style={{ fontSize: 11, color: C.t2, fontFamily: F.mono }}>Beyrey Consulting LMS</div>
@@ -81,7 +81,7 @@ function AdminLogin({ onAuth }: { onAuth: () => void }) {
         <Field label="Mot de passe" value={pw} onChange={setPw} type="password" placeholder="••••••••••••" />
         {err && <div style={{ fontSize: 12, color: C.red, marginBottom: 12 }}>{err}</div>}
         <button onClick={submit} disabled={loading}
-          style={btn({ width: "100%", background: "linear-gradient(135deg,#C8971A,#E0A820)", color: C.bg, padding: 13, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
+          style={btn({ width: "100%", background: `linear-gradient(135deg,${C.gold},${C.gl})`, color: C.bg, padding: 13, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
           {loading ? "Connexion…" : "Accéder au panneau →"}
         </button>
         <div style={{ marginTop: 16, textAlign: "center", fontSize: 12, color: C.t3 }}>
@@ -149,7 +149,7 @@ function VideoUploader({ lessonId, currentUrl, onSaved }: { lessonId: string; cu
         onDragLeave={() => setDrag(false)}
         onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
-        style={{ border: `2px dashed ${drag ? C.gold : C.bdr}`, borderRadius: 12, padding: "24px 16px", textAlign: "center", cursor: "pointer", background: drag ? `${C.gold}08` : "transparent", transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)" }}
+        style={{ border: `2px dashed ${drag ? C.gold : C.bdr}`, borderRadius: 12, padding: "24px 16px", textAlign: "center", cursor: "pointer", background: drag ? `${alpha(C.gold, 3.1)}` : "transparent", transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)" }}
       >
         <div style={{ fontSize: 28, marginBottom: 8 }}>📤</div>
         <div style={{ fontSize: 13, fontWeight: 700, color: C.t, marginBottom: 4 }}>
@@ -221,7 +221,7 @@ function FilesManager({ lessonId }: { lessonId: string }) {
               <div style={{ fontSize: 12, fontWeight: 700, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</div>
               <div style={{ fontSize: 10, color: C.t2 }}>{f.size_bytes ? fmtBytes(f.size_bytes) : ""}</div>
             </div>
-            <button onClick={() => remove(f)} style={btn({ background: `${C.red}18`, color: C.red, padding: "4px 8px", borderRadius: 6, fontSize: 11, border: `1px solid ${C.red}30` })}>Suppr.</button>
+            <button onClick={() => remove(f)} style={btn({ background: `${alpha(C.red, 9.4)}`, color: C.red, padding: "4px 8px", borderRadius: 6, fontSize: 11, border: `1px solid ${alpha(C.red, 18.8)}` })}>Suppr.</button>
           </div>
         ))}
       </div>
@@ -324,7 +324,7 @@ function QuizBuilder({ lessonId }: { lessonId: string }) {
         <div key={q.id} style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 16, marginBottom: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <div style={{ fontSize: 11, fontFamily: F.mono, color: C.gold }}>QUESTION {qi + 1}</div>
-            <button onClick={() => removeQuestion(qi)} style={btn({ background: `${C.red}18`, color: C.red, padding: "3px 8px", borderRadius: 6, fontSize: 11, border: `1px solid ${C.red}30` })}>Suppr.</button>
+            <button onClick={() => removeQuestion(qi)} style={btn({ background: `${alpha(C.red, 9.4)}`, color: C.red, padding: "3px 8px", borderRadius: 6, fontSize: 11, border: `1px solid ${alpha(C.red, 18.8)}` })}>Suppr.</button>
           </div>
           <Field label="Question" value={q.question} onChange={v => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, question: v } : x))} placeholder="Ex: Quel est le rôle du DAX dans Power BI ?" />
           <Field label="Explication (affiché après réponse)" value={q.explanation} onChange={v => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, explanation: v } : x))} placeholder="Optionnel — explique la bonne réponse" />
@@ -334,7 +334,7 @@ function QuizBuilder({ lessonId }: { lessonId: string }) {
               <input type="radio" name={`q-${qi}`} checked={opt.is_correct} onChange={() => setCorrect(qi, oi)} style={{ accentColor: C.gold, width: 16, height: 16, cursor: "pointer" }} />
               <input value={opt.text} onChange={e => setQuestions(prev => prev.map((x, i) => i !== qi ? x : { ...x, options: x.options.map((o, j) => j === oi ? { ...o, text: e.target.value } : o) }))}
                 placeholder={`Option ${oi + 1}`}
-                style={{ flex: 1, background: opt.is_correct ? `${C.grn}12` : C.bg, border: `1px solid ${opt.is_correct ? C.grn : C.bdr}`, borderRadius: 7, padding: "7px 10px", color: C.t, fontSize: 12, fontFamily: F.sans, outline: "none" }} />
+                style={{ flex: 1, background: opt.is_correct ? `${alpha(C.grn, 7.1)}` : C.bg, border: `1px solid ${opt.is_correct ? C.grn : C.bdr}`, borderRadius: 7, padding: "7px 10px", color: C.t, fontSize: 12, fontFamily: F.sans, outline: "none" }} />
               {q.options.length > 2 && <button onClick={() => removeOption(qi, oi)} style={btn({ color: C.t3, background: "none", fontSize: 16, padding: "0 4px" })}>✕</button>}
             </div>
           ))}
@@ -350,7 +350,7 @@ function QuizBuilder({ lessonId }: { lessonId: string }) {
           style={btn({ background: questions.length > 0 ? C.gold : C.bdr, color: questions.length > 0 ? C.bg : C.t3, padding: "8px 18px", borderRadius: 8, fontSize: 12, fontWeight: 800 })}>
           {saving ? "Sauvegarde…" : "💾 Sauvegarder le quiz"}
         </button>
-        {quiz && <button onClick={deleteQuiz} style={btn({ background: `${C.red}18`, color: C.red, padding: "8px 14px", borderRadius: 8, fontSize: 12, border: `1px solid ${C.red}30` })}>Supprimer quiz</button>}
+        {quiz && <button onClick={deleteQuiz} style={btn({ background: `${alpha(C.red, 9.4)}`, color: C.red, padding: "8px 14px", borderRadius: 8, fontSize: 12, border: `1px solid ${alpha(C.red, 18.8)}` })}>Supprimer quiz</button>}
       </div>
     </div>
   );
@@ -393,7 +393,7 @@ function QAManager({ lessonId }: { lessonId: string }) {
         <div key={qa.id} style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 16, marginBottom: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <div style={{ width: 34, height: 34, borderRadius: "50%", background: `${C.blue}20`, color: C.blue, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800 }}>
+              <div style={{ width: 34, height: 34, borderRadius: "50%", background: `${alpha(C.blue, 12.5)}`, color: C.blue, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800 }}>
                 {qa.author_name?.[0]?.toUpperCase() || "?"}
               </div>
               <div>
@@ -403,18 +403,18 @@ function QAManager({ lessonId }: { lessonId: string }) {
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {qa.is_answered && <span style={{ fontSize: 10, color: C.grn, fontFamily: F.mono }}>✓ RÉPONDU</span>}
-              <button onClick={() => deleteQA(qa.id)} style={btn({ background: `${C.red}18`, color: C.red, padding: "3px 8px", borderRadius: 6, fontSize: 11, border: `1px solid ${C.red}30` })}>Suppr.</button>
+              <button onClick={() => deleteQA(qa.id)} style={btn({ background: `${alpha(C.red, 9.4)}`, color: C.red, padding: "3px 8px", borderRadius: 6, fontSize: 11, border: `1px solid ${alpha(C.red, 18.8)}` })}>Suppr.</button>
             </div>
           </div>
           <p style={{ fontSize: 13, color: C.t, lineHeight: 1.6, margin: "0 0 12px" }}>{qa.question}</p>
           {qa.answers.map(ans => (
-            <div key={ans.id} style={{ marginLeft: 20, background: ans.is_from_instructor ? `${C.gold}10` : C.bg, border: `1px solid ${ans.is_from_instructor ? C.gold + "30" : C.bdr}`, borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
+            <div key={ans.id} style={{ marginLeft: 20, background: ans.is_from_instructor ? `${alpha(C.gold, 6.3)}` : C.bg, border: `1px solid ${ans.is_from_instructor ? alpha(C.gold, 18.8) : C.bdr}`, borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
-                <div style={{ width: 24, height: 24, borderRadius: "50%", background: ans.is_from_instructor ? `${C.gold}20` : C.s2, color: ans.is_from_instructor ? C.gold : C.t2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>
+                <div style={{ width: 24, height: 24, borderRadius: "50%", background: ans.is_from_instructor ? `${alpha(C.gold, 12.5)}` : C.s2, color: ans.is_from_instructor ? C.gold : C.t2, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800 }}>
                   {ans.author_name?.[0]?.toUpperCase()}
                 </div>
                 <span style={{ fontSize: 11, fontWeight: 700, color: ans.is_from_instructor ? C.gold : C.t }}>{ans.author_name}</span>
-                {ans.is_from_instructor && <span style={{ fontSize: 9, color: C.gold, fontFamily: F.mono, background: `${C.gold}18`, padding: "2px 6px", borderRadius: 4 }}>FORMATEUR</span>}
+                {ans.is_from_instructor && <span style={{ fontSize: 9, color: C.gold, fontFamily: F.mono, background: `${alpha(C.gold, 9.4)}`, padding: "2px 6px", borderRadius: 4 }}>FORMATEUR</span>}
               </div>
               <p style={{ fontSize: 12, color: C.t, lineHeight: 1.6, margin: 0 }}>{ans.answer}</p>
             </div>
@@ -558,7 +558,7 @@ function SectionEditor({ courseId, onBack }: { courseId: string; onBack: () => v
 
       {/* Section form */}
       {editSection !== null && (
-        <div style={{ background: C.s2, border: `1px solid ${C.gold}30`, borderRadius: 12, padding: 16, marginBottom: 16 }}>
+        <div style={{ background: C.s2, border: `1px solid ${alpha(C.gold, 18.8)}`, borderRadius: 12, padding: 16, marginBottom: 16 }}>
           <Field label="Titre de la section" value={editSection.title || ""} onChange={v => setEditSection(s => ({ ...s, title: v }))} placeholder="Ex: Introduction à Power BI" required />
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={saveSection} style={btn({ background: C.gold, color: C.bg, padding: "8px 16px", borderRadius: 8, fontWeight: 700, fontSize: 12 })}>Sauvegarder</button>
@@ -582,7 +582,7 @@ function SectionEditor({ courseId, onBack }: { courseId: string; onBack: () => v
             <div style={{ flex: 1, fontWeight: 700, fontSize: 14, color: C.t }}>{sec.title}</div>
             <div style={{ display: "flex", gap: 6 }}>
               <button onClick={e => { e.stopPropagation(); setEditSection(sec); }} style={btn({ background: C.s2, border: `1px solid ${C.bdr}`, color: C.t2, padding: "4px 8px", borderRadius: 6, fontSize: 11 })}>Éditer</button>
-              <button onClick={e => { e.stopPropagation(); deleteSection(sec.id); }} style={btn({ background: `${C.red}18`, color: C.red, padding: "4px 8px", borderRadius: 6, fontSize: 11, border: `1px solid ${C.red}30` })}>Suppr.</button>
+              <button onClick={e => { e.stopPropagation(); deleteSection(sec.id); }} style={btn({ background: `${alpha(C.red, 9.4)}`, color: C.red, padding: "4px 8px", borderRadius: 6, fontSize: 11, border: `1px solid ${alpha(C.red, 18.8)}` })}>Suppr.</button>
             </div>
             <span style={{ color: C.t2, fontSize: 14 }}>{expandedSection === sec.id ? "▲" : "▼"}</span>
           </div>
@@ -601,7 +601,7 @@ function SectionEditor({ courseId, onBack }: { courseId: string; onBack: () => v
                     </div>
                   </div>
                   <button onClick={() => setEditLesson(les)} style={btn({ background: C.gold, color: C.bg, padding: "5px 12px", borderRadius: 6, fontSize: 11, fontWeight: 700 })}>Éditer leçon</button>
-                  <button onClick={() => deleteLesson(les.id, sec.id)} style={btn({ background: `${C.red}18`, color: C.red, padding: "5px 8px", borderRadius: 6, fontSize: 11, border: `1px solid ${C.red}30` })}>✕</button>
+                  <button onClick={() => deleteLesson(les.id, sec.id)} style={btn({ background: `${alpha(C.red, 9.4)}`, color: C.red, padding: "5px 8px", borderRadius: 6, fontSize: 11, border: `1px solid ${alpha(C.red, 18.8)}` })}>✕</button>
                 </div>
               ))}
               <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
@@ -675,7 +675,7 @@ function CourseForm({ initial, onSave, onCancel }: { initial?: Course; onSave: (
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {ICONS.map(ic => (
             <button key={ic} onClick={() => setForm(x => ({ ...x, icon: ic }))}
-              style={btn({ fontSize: 22, padding: "6px 10px", borderRadius: 8, background: form.icon === ic ? `${C.gold}25` : C.s2, border: `2px solid ${form.icon === ic ? C.gold : C.bdr}` })}>
+              style={btn({ fontSize: 22, padding: "6px 10px", borderRadius: 8, background: form.icon === ic ? `${alpha(C.gold, 14.5)}` : C.s2, border: `2px solid ${form.icon === ic ? C.gold : C.bdr}` })}>
               {ic}
             </button>
           ))}
@@ -738,7 +738,7 @@ function CourseList({ onManageSections }: { onManageSections: (c: Course) => voi
       {toast && <Toast msg={toast.msg} type={toast.type} onDismiss={() => setToast(null)} />}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <div style={{ fontSize: 16, fontWeight: 700, color: C.t }}>Mes formations ({courses.length})</div>
-        <button onClick={() => setCreating(true)} style={btn({ background: "linear-gradient(135deg,#C8971A,#E0A820)", color: C.bg, padding: "10px 18px", borderRadius: 10, fontWeight: 800, fontSize: 13 })}>
+        <button onClick={() => setCreating(true)} style={btn({ background: `linear-gradient(135deg,${C.gold},${C.gl})`, color: C.bg, padding: "10px 18px", borderRadius: 10, fontWeight: 800, fontSize: 13 })}>
           + Nouvelle formation
         </button>
       </div>
@@ -755,7 +755,7 @@ function CourseList({ onManageSections }: { onManageSections: (c: Course) => voi
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.title}</div>
-                <span style={{ fontSize: 10, color: c.is_published ? C.grn : C.t3, fontFamily: F.mono, background: c.is_published ? `${C.grn}18` : C.s2, padding: "2px 7px", borderRadius: 4, border: `1px solid ${c.is_published ? C.grn + "30" : C.bdr}`, flexShrink: 0 }}>
+                <span style={{ fontSize: 10, color: c.is_published ? C.grn : C.t3, fontFamily: F.mono, background: c.is_published ? `${alpha(C.grn, 9.4)}` : C.s2, padding: "2px 7px", borderRadius: 4, border: `1px solid ${c.is_published ? alpha(C.grn, 18.8) : C.bdr}`, flexShrink: 0 }}>
                   {c.is_published ? "● PUBLIÉ" : "○ BROUILLON"}
                 </span>
               </div>
@@ -767,10 +767,10 @@ function CourseList({ onManageSections }: { onManageSections: (c: Course) => voi
             <div style={{ display: "flex", gap: 6, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
               <button onClick={() => onManageSections(c)} style={btn({ background: `${c.color}18`, color: c.color, padding: "6px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, border: `1px solid ${c.color}30` })}>📝 Contenu</button>
               <button onClick={() => setEditing(c)} style={btn({ background: C.s2, border: `1px solid ${C.bdr}`, color: C.t2, padding: "6px 12px", borderRadius: 8, fontSize: 11 })}>Éditer</button>
-              <button onClick={() => togglePublish(c)} style={btn({ background: c.is_published ? `${C.gold}18` : `${C.grn}18`, color: c.is_published ? C.gold : C.grn, padding: "6px 12px", borderRadius: 8, fontSize: 11, border: `1px solid ${c.is_published ? C.gold + "30" : C.grn + "30"}` })}>
+              <button onClick={() => togglePublish(c)} style={btn({ background: c.is_published ? `${alpha(C.gold, 9.4)}` : `${alpha(C.grn, 9.4)}`, color: c.is_published ? C.gold : C.grn, padding: "6px 12px", borderRadius: 8, fontSize: 11, border: `1px solid ${c.is_published ? alpha(C.gold, 18.8) : alpha(C.grn, 18.8)}` })}>
                 {c.is_published ? "Dépublier" : "Publier"}
               </button>
-              <button onClick={() => deleteCourse(c.id)} style={btn({ background: `${C.red}18`, color: C.red, padding: "6px 12px", borderRadius: 8, fontSize: 11, border: `1px solid ${C.red}30` })}>Suppr.</button>
+              <button onClick={() => deleteCourse(c.id)} style={btn({ background: `${alpha(C.red, 9.4)}`, color: C.red, padding: "6px 12px", borderRadius: 8, fontSize: 11, border: `1px solid ${alpha(C.red, 18.8)}` })}>Suppr.</button>
             </div>
           </div>
         ))}
@@ -831,7 +831,7 @@ function OrdersManager() {
                 {o.status === "pending" && (
                   <div style={{ display: "flex", gap: 6 }}>
                     <button onClick={() => setStatus(o.id, "paid")} style={btn({ background: C.grn, color: textOn(C.grn), padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>Marquer payé</button>
-                    <button onClick={() => setStatus(o.id, "cancelled")} style={btn({ background: `${C.red}18`, color: C.red, border: `1px solid ${C.red}30`, padding: "7px 10px", borderRadius: 8, fontSize: 12 })}>Annuler</button>
+                    <button onClick={() => setStatus(o.id, "cancelled")} style={btn({ background: `${alpha(C.red, 9.4)}`, color: C.red, border: `1px solid ${alpha(C.red, 18.8)}`, padding: "7px 10px", borderRadius: 8, fontSize: 12 })}>Annuler</button>
                   </div>
                 )}
               </div>
@@ -887,16 +887,16 @@ export function AdminPanel() {
           )}
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <button onClick={() => setPage("courses")} style={btn({ background: page !== "orders" ? `${C.gold}18` : "none", color: page !== "orders" ? C.gold : C.t2, border: `1px solid ${page !== "orders" ? C.gold + "30" : C.bdr}`, padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>
+          <button onClick={() => setPage("courses")} style={btn({ background: page !== "orders" ? `${alpha(C.gold, 9.4)}` : "none", color: page !== "orders" ? C.gold : C.t2, border: `1px solid ${page !== "orders" ? alpha(C.gold, 18.8) : C.bdr}`, padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>
             Formations
           </button>
-          <button onClick={() => setPage("orders")} style={btn({ background: page === "orders" ? `${C.gold}18` : "none", color: page === "orders" ? C.gold : C.t2, border: `1px solid ${page === "orders" ? C.gold + "30" : C.bdr}`, padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>
+          <button onClick={() => setPage("orders")} style={btn({ background: page === "orders" ? `${alpha(C.gold, 9.4)}` : "none", color: page === "orders" ? C.gold : C.t2, border: `1px solid ${page === "orders" ? alpha(C.gold, 18.8) : C.bdr}`, padding: "7px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700 })}>
             Commandes
           </button>
           <a href="#" onClick={e => { e.preventDefault(); window.location.hash = ""; }} style={{ fontSize: 12, color: C.t2, textDecoration: "none", background: C.s2, border: `1px solid ${C.bdr}`, padding: "7px 14px", borderRadius: 8 }}>
             ← Site public
           </a>
-          <button onClick={async () => { await supabase.auth.signOut(); setAuthed(false); }} style={btn({ background: `${C.red}18`, color: C.red, border: `1px solid ${C.red}30`, padding: "7px 14px", borderRadius: 8, fontSize: 12 })}>
+          <button onClick={async () => { await supabase.auth.signOut(); setAuthed(false); }} style={btn({ background: `${alpha(C.red, 9.4)}`, color: C.red, border: `1px solid ${alpha(C.red, 18.8)}`, padding: "7px 14px", borderRadius: 8, fontSize: 12 })}>
             Se déconnecter
           </button>
         </div>

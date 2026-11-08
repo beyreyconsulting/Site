@@ -144,7 +144,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
           </m.button>
           <m.button
             onClick={()=>setMobileOpen(true)}
-            aria-label="Ouvrir le menu"
+            aria-label={t("Ouvrir le menu")}
             aria-expanded={mobileOpen}
             whileHover={{ backgroundColor: C.s3 }}
             whileTap={{ scale: 0.9 }}
@@ -164,7 +164,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
           >
             <m.button
               onClick={()=>setMobileOpen(false)}
-              aria-label="Fermer le menu"
+              aria-label={t("Fermer le menu")}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               style={btn({position:"absolute",top:20,insetInlineEnd:20,background:C.s2,color:C.t,width:40,height:40,borderRadius:"50%",fontSize:18})}
@@ -188,7 +188,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
                 variants={staggerItem}
                 onClick={()=>{ window.location.hash = "lms"; setMobileOpen(false); }}
                 style={btn({background:`${alpha(C.gold, 9.4)}`,border:`1px solid ${alpha(C.gold, 18.8)}`,color:C.gold,padding:"12px 24px",borderRadius:10,fontSize:18,fontFamily:F.serif,fontWeight:700})}
-              >🎓 Académie Kalan</m.button>
+              >🎓 {t("Académie Kalan")}</m.button>
             </m.div>
 
             <m.button
@@ -230,7 +230,7 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
             style={{display:"inline-flex",alignItems:"center",gap:8,background:`${alpha(C.gold, 7.1)}`,border:`1px solid ${alpha(C.gold, 15.7)}`,borderRadius:24,padding:"8px 16px",marginBottom:28}}
           >
             <span style={{width:8,height:8,borderRadius:"50%",background:C.grn}}/>
-            <span style={{fontFamily:F.mono,fontSize:11,color:C.gold,letterSpacing:".1em"}}>CABINET DATA & BI · BAMAKO</span>
+            <span style={{fontFamily:F.mono,fontSize:11,color:C.gold,letterSpacing:".1em"}}>{t("CABINET DATA & BI · BAMAKO")}</span>
           </m.div>
 
           {/* Headline - ROI Focused */}
@@ -253,7 +253,7 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
             style={{fontSize:18,color:C.t2,lineHeight:1.75,maxWidth:540,margin:"0 0 36px"}}
           >
             <strong style={{color:C.t}}>Beyrey Consulting</strong> aide les entreprises maliennes à exploiter la puissance de leurs données.
-            <span style={{color:C.gold,fontWeight:700}}> ROI prouvé, méthodologie éprouvée DIAL™.</span>
+            <span style={{color:C.gold,fontWeight:700}}> {t("ROI prouvé, méthodologie éprouvée DIAL™.")}</span>
           </m.p>
 
           {/* ROI Stats */}
@@ -340,11 +340,11 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
           >
             <div style={{padding:24,paddingBottom:0}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-                <Tag c={C.gold}>⭐ Formation phare</Tag>
+                <Tag c={C.gold}>⭐ {t("Formation phare")}</Tag>
                 <span style={{fontFamily:F.mono,fontSize:10,color:C.t2}}>★ 4.9 · 147 étudiants</span>
               </div>
               <div style={{fontFamily:F.serif,fontSize:24,fontWeight:600,color:C.tf,marginBottom:8}}>Power BI pour PME Maliennes</div>
-              <div style={{fontSize:13,color:C.t2,marginBottom:20}}>De zéro à votre premier dashboard professionnel</div>
+              <div style={{fontSize:13,color:C.t2,marginBottom:20}}>{t("De zéro à votre premier dashboard professionnel")}</div>
             </div>
             <div style={{padding:"0 24px 24px"}}>
               <VideoPlayer course={COURSES[0]} enrolled={false} />
@@ -441,6 +441,7 @@ function TrustBar(){
    LEAD MAGNET — inline email capture (Template Data & Gouvernance)
 ═══════════════════════════════════════════════════ */
 function LeadMagnet(){
+  const { t } = useLangue();
   const [email,setEmail]=useState("");
   const [state,setState]=useState<"idle"|"loading"|"done"|"err">("idle");
   const submit=async()=>{
@@ -460,23 +461,23 @@ function LeadMagnet(){
         style={{maxWidth:920,margin:"0 auto",background:`linear-gradient(135deg,${C.s1},${C.s2})`,border:`1px solid ${alpha(C.gold, 18.8)}`,borderRadius:20,padding:32,display:"grid",gridTemplateColumns:"1.3fr 1fr",gap:28,alignItems:"center"}}
         className="dial-book">
         <div>
-          <Tag c={C.gold}>🎁 RESSOURCE GRATUITE</Tag>
+          <Tag c={C.gold}>🎁 {t("RESSOURCE GRATUITE")}</Tag>
           <h3 style={{fontFamily:F.serif,fontSize:26,fontWeight:600,color:C.tf,margin:"14px 0 10px",lineHeight:1.2}}>Template de Structuration de Département Data & Gouvernance</h3>
-          <p style={{fontSize:14,color:C.t2,lineHeight:1.7,margin:0}}>Le cadre exact que nous déployons chez nos clients pour poser une gouvernance data rigoureuse. Téléchargement immédiat.</p>
+          <p style={{fontSize:14,color:C.t2,lineHeight:1.7,margin:0}}>{t("Le cadre exact que nous déployons chez nos clients pour poser une gouvernance data rigoureuse. Téléchargement immédiat.")}</p>
         </div>
         <div>
           {state==="done"?(
             <div style={{textAlign:"center",padding:"12px 0"}}>
               <div style={{fontSize:34,marginBottom:8}}>✅</div>
-              <div style={{fontSize:14,fontWeight:700,color:C.grn}}>C'est envoyé !</div>
-              <div style={{fontSize:12,color:C.t2,marginTop:4}}>Vérifiez votre boîte mail.</div>
+              <div style={{fontSize:14,fontWeight:700,color:C.grn}}>{t("C'est envoyé !")}</div>
+              <div style={{fontSize:12,color:C.t2,marginTop:4}}>{t("Vérifiez votre boîte mail.")}</div>
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              <input aria-label="Votre email" value={email} onChange={e=>{setEmail(e.target.value);if(state==="err")setState("idle");}}
+              <input aria-label={t("Votre email")} value={email} onChange={e=>{setEmail(e.target.value);if(state==="err")setState("idle");}}
                 placeholder="vous@entreprise.com" type="email"
                 style={{width:"100%",background:C.s2,border:`1px solid ${state==="err"?C.red:C.bdr}`,borderRadius:10,padding:"13px 14px",color:C.t,fontSize:14,fontFamily:F.sans,outline:"none",boxSizing:"border-box"}}/>
-              {state==="err"&&<div style={{fontSize:11,color:C.red}}>Email invalide. Réessayez.</div>}
+              {state==="err"&&<div style={{fontSize:11,color:C.red}}>{t("Email invalide. Réessayez.")}</div>}
               <button onClick={submit} disabled={state==="loading"}
                 style={btn({background:`linear-gradient(135deg,${C.gold},${C.gl})`,color:C.bg,padding:"13px",borderRadius:10,fontWeight:800,fontSize:14})}>
                 {state==="loading"?"Envoi…":"Recevoir le template →"}
@@ -531,13 +532,14 @@ function SectionTitle({tag,title,sub,center}:{tag:string,title:React.ReactNode,s
    COURSES SECTION
 ═══════════════════════════════════════════════════ */
 function CoursesSection({onOpenCourse,onBuy}:{onOpenCourse:(c:any)=>void,onBuy:(c:any)=>void}){
+  const { t } = useLangue();
   const [filter,setFilter]=useState<string>("Tous");
   const cats=["Tous",...Array.from(new Set(COURSES.map(c=>c.cat)))];
   const list=filter==="Tous"?COURSES:COURSES.filter(c=>c.cat===filter);
 
   return(
     <section id="formations" style={{padding:"80px 24px",maxWidth:1200,margin:"0 auto"}}>
-      <SectionTitle tag="Catalogue · 6 formations" title={<>Choisissez votre <span style={{color:C.gold,fontStyle:"italic"}}>prochaine compétence</span></>} sub="Des formations conçues pour le contexte malien. 80% de pratique, 100% de terrain." center/>
+      <SectionTitle tag="Catalogue · 6 formations" title={<>{t("Choisissez votre")} <span style={{color:C.gold,fontStyle:"italic"}}>{t("prochaine compétence")}</span></>} sub="Des formations conçues pour le contexte malien. 80% de pratique, 100% de terrain." center/>
 
       <div style={{display:"flex",gap:8,marginBottom:32,flexWrap:"wrap",justifyContent:"center"}}>
         {cats.map(c=>(
@@ -582,13 +584,13 @@ function CoursesSection({onOpenCourse,onBuy}:{onOpenCourse:(c:any)=>void,onBuy:(
                       <span style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:C.gold}}>{fmt(course.price)}</span>
                       <span style={{fontSize:12,color:C.t3,textDecoration:"line-through"}}>{fmt(course.orig)}</span>
                     </div>
-                    {course.preview&&<div style={{fontSize:10,color:C.grn,fontFamily:F.mono,marginTop:2}}>▶ Aperçu gratuit</div>}
+                    {course.preview&&<div style={{fontSize:10,color:C.grn,fontFamily:F.mono,marginTop:2}}>▶ {t("Aperçu gratuit")}</div>}
                   </div>
                   <Tag c={C.red}>-{discount}%</Tag>
                 </div>
                 <div style={{display:"flex",gap:8}}>
-                  <button onClick={()=>onOpenCourse(course)} style={btn({flex:1,background:C.s2,color:C.t,border:`1px solid ${C.bdr2}`,padding:"11px",borderRadius:10,fontWeight:700,fontSize:12})}>Détails</button>
-                  <button onClick={()=>onBuy(course)} style={btn({flex:1,background:course.color,color:textOn(course.color),padding:"11px",borderRadius:10,fontWeight:800,fontSize:12})}>S'inscrire</button>
+                  <button onClick={()=>onOpenCourse(course)} style={btn({flex:1,background:C.s2,color:C.t,border:`1px solid ${C.bdr2}`,padding:"11px",borderRadius:10,fontWeight:700,fontSize:12})}>{t("Détails")}</button>
+                  <button onClick={()=>onBuy(course)} style={btn({flex:1,background:course.color,color:textOn(course.color),padding:"11px",borderRadius:10,fontWeight:800,fontSize:12})}>{t("S'inscrire")}</button>
                 </div>
               </div>
             </div>
@@ -603,10 +605,11 @@ function CoursesSection({onOpenCourse,onBuy}:{onOpenCourse:(c:any)=>void,onBuy:(
    DIAL METHOD SECTION
 ═══════════════════════════════════════════════════ */
 function DialSection({onDownload}:{onDownload:()=>void}){
+  const { t } = useLangue();
   return(
     <section id="methode" style={{padding:"80px 24px",background:"linear-gradient(180deg,transparent,rgba(14,26,44,.4),transparent)"}}>
       <div style={{maxWidth:1200,margin:"0 auto"}}>
-        <SectionTitle tag="Méthode propriétaire" title={<>DIAL™ — <span style={{color:C.gold,fontStyle:"italic"}}>la gouvernance frugale</span></>} sub="Diagnostiquer, Implémenter, Automatiser, Livrer. Une méthode conçue pour la réalité africaine, pas pour les éditeurs occidentaux." center/>
+        <SectionTitle tag="Méthode propriétaire" title={<>DIAL™ — <span style={{color:C.gold,fontStyle:"italic"}}>{t("la gouvernance frugale")}</span></>} sub="Diagnostiquer, Implémenter, Automatiser, Livrer. Une méthode conçue pour la réalité africaine, pas pour les éditeurs occidentaux." center/>
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:20,marginBottom:40}}>
           {DIAL.map((d,i)=>(
@@ -630,7 +633,7 @@ function DialSection({onDownload}:{onDownload:()=>void}){
 
         <div className="dial-book" style={{background:`linear-gradient(135deg,${C.s1},${C.s2})`,border:`1px solid ${C.bdr}`,borderRadius:20,padding:32,display:"grid",gridTemplateColumns:"1fr 1fr",gap:32,alignItems:"center"}}>
           <div>
-            <Tag c={C.gold}>📚 LIVRE BLANC</Tag>
+            <Tag c={C.gold}>📚 {t("LIVRE BLANC")}</Tag>
             <h3 style={{fontFamily:F.serif,fontSize:28,fontWeight:600,color:C.tf,margin:"14px 0 12px",lineHeight:1.2}}>L'Art de la Rigueur</h3>
             <p style={{fontSize:14,color:C.t2,lineHeight:1.7,margin:"0 0 20px"}}>
               Manifeste pour une gouvernance frugale de la data en Afrique. Écrit par Ibrahim Seydou après 5 ans de terrain à Bamako. Disponible en téléchargement gratuit.
@@ -653,9 +656,10 @@ function DialSection({onDownload}:{onDownload:()=>void}){
    TESTIMONIALS SECTION
 ═══════════════════════════════════════════════════ */
 function TestimonialsSection(){
+  const { t } = useLangue();
   return(
     <section id="temoignages" style={{padding:"80px 24px",maxWidth:1200,margin:"0 auto"}}>
-      <SectionTitle tag="Ils nous font confiance" title={<>Ce que disent <span style={{color:C.gold,fontStyle:"italic"}}>nos clients</span></>} sub="PME, ONG, institutions financières. 465+ professionnels formés au Mali." center/>
+      <SectionTitle tag="Ils nous font confiance" title={<>{t("Ce que disent")} <span style={{color:C.gold,fontStyle:"italic"}}>{t("nos clients")}</span></>} sub="PME, ONG, institutions financières. 465+ professionnels formés au Mali." center/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:20}}>
         {TESTIMONIALS.map((t,i)=>(
           <div className="carte-bord" key={i} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,padding:24,position:"relative",transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)"}}
@@ -681,13 +685,14 @@ function TestimonialsSection(){
    BLOG SECTION
 ═══════════════════════════════════════════════════ */
 function BlogSection({onOpenPost}:{onOpenPost:(p:any)=>void}){
+  const { t } = useLangue();
   const [filter,setFilter]=useState<string>("Tous");
   const cats=["Tous",...Array.from(new Set(POSTS.map(p=>p.cat)))];
   const list=filter==="Tous"?POSTS:POSTS.filter(p=>p.cat===filter);
 
   return(
     <section id="blog" style={{padding:"80px 24px",maxWidth:1200,margin:"0 auto"}}>
-      <SectionTitle tag="Le journal · Beyrey" title={<>Carnet de <span style={{color:C.gold,fontStyle:"italic"}}>terrain</span></>} sub="Stratégie, méthodes, études de cas. 5 ans de terrain malien racontés sans filtre." center/>
+      <SectionTitle tag="Le journal · Beyrey" title={<>{t("Carnet de")} <span style={{color:C.gold,fontStyle:"italic"}}>{t("terrain")}</span></>} sub="Stratégie, méthodes, études de cas. 5 ans de terrain malien racontés sans filtre." center/>
 
       <div style={{display:"flex",gap:8,marginBottom:32,flexWrap:"wrap",justifyContent:"center"}}>
         {cats.map(c=>(
@@ -724,6 +729,7 @@ function BlogSection({onOpenPost}:{onOpenPost:(p:any)=>void}){
    ABOUT SECTION
 ═══════════════════════════════════════════════════ */
 function AboutSection(){
+  const { t } = useLangue();
   return(
     <section id="apropos" style={{padding:"80px 24px",background:"linear-gradient(180deg,transparent,rgba(14,26,44,.4),transparent)"}}>
       <div style={{maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:60,alignItems:"center"}} className="about-grid">
@@ -750,7 +756,7 @@ function AboutSection(){
               <img src="/tof.jpg" alt="Ibrahim Seydou" style={{width:72,height:72,borderRadius:"50%",objectFit:"cover",border:`2px solid ${C.gold}`}}/>
               <div>
                 <div style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:C.tf}}>Ibrahim Seydou</div>
-                <div style={{fontSize:12,color:C.gold,fontFamily:F.mono}}>Fondateur · Consultant Principal</div>
+                <div style={{fontSize:12,color:C.gold,fontFamily:F.mono}}>{t("Fondateur · Consultant Principal")}</div>
               </div>
             </div>
             <p style={{color:C.t2,lineHeight:1.7,margin:"0 0 18px",fontStyle:"italic",fontFamily:F.serif,fontSize:15}}>
@@ -780,6 +786,7 @@ const BESOINS=[
   "Inscription à l'Académie Kalan",
 ];
 function ContactSection(){
+  const { t } = useLangue();
   const [form,setForm]=useState({name:"",entreprise:"",email:"",tel:"",besoin:"",msg:""});
   const [sent,setSent]=useState(false);
   const [sending,setSending]=useState(false);
@@ -807,7 +814,7 @@ function ContactSection(){
     <section id="contact" style={{padding:"80px 24px",maxWidth:1200,margin:"0 auto"}}>
       <div style={{background:`linear-gradient(135deg,${C.s1},${C.s2})`,border:`1px solid ${C.bdr}`,borderRadius:24,overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr"}} className="contact-grid">
         <div style={{padding:40}}>
-          <SectionTitle tag="Travaillons ensemble" title={<>Un projet data ?<br/><span style={{color:C.gold,fontStyle:"italic"}}>Parlons-en.</span></>}/>
+          <SectionTitle tag="Travaillons ensemble" title={<>{t("Un projet data ?")}<br/><span style={{color:C.gold,fontStyle:"italic"}}>{t("Parlons-en.")}</span></>}/>
           <p style={{fontSize:14,color:C.t2,lineHeight:1.7,margin:"0 0 24px"}}>
             Audit, formation sur mesure, accompagnement DIAL™. Réponse sous 24h ouvrées.
           </p>
@@ -830,8 +837,8 @@ function ContactSection(){
           {sent?(
             <div style={{height:"100%",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,textAlign:"center"}}>
               <div style={{width:60,height:60,borderRadius:"50%",background:C.grn,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,color:C.surAccent}}>✓</div>
-              <div style={{fontSize:18,fontWeight:800,color:C.tf}}>Message envoyé !</div>
-              <div style={{fontSize:13,color:C.t2}}>Nous vous répondrons sous 24h.</div>
+              <div style={{fontSize:18,fontWeight:800,color:C.tf}}>{t("Message envoyé !")}</div>
+              <div style={{fontSize:13,color:C.t2}}>{t("Nous vous répondrons sous 24h.")}</div>
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:14}}>
@@ -839,8 +846,8 @@ function ContactSection(){
                 style={{position:"absolute",insetInlineStart:"-9999px",width:1,height:1,opacity:0}} />
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
                 <div>
-                  <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Nom complet *</div>
-                  <input aria-label="Nom complet" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Votre nom" style={fieldStyle}/>
+                  <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>{t("Nom complet *")}</div>
+                  <input aria-label={t("Nom complet")} value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Votre nom" style={fieldStyle}/>
                 </div>
                 <div>
                   <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Entreprise</div>

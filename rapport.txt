@@ -1,0 +1,7 @@
+lms.tsx : 6 enveloppe(s), 0 non traite(s)
+  OK   QUESTIONS & REPONSES
+  OK   Question envoyee ! Un formateur vous repondra bientot.
+  OK   Aucune question pour cette lecon. Soyez le premier a poser la votre !
+  OK   REPONDU
+  OK   Aucune video pour cette lecon
+  OK   A propos de cette lecon

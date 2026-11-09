@@ -98,8 +98,15 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
         </nav>
 
         <div style={{display:"flex",gap:10,alignItems:"center"}}>
-          <SelecteurLangue />
-          <CommutateurTheme />
+          {/* LES DEUX CONTROLES SORTENT DE L'EN-TETE AU TELEPHONE.
+              Mesure a 375 px : avec eux, le groupe d'actions s'etendait
+              jusqu'a 405 px et poussait le bouton de menu a moitie hors
+              de l'ecran. Ils reviennent dans le panneau deroulant, ou la
+              place ne manque pas. */}
+          <div className="hide-mobile" style={{display:"flex",gap:10,alignItems:"center"}}>
+            <SelecteurLangue />
+            <CommutateurTheme />
+          </div>
           {user && (
             <m.button
               onClick={onShowCart}
@@ -189,6 +196,16 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
                 onClick={()=>{ window.location.hash = "lms"; setMobileOpen(false); }}
                 style={btn({background:`${alpha(C.gold, 9.4)}`,border:`1px solid ${alpha(C.gold, 18.8)}`,color:C.gold,padding:"12px 24px",borderRadius:10,fontSize:18,fontFamily:F.serif,fontWeight:700})}
               >🎓 {t("Académie Kalan")}</m.button>
+
+              {/* Langue et thème, sortis de l'en-tête faute de place : ils
+                  doivent rester atteignables quelque part. */}
+              <m.div
+                variants={staggerItem}
+                style={{display:"flex",gap:12,alignItems:"center",marginTop:8}}
+              >
+                <SelecteurLangue />
+                <CommutateurTheme />
+              </m.div>
             </m.div>
 
             <m.button

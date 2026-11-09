@@ -21,6 +21,7 @@
 
 import { useEffect, useState } from "react";
 import { C, F, btn } from "./data.tsx";
+import { useLangue } from "./i18n.tsx";
 
 export type Theme = "systeme" | "jour" | "nuit";
 
@@ -54,13 +55,22 @@ export function appliquerTheme(theme: Theme): void {
   }
 }
 
-const ETATS: { valeur: Theme; icone: string; libelle: string }[] = [
-  { valeur: "systeme", icone: "◐", libelle: "Thème du système" },
-  { valeur: "jour", icone: "☀", libelle: "Thème clair" },
-  { valeur: "nuit", icone: "☾", libelle: "Thème sombre" },
+/* `invitation` est la phrase qui mène VERS cet état, pas celle qui le
+ * décrit. Elle est écrite en entier plutôt que composée d'un verbe et
+ * d'un nom : « passer au thème clair » et « passer à la sombra » ne se
+ * recollent pas de la même façon d'une langue à l'autre, et l'arabe
+ * encore moins. Trois phrases coûtent moins cher qu'un gabarit faux. */
+const ETATS: { valeur: Theme; icone: string; libelle: string; invitation: string }[] = [
+  { valeur: "systeme", icone: "◐", libelle: "Thème du système",
+    invitation: "Cliquer pour passer au thème du système." },
+  { valeur: "jour", icone: "☀", libelle: "Thème clair",
+    invitation: "Cliquer pour passer au thème clair." },
+  { valeur: "nuit", icone: "☾", libelle: "Thème sombre",
+    invitation: "Cliquer pour passer au thème sombre." },
 ];
 
 export function CommutateurTheme({ compact = false }: { compact?: boolean }) {
+  const { t } = useLangue();
   const [theme, setTheme] = useState<Theme>(themeMemorise);
 
   useEffect(() => { appliquerTheme(theme); }, [theme]);
@@ -75,8 +85,8 @@ export function CommutateurTheme({ compact = false }: { compact?: boolean }) {
       // CE QUE FAIT LE BOUTON, pas ce qu'il affiche : un lecteur d'écran
       // qui annonce « thème sombre » sans dire que le clic l'ACTIVE laisse
       // croire que c'est l'état courant.
-      aria-label={`${actuel.libelle}. Cliquer pour passer au ${suivant.libelle.toLowerCase()}.`}
-      title={actuel.libelle}
+      aria-label={`${t(actuel.libelle)}. ${t(suivant.invitation)}`}
+      title={t(actuel.libelle)}
       style={btn({
         background: "none",
         color: C.t2,

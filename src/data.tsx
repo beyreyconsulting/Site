@@ -57,8 +57,21 @@ export function alpha(couleur: string, opacite: number): string {
   if (couleur.startsWith("rgb(") && couleur.endsWith(")")) {
     return `${couleur.slice(0, -1)} / ${arrondi}%)`;
   }
-  // Couleur littérale (hexadécimal ou nom) : rendue telle quelle plutôt
-  // que de fabriquer du CSS douteux.
+  // HEXADÉCIMAL. Il faut le traiter, pas le laisser passer : les données
+  // mélangent jetons et couleurs écrites à la main (`#E060C0` pour la
+  // 4e étape DIAL). Rendre l'hexadécimal inchangé donnerait un aplat
+  // OPAQUE là où l'appelant demandait 3 % — un défaut plus voyant que
+  // celui qu'on corrige.
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(couleur.trim());
+  if (hex) {
+    const n = hex[1].length === 3
+      ? hex[1].split("").map(c => c + c).join("")
+      : hex[1];
+    const [r, v, b] = [0, 2, 4].map(i => parseInt(n.slice(i, i + 2), 16));
+    return `rgb(${r} ${v} ${b} / ${arrondi}%)`;
+  }
+  // Nom de couleur ou valeur inconnue : rendue telle quelle plutôt que
+  // de fabriquer du CSS douteux.
   return couleur;
 }
 export const F = {
@@ -363,4 +376,4 @@ export const clickable = (onActivate:()=>void) => ({
   role:"button" as const, tabIndex:0, onClick:onActivate,
   onKeyDown:(e:React.KeyboardEvent)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); onActivate(); } },
 });
-export function Tag({c=C.gold,children}:{c?:string,children:React.ReactNode}){return<span style={{background:`${c}18`,color:c,fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:20,border:`1px solid ${c}28`,display:"inline-block"}}>{children}</span>}
+export function Tag({c=C.gold,children}:{c?:string,children:React.ReactNode}){return<span style={{background:`${alpha(c, 9.4)}`,color:c,fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:20,border:`1px solid ${alpha(c, 15.7)}`,display:"inline-block"}}>{children}</span>}

@@ -195,6 +195,51 @@ const TRADUCTIONS: Record<Exclude<Langue, "fr">, Record<string, string>> = {
     "Progression globale": "Overall progress",
     "Aucune formation": "No courses yet",
     "Aucun certificat": "No certificates yet",
+
+    // ----- Libelles accessibles et formulaire -----
+    "Organisation": "Organisation",
+    "Email pro *": "Work email *",
+    "Email professionnel": "Work email",
+    "Téléphone": "Phone",
+    "Votre besoin *": "What you need *",
+    "Votre besoin": "What you need",
+    "— Sélectionnez —": "— Select —",
+    "Vos blocages actuels": "What is blocking you",
+    "Décrivez brièvement votre situation...": "Briefly describe your situation…",
+    "Votre nom": "Your name",
+    "Contacter sur WhatsApp": "Contact us on WhatsApp",
+    "Langue": "Language",
+    "Section": "Section",
+    "Thème du système": "System theme",
+    "Thème clair": "Light theme",
+    "Thème sombre": "Dark theme",
+    "Cliquer pour passer au thème du système.": "Click to switch to the system theme.",
+    "Cliquer pour passer au thème clair.": "Click to switch to the light theme.",
+    "Cliquer pour passer au thème sombre.": "Click to switch to the dark theme.",
+    "Cette formation n'existe pas ou n'est pas encore publiee.": "This course does not exist, or is not published yet.",
+    "A PROPOS DE LA FORMATION": "ABOUT THIS COURSE",
+    "Contenu du cours": "Course content",
+    "Le contenu de cette formation sera bientot disponible.": "This course's content is coming soon.",
+    "Catalogue des formations": "Course catalogue",
+    "Explorez nos formations disponibles et lancez-vous.": "Browse the courses on offer and get started.",
+    "Les formations seront bientot publiees.": "Courses will be published soon.",
+    "Aller à mon espace": "Go to my dashboard",
+    "ou": "or",
+    "Formation introuvable": "Course not found",
+    "Aucune formation disponible": "No courses available",
+
+    // ----- Etiquettes et chapeaux de section -----
+    "Catalogue · 6 formations": "Catalogue · 6 courses",
+    "Des formations conçues pour le contexte malien. 80% de pratique, 100% de terrain.": "Courses built for the Malian context. 80% practice, 100% from the field.",
+    "Méthode propriétaire": "Proprietary method",
+    "Diagnostiquer, Implémenter, Automatiser, Livrer. Une méthode conçue pour la réalité africaine, pas pour les éditeurs occidentaux.": "Diagnose, Implement, Automate, Deliver. A method built for African realities, not for Western vendors.",
+    "Ils nous font confiance": "They trust us",
+    "PME, ONG, institutions financières. 465+ professionnels formés au Mali.": "SMEs, NGOs, financial institutions. 465+ professionals trained in Mali.",
+    "Le journal · Beyrey": "The journal · Beyrey",
+    "Stratégie, méthodes, études de cas. 5 ans de terrain malien racontés sans filtre.": "Strategy, methods, case studies. Five years of Malian fieldwork, told plainly.",
+    "Le cabinet": "The firm",
+    "Travaillons ensemble": "Let us work together",
+    "Directeur Data": "Head of Data",
   },
 
   ar: {
@@ -355,6 +400,51 @@ const TRADUCTIONS: Record<Exclude<Langue, "fr">, Record<string, string>> = {
     "Progression globale": "التقدّم الإجمالي",
     "Aucune formation": "لا توجد دورات بعد",
     "Aucun certificat": "لا توجد شهادات بعد",
+
+    // ----- Libelles accessibles et formulaire -----
+    "Organisation": "المؤسسة",
+    "Email pro *": "البريد المهني *",
+    "Email professionnel": "البريد المهني",
+    "Téléphone": "الهاتف",
+    "Votre besoin *": "ما الذي تحتاجه *",
+    "Votre besoin": "ما الذي تحتاجه",
+    "— Sélectionnez —": "— اختر —",
+    "Vos blocages actuels": "ما الذي يعيقك",
+    "Décrivez brièvement votre situation...": "صف وضعك باختصار…",
+    "Votre nom": "اسمك",
+    "Contacter sur WhatsApp": "تواصل عبر واتساب",
+    "Langue": "اللغة",
+    "Section": "القسم",
+    "Thème du système": "سمة النظام",
+    "Thème clair": "السمة الفاتحة",
+    "Thème sombre": "السمة الداكنة",
+    "Cliquer pour passer au thème du système.": "اضغط للتبديل إلى سمة النظام.",
+    "Cliquer pour passer au thème clair.": "اضغط للتبديل إلى السمة الفاتحة.",
+    "Cliquer pour passer au thème sombre.": "اضغط للتبديل إلى السمة الداكنة.",
+    "Cette formation n'existe pas ou n'est pas encore publiee.": "هذه الدورة غير موجودة أو لم تُنشر بعد.",
+    "A PROPOS DE LA FORMATION": "عن هذه الدورة",
+    "Contenu du cours": "محتوى الدورة",
+    "Le contenu de cette formation sera bientot disponible.": "سيتوفر محتوى هذه الدورة قريباً.",
+    "Catalogue des formations": "دليل الدورات",
+    "Explorez nos formations disponibles et lancez-vous.": "تصفّح الدورات المتاحة وابدأ.",
+    "Les formations seront bientot publiees.": "ستُنشر الدورات قريباً.",
+    "Aller à mon espace": "اذهب إلى مساحتي",
+    "ou": "أو",
+    "Formation introuvable": "الدورة غير موجودة",
+    "Aucune formation disponible": "لا توجد دورات متاحة",
+
+    // ----- Etiquettes et chapeaux de section -----
+    "Catalogue · 6 formations": "الدليل · ٦ دورات",
+    "Des formations conçues pour le contexte malien. 80% de pratique, 100% de terrain.": "دورات مصمّمة للسياق المالي. ٨٠٪ تطبيق، ١٠٠٪ من الميدان.",
+    "Méthode propriétaire": "منهجية خاصة",
+    "Diagnostiquer, Implémenter, Automatiser, Livrer. Une méthode conçue pour la réalité africaine, pas pour les éditeurs occidentaux.": "التشخيص، التنفيذ، الأتمتة، التسليم. منهجية مصمّمة للواقع الأفريقي، لا لموردي الغرب.",
+    "Ils nous font confiance": "يثقون بنا",
+    "PME, ONG, institutions financières. 465+ professionnels formés au Mali.": "شركات صغيرة ومتوسطة، منظمات غير حكومية، مؤسسات مالية. أكثر من ٤٦٥ مهنياً تدرّبوا في مالي.",
+    "Le journal · Beyrey": "المدوّنة · بيري",
+    "Stratégie, méthodes, études de cas. 5 ans de terrain malien racontés sans filtre.": "استراتيجية ومنهجيات ودراسات حالة. خمس سنوات من العمل الميداني في مالي، بلا تجميل.",
+    "Le cabinet": "المكتب",
+    "Travaillons ensemble": "لنعمل معاً",
+    "Directeur Data": "مدير البيانات",
   },
 };
 
@@ -426,11 +516,11 @@ export function clesTraduites(langue: Exclude<Langue, "fr">): string[] {
  *  trois. Chacune s'écrit DANS SA PROPRE LANGUE — « العربية », pas
  *  « Arabe » : quelqu'un qui cherche l'arabe ne lit pas le français. */
 export function SelecteurLangue() {
-  const { langue, choisir } = useLangue();
+  const { langue, choisir, t } = useLangue();
   return (
     <div
       role="group"
-      aria-label="Langue"
+      aria-label={t("Langue")}
       style={{ display: "inline-flex", gap: 2, alignItems: "center" }}
     >
       {LANGUES.map(l => {

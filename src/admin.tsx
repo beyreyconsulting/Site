@@ -751,7 +751,7 @@ function CourseList({ onManageSections }: { onManageSections: (c: Course) => voi
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {courses.map(c => (
           <div key={c.id} style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 14, padding: 18, display: "flex", gap: 16, alignItems: "center" }}>
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: `${c.color}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>{c.icon}</div>
+            <div style={{ width: 48, height: 48, borderRadius: 12, background: `${alpha(c.color, 12.5)}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>{c.icon}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: C.t, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.title}</div>
@@ -765,7 +765,7 @@ function CourseList({ onManageSections }: { onManageSections: (c: Course) => voi
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
-              <button onClick={() => onManageSections(c)} style={btn({ background: `${c.color}18`, color: c.color, padding: "6px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, border: `1px solid ${c.color}30` })}>📝 Contenu</button>
+              <button onClick={() => onManageSections(c)} style={btn({ background: `${alpha(c.color, 9.4)}`, color: c.color, padding: "6px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, border: `1px solid ${alpha(c.color, 18.8)}` })}>📝 Contenu</button>
               <button onClick={() => setEditing(c)} style={btn({ background: C.s2, border: `1px solid ${C.bdr}`, color: C.t2, padding: "6px 12px", borderRadius: 8, fontSize: 11 })}>Éditer</button>
               <button onClick={() => togglePublish(c)} style={btn({ background: c.is_published ? `${alpha(C.gold, 9.4)}` : `${alpha(C.grn, 9.4)}`, color: c.is_published ? C.gold : C.grn, padding: "6px 12px", borderRadius: 8, fontSize: 11, border: `1px solid ${c.is_published ? alpha(C.gold, 18.8) : alpha(C.grn, 18.8)}` })}>
                 {c.is_published ? "Dépublier" : "Publier"}

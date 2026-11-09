@@ -393,7 +393,7 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:18}}>
               {PAY.map(m=>(
                 <button key={m.id} onClick={()=>setMethod(m)}
-                  style={btn({background:method?.id===m.id?`${m.color}18`:C.s2,border:`1px solid ${method?.id===m.id?m.color:C.bdr}`,borderRadius:12,padding:"14px 10px",display:"flex",flexDirection:"column",alignItems:"center",gap:6,transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)"})}>
+                  style={btn({background:method?.id===m.id?`${alpha(m.color, 9.4)}`:C.s2,border:`1px solid ${method?.id===m.id?m.color:C.bdr}`,borderRadius:12,padding:"14px 10px",display:"flex",flexDirection:"column",alignItems:"center",gap:6,transition:"background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .2s cubic-bezier(.23,1,.32,1)"})}>
                   <span style={{fontSize:26}}>{m.icon}</span>
                   <span style={{fontSize:11,fontWeight:700,color:method?.id===m.id?m.color:C.t}}>{m.name}</span>
                 </button>
@@ -585,7 +585,7 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
                 </div>
                 <div>
                   <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>{t("Poste")}</div>
-                  <input {...inp("poste")} placeholder="Directeur Data" />
+                  <input {...inp("poste")} placeholder={t("Directeur Data")} />
                 </div>
               </div>
             </div>

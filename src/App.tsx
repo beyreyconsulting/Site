@@ -52,11 +52,17 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
       transition={{ duration: 0.5, ease: "easeOut" }}
       style={{position:"fixed",top:0,insetInlineStart:0,insetInlineEnd:0,zIndex:mobileOpen?300:100,transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)",background:scrolled?"rgba(8,17,30,.95)":"transparent",backdropFilter:scrolled?"blur(16px)":"none",borderBottom:scrolled?`1px solid ${C.bdr}`:"1px solid transparent"}}
     >
-      <div style={{maxWidth:1200,margin:"0 auto",padding:"14px 24px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+      {/* `space-between` SEUL NE PROTÈGE DE RIEN : quand les trois blocs
+          saturent la largeur, il les colle bord à bord et le premier lien
+          de navigation vient s'imprimer sur le logo. Mesuré à 1024 px en
+          français, où les libellés sont plus longs qu'en anglais : logo
+          0→104 px, navigation 104→576 px, aucun écart. L'écart explicite
+          et le logo incompressible rendent la collision impossible. */}
+      <div style={{maxWidth:1200,margin:"0 auto",padding:"14px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:20,flexWrap:"nowrap"}}>
         <m.div
           onClick={()=>onNav("hero")}
           whileHover={{ scale: 1.02 }}
-          style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}
+          style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",flexShrink:0}}
         >
           <m.img
             src="/logo.png"
@@ -198,10 +204,15 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
               >🎓 {t("Académie Kalan")}</m.button>
 
               {/* Langue et thème, sortis de l'en-tête faute de place : ils
-                  doivent rester atteignables quelque part. */}
+                  doivent rester atteignables quelque part. Ce doublon ne
+                  paraît QUE sous 768 px, là où l'en-tête les a retirés ;
+                  entre 769 et 1080 le menu ☰ s'ouvre mais l'en-tête les
+                  affiche encore, et les montrer deux fois serait une
+                  hésitation de plus à l'écran. */}
               <m.div
                 variants={staggerItem}
-                style={{display:"flex",gap:12,alignItems:"center",marginTop:8}}
+                className="doublon-mobile"
+                style={{display:"none",gap:12,alignItems:"center",marginTop:8}}
               >
                 <SelecteurLangue />
                 <CommutateurTheme />
@@ -556,7 +567,7 @@ function CoursesSection({onOpenCourse,onBuy}:{onOpenCourse:(c:any)=>void,onBuy:(
 
   return(
     <section id="formations" style={{padding:"80px 24px",maxWidth:1200,margin:"0 auto"}}>
-      <SectionTitle tag="Catalogue · 6 formations" title={<>{t("Choisissez votre")} <span style={{color:C.gold,fontStyle:"italic"}}>{t("prochaine compétence")}</span></>} sub="Des formations conçues pour le contexte malien. 80% de pratique, 100% de terrain." center/>
+      <SectionTitle tag={t("Catalogue · 6 formations")} title={<>{t("Choisissez votre")} <span style={{color:C.gold,fontStyle:"italic"}}>{t("prochaine compétence")}</span></>} sub={t("Des formations conçues pour le contexte malien. 80% de pratique, 100% de terrain.")} center/>
 
       <div style={{display:"flex",gap:8,marginBottom:32,flexWrap:"wrap",justifyContent:"center"}}>
         {cats.map(c=>(
@@ -573,9 +584,9 @@ function CoursesSection({onOpenCourse,onBuy}:{onOpenCourse:(c:any)=>void,onBuy:(
             <div className="carte" key={course.id} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,overflow:"hidden",transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)",display:"flex",flexDirection:"column"}}
               
               >
-              <div style={{padding:20,background:`linear-gradient(135deg,${course.color}10,transparent)`,borderBottom:`1px solid ${C.bdr}`}}>
+              <div style={{padding:20,background:`linear-gradient(135deg,${alpha(course.color, 6.3)},transparent)`,borderBottom:`1px solid ${C.bdr}`}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-                  <div style={{width:48,height:48,borderRadius:12,background:`${course.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24}}>{course.icon}</div>
+                  <div style={{width:48,height:48,borderRadius:12,background:`${alpha(course.color, 9.4)}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24}}>{course.icon}</div>
                   <div style={{display:"flex",flexDirection:"column",gap:4,alignItems:"flex-end"}}>
                     <Tag c={course.color}>{course.cat}</Tag>
                     <Tag c={C.t2}>{course.lvl}</Tag>
@@ -626,17 +637,22 @@ function DialSection({onDownload}:{onDownload:()=>void}){
   return(
     <section id="methode" style={{padding:"80px 24px",background:"linear-gradient(180deg,transparent,rgba(14,26,44,.4),transparent)"}}>
       <div style={{maxWidth:1200,margin:"0 auto"}}>
-        <SectionTitle tag="Méthode propriétaire" title={<>DIAL™ — <span style={{color:C.gold,fontStyle:"italic"}}>{t("la gouvernance frugale")}</span></>} sub="Diagnostiquer, Implémenter, Automatiser, Livrer. Une méthode conçue pour la réalité africaine, pas pour les éditeurs occidentaux." center/>
+        <SectionTitle tag={t("Méthode propriétaire")} title={<>DIAL™ — <span style={{color:C.gold,fontStyle:"italic"}}>{t("la gouvernance frugale")}</span></>} sub={t("Diagnostiquer, Implémenter, Automatiser, Livrer. Une méthode conçue pour la réalité africaine, pas pour les éditeurs occidentaux.")} center/>
 
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:20,marginBottom:40}}>
+        {/* PAS d'auto-fit ici. D-I-A-L est un acronyme : ses quatre cartes
+            se lisent comme un mot. `auto-fit` les cassait en 3 + 1 dès que
+            la fenêtre descendait sous ~1070 px — un orphelin qui donne
+            l'impression d'une quatrième étape ajoutée après coup. Les
+            seuls découpages honnêtes sont 4, 2 + 2, et 1 par ligne. */}
+        <div className="grille-dial">
           {DIAL.map((d,i)=>(
             <div className="carte" key={i} style={{position:"relative",background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,padding:24,overflow:"hidden",transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)"}}
               
               >
-              <div style={{position:"absolute",top:-20,insetInlineEnd:-10,fontFamily:F.serif,fontSize:120,fontWeight:600,color:`${d.color}08`,lineHeight:1}}>{d.letter}</div>
+              <div style={{position:"absolute",top:-20,insetInlineEnd:-10,fontFamily:F.serif,fontSize:120,fontWeight:600,color:`${alpha(d.color, 3.1)}`,lineHeight:1}}>{d.letter}</div>
               <div style={{position:"relative",zIndex:1}}>
                 <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-                  <div style={{width:44,height:44,borderRadius:12,background:`${d.color}18`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{d.icon}</div>
+                  <div style={{width:44,height:44,borderRadius:12,background:`${alpha(d.color, 9.4)}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{d.icon}</div>
                   <div>
                     <div style={{fontFamily:F.mono,fontSize:10,color:d.color,letterSpacing:".15em"}}>ÉTAPE {i+1}</div>
                     <div style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:C.tf}}>{d.title}</div>
@@ -676,16 +692,16 @@ function TestimonialsSection(){
   const { t } = useLangue();
   return(
     <section id="temoignages" style={{padding:"80px 24px",maxWidth:1200,margin:"0 auto"}}>
-      <SectionTitle tag="Ils nous font confiance" title={<>{t("Ce que disent")} <span style={{color:C.gold,fontStyle:"italic"}}>{t("nos clients")}</span></>} sub="PME, ONG, institutions financières. 465+ professionnels formés au Mali." center/>
+      <SectionTitle tag={t("Ils nous font confiance")} title={<>{t("Ce que disent")} <span style={{color:C.gold,fontStyle:"italic"}}>{t("nos clients")}</span></>} sub={t("PME, ONG, institutions financières. 465+ professionnels formés au Mali.")} center/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:20}}>
         {TESTIMONIALS.map((t,i)=>(
           <div className="carte-bord" key={i} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:18,padding:24,position:"relative",transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)"}}
             
             >
-            <div style={{fontFamily:F.serif,fontSize:60,color:`${t.color}30`,lineHeight:.5,position:"absolute",top:24,insetInlineEnd:20}}>"</div>
+            <div style={{fontFamily:F.serif,fontSize:60,color:`${alpha(t.color, 18.8)}`,lineHeight:.5,position:"absolute",top:24,insetInlineEnd:20}}>"</div>
             <p style={{fontSize:14,color:C.t,lineHeight:1.7,margin:"0 0 20px",position:"relative",zIndex:1}}>{t.text}</p>
             <div style={{display:"flex",alignItems:"center",gap:12,paddingTop:16,borderTop:`1px solid ${C.bdr}`}}>
-              <div style={{width:42,height:42,borderRadius:"50%",background:`${t.color}20`,color:t.color,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:14}}>{t.avatar}</div>
+              <div style={{width:42,height:42,borderRadius:"50%",background:`${alpha(t.color, 12.5)}`,color:t.color,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:14}}>{t.avatar}</div>
               <div>
                 <div style={{fontSize:13,fontWeight:700,color:C.tf}}>{t.name}</div>
                 <div style={{fontSize:11,color:C.t2,fontFamily:F.mono}}>{t.role}</div>
@@ -709,7 +725,7 @@ function BlogSection({onOpenPost}:{onOpenPost:(p:any)=>void}){
 
   return(
     <section id="blog" style={{padding:"80px 24px",maxWidth:1200,margin:"0 auto"}}>
-      <SectionTitle tag="Le journal · Beyrey" title={<>{t("Carnet de")} <span style={{color:C.gold,fontStyle:"italic"}}>{t("terrain")}</span></>} sub="Stratégie, méthodes, études de cas. 5 ans de terrain malien racontés sans filtre." center/>
+      <SectionTitle tag={t("Le journal · Beyrey")} title={<>{t("Carnet de")} <span style={{color:C.gold,fontStyle:"italic"}}>{t("terrain")}</span></>} sub={t("Stratégie, méthodes, études de cas. 5 ans de terrain malien racontés sans filtre.")} center/>
 
       <div style={{display:"flex",gap:8,marginBottom:32,flexWrap:"wrap",justifyContent:"center"}}>
         {cats.map(c=>(
@@ -751,7 +767,7 @@ function AboutSection(){
     <section id="apropos" style={{padding:"80px 24px",background:"linear-gradient(180deg,transparent,rgba(14,26,44,.4),transparent)"}}>
       <div style={{maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:60,alignItems:"center"}} className="about-grid">
         <div>
-          <SectionTitle tag="Le cabinet" title={<>Beyrey <span style={{color:C.gold,fontStyle:"italic"}}>Consulting</span></>}/>
+          <SectionTitle tag={t("Le cabinet")} title={<>Beyrey <span style={{color:C.gold,fontStyle:"italic"}}>Consulting</span></>}/>
           <p style={{fontSize:15,color:C.t,lineHeight:1.8,margin:"0 0 20px"}}>
             Fondé par <strong style={{color:C.gold}}>Ibrahim Seydou</strong> après 5 ans de terrain à Bamako, Beyrey Consulting est devenu le cabinet de référence Data & BI au Mali. Notre conviction : les meilleures solutions data pour l'Afrique ne viendront pas des éditeurs occidentaux, mais de praticiens qui connaissent le terrain.
           </p>
@@ -831,7 +847,7 @@ function ContactSection(){
     <section id="contact" style={{padding:"80px 24px",maxWidth:1200,margin:"0 auto"}}>
       <div style={{background:`linear-gradient(135deg,${C.s1},${C.s2})`,border:`1px solid ${C.bdr}`,borderRadius:24,overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr"}} className="contact-grid">
         <div style={{padding:40}}>
-          <SectionTitle tag="Travaillons ensemble" title={<>{t("Un projet data ?")}<br/><span style={{color:C.gold,fontStyle:"italic"}}>{t("Parlons-en.")}</span></>}/>
+          <SectionTitle tag={t("Travaillons ensemble")} title={<>{t("Un projet data ?")}<br/><span style={{color:C.gold,fontStyle:"italic"}}>{t("Parlons-en.")}</span></>}/>
           <p style={{fontSize:14,color:C.t2,lineHeight:1.7,margin:"0 0 24px"}}>
             Audit, formation sur mesure, accompagnement DIAL™. Réponse sous 24h ouvrées.
           </p>
@@ -864,33 +880,33 @@ function ContactSection(){
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
                 <div>
                   <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>{t("Nom complet *")}</div>
-                  <input aria-label={t("Nom complet")} value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Votre nom" style={fieldStyle}/>
+                  <input aria-label={t("Nom complet")} value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder={t("Votre nom")} style={fieldStyle}/>
                 </div>
                 <div>
-                  <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Entreprise</div>
-                  <input aria-label="Entreprise" value={form.entreprise} onChange={e=>setForm({...form,entreprise:e.target.value})} placeholder="Organisation" style={fieldStyle}/>
+                  <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>{t("Entreprise")}</div>
+                  <input aria-label={t("Entreprise")} value={form.entreprise} onChange={e=>setForm({...form,entreprise:e.target.value})} placeholder={t("Organisation")} style={fieldStyle}/>
                 </div>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
                 <div>
-                  <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Email pro *</div>
-                  <input aria-label="Email professionnel" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="vous@entreprise.com" type="email" style={fieldStyle}/>
+                  <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>{t("Email pro *")}</div>
+                  <input aria-label={t("Email professionnel")} value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="vous@entreprise.com" type="email" style={fieldStyle}/>
                 </div>
                 <div>
-                  <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Téléphone</div>
-                  <input aria-label="Téléphone" value={form.tel} onChange={e=>setForm({...form,tel:e.target.value})} placeholder="+223 …" type="tel" style={fieldStyle}/>
+                  <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>{t("Téléphone")}</div>
+                  <input aria-label={t("Téléphone")} value={form.tel} onChange={e=>setForm({...form,tel:e.target.value})} placeholder="+223 …" type="tel" style={fieldStyle}/>
                 </div>
               </div>
               <div>
-                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Votre besoin *</div>
-                <select aria-label="Votre besoin" value={form.besoin} onChange={e=>setForm({...form,besoin:e.target.value})} style={{...fieldStyle,cursor:"pointer",appearance:"auto"}}>
-                  <option value="">— Sélectionnez —</option>
+                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>{t("Votre besoin *")}</div>
+                <select aria-label={t("Votre besoin")} value={form.besoin} onChange={e=>setForm({...form,besoin:e.target.value})} style={{...fieldStyle,cursor:"pointer",appearance:"auto"}}>
+                  <option value="">{t("— Sélectionnez —")}</option>
                   {BESOINS.map(b=><option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
               <div>
-                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Vos blocages actuels</div>
-                <textarea aria-label="Vos blocages actuels" value={form.msg} onChange={e=>setForm({...form,msg:e.target.value})} placeholder="Décrivez brièvement votre situation..." rows={3}
+                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>{t("Vos blocages actuels")}</div>
+                <textarea aria-label={t("Vos blocages actuels")} value={form.msg} onChange={e=>setForm({...form,msg:e.target.value})} placeholder={t("Décrivez brièvement votre situation...")} rows={3}
                   style={{...fieldStyle,resize:"vertical"}}/>
               </div>
               {err&&<div style={{fontSize:12,color:C.red}}>{err}</div>}
@@ -973,6 +989,7 @@ function parseHash(): { route: Route; courseId?: string } {
 }
 
 export default function App() {
+  const { t } = useLangue();
   const [route, setRoute] = useState<Route>("home");
   const [lmsCourseId, setLmsCourseId] = useState<string | undefined>();
   const [detailCourse,setDetailCourse]=useState<any>(null);
@@ -1104,9 +1121,32 @@ export default function App() {
         @media(prefers-reduced-motion:reduce){
           *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
         }
-        @media(max-width:768px){
+        /* L'EN-TÊTE EST FIXE ET HAUT DE 88 px. Sans cette réserve, chaque
+           lien du menu dépose la section visée SOUS l'en-tête : on arrive
+           sur « Méthode DIAL™ » et le titre est déjà caché. La marge se
+           pose sur la cible (scrollIntoView l'honore) et le remplissage
+           Une SEULE règle, posée sur le conteneur de défilement : la
+           réserve de la page et une marge sur la cible S'ADDITIONNENT.
+           Les deux ensemble déposaient la section à 208 px du haut au
+           lieu de 104 — un vide que personne n'a demandé.
+           scroll-padding-top couvre les deux chemins, le clic du menu
+           comme l'arrivée par #ancre. Mesuré : 104 px pile. */
+        html{scroll-padding-top:104px}
+        .grille-dial{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:40px}
+        @media(max-width:1080px){.grille-dial{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:560px){.grille-dial{grid-template-columns:1fr}}
+        /* LA NAVIGATION DE BUREAU CÈDE À 1080, PAS À 768. Les libellés
+           français sont plus longs que les anglais — « Méthode DIAL™ »
+           contre « DIAL™ Method », « À propos » contre « About ». À
+           1024 px la barre était saturée au pixel près : les liens
+           passaient à la ligne et recouvraient le logo. La bascule vers
+           le menu ☰ se fait donc là où la place manque vraiment. */
+        @media(max-width:1080px){
           .mobile-only{display:flex !important;}
           nav{display:none !important;}
+        }
+        @media(max-width:768px){
+          .doublon-mobile{display:flex !important;}
           .hero-grid{grid-template-columns:1fr !important;gap:32px !important;}
           .hero-title{font-size:40px !important;}
           .about-grid{grid-template-columns:1fr !important;gap:32px !important;}
@@ -1160,7 +1200,7 @@ export default function App() {
           href="https://wa.me/22392976646"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Contacter sur WhatsApp"
+          aria-label={t("Contacter sur WhatsApp")}
           onClick={()=>track("whatsapp_click")}
           style={{
             position:"absolute",

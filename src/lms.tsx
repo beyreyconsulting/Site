@@ -399,7 +399,7 @@ function QASection({ lessonId }: { lessonId: string }) {
       <div style={{ background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 16, marginBottom: 20 }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: C.t, marginBottom: 12 }}>{t("Posez votre question")}</div>
         <div style={{ marginBottom: 10 }}>
-          <input aria-label="Votre nom" value={newQuestion.name} onChange={e => setNewQuestion(q => ({ ...q, name: e.target.value }))} placeholder="Votre nom"
+          <input aria-label={t("Votre nom")} value={newQuestion.name} onChange={e => setNewQuestion(q => ({ ...q, name: e.target.value }))} placeholder={t("Votre nom")}
             style={{ width: "100%", boxSizing: "border-box", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "10px 12px", color: C.t, fontSize: 13, outline: "none" }} />
         </div>
         <textarea value={newQuestion.question} onChange={e => setNewQuestion(q => ({ ...q, question: e.target.value }))} placeholder={t("Votre question...")} rows={3}
@@ -638,8 +638,8 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
     return (
       <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16, textAlign: "center", padding: 24 }}>
         <div style={{ fontSize: 48 }}>📚</div>
-        <div style={{ fontSize: 18, fontWeight: 700, color: C.t }}>Formation introuvable</div>
-        <div style={{ fontSize: 13, color: C.t2, maxWidth: 320 }}>Cette formation n'existe pas ou n'est pas encore publiee.</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: C.t }}>{t("Formation introuvable")}</div>
+        <div style={{ fontSize: 13, color: C.t2, maxWidth: 320 }}>{t("Cette formation n'existe pas ou n'est pas encore publiee.")}</div>
         <button onClick={onBack} style={btn({ background: C.gold, color: C.bg, padding: "10px 20px", borderRadius: 10, fontWeight: 700, fontSize: 13 })}>
           Retour au site
         </button>
@@ -681,12 +681,12 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
             ← Retour
           </button>
           <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-            <div style={{ width: 64, height: 64, borderRadius: 16, background: `${course.color}18`, border: `1px solid ${course.color}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, flexShrink: 0 }}>
+            <div style={{ width: 64, height: 64, borderRadius: 16, background: `${alpha(course.color, 9.4)}`, border: `1px solid ${alpha(course.color, 18.8)}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, flexShrink: 0 }}>
               {course.icon}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 10, color: course.color, fontFamily: F.mono, background: `${course.color}18`, padding: "3px 8px", borderRadius: 4 }}>{course.category}</span>
+                <span style={{ fontSize: 10, color: course.color, fontFamily: F.mono, background: `${alpha(course.color, 9.4)}`, padding: "3px 8px", borderRadius: 4 }}>{course.category}</span>
                 <span style={{ fontSize: 10, color: C.t2, fontFamily: F.mono, background: C.s2, padding: "3px 8px", borderRadius: 4 }}>{course.level}</span>
               </div>
               <h1 style={{ fontFamily: F.serif, fontSize: 28, fontWeight: 600, color: C.tf, margin: "0 0 6px", lineHeight: 1.2 }}>{course.title}</h1>
@@ -724,17 +724,17 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
         {/* Description */}
         {course.description && (
           <div style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 16, padding: 24, marginBottom: 24 }}>
-            <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".1em", marginBottom: 10 }}>A PROPOS DE LA FORMATION</div>
+            <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".1em", marginBottom: 10 }}>{t("A PROPOS DE LA FORMATION")}</div>
             <p style={{ fontSize: 14, color: C.t2, lineHeight: 1.75, margin: 0 }}>{course.description}</p>
           </div>
         )}
 
         {/* Sections and lessons */}
-        <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".1em", marginBottom: 12, textTransform: "uppercase" }}>Contenu du cours</div>
+        <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".1em", marginBottom: 12, textTransform: "uppercase" }}>{t("Contenu du cours")}</div>
         {sections.length === 0 && (
           <div style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 16, padding: 40, textAlign: "center" }}>
             <div style={{ fontSize: 32, marginBottom: 10 }}>📚</div>
-            <div style={{ fontSize: 14, color: C.t2 }}>Le contenu de cette formation sera bientot disponible.</div>
+            <div style={{ fontSize: 14, color: C.t2 }}>{t("Le contenu de cette formation sera bientot disponible.")}</div>
           </div>
         )}
         {sections.map((sec, si) => {
@@ -746,12 +746,12 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
                 className="ligne-fond"
                 {...clickable(() => { const next = new Set(expandedSections); if (isExpanded) next.delete(sec.id); else next.add(sec.id); setExpandedSections(next); })}
                 aria-expanded={isExpanded}
-                aria-label={`Section : ${sec.title}`}
+                aria-label={`${t("Section")} : ${sec.title}`}
                 style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", transition: "background .15s" }}
                 
                 
               >
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: `${course.color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: course.color, flexShrink: 0 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: `${alpha(course.color, 9.4)}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: course.color, flexShrink: 0 }}>
                   {si + 1}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -768,7 +768,7 @@ export function CourseViewer({ courseId, onBack, user }: { courseId: string; onB
                     return (
                       <div className="ligne" key={les.id}
                         {...clickable(() => setSelectedLesson(les))}
-                        aria-label={`Leçon : ${les.title}`}
+                        aria-label={`${t("Leçon")} : ${les.title}`}
                         style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", marginTop: li === 0 ? 16 : 8, background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 10, cursor: "pointer", transition:"background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s cubic-bezier(.23,1,.32,1)" }}
                         
                         
@@ -837,8 +837,8 @@ export function CourseCatalog({ onSelectCourse, onBack, user, onAddToCart }: { o
           <button onClick={onBack} style={btn({ background: C.s2, border: `1px solid ${C.bdr}`, color: C.t2, padding: "8px 14px", borderRadius: 8, fontSize: 12, marginBottom: 20 })}>
             ← Retour au site
           </button>
-          <h1 style={{ fontFamily: F.serif, fontSize: 36, fontWeight: 600, color: C.tf, margin: 0 }}>Catalogue des formations</h1>
-          <p style={{ fontSize: 15, color: C.t2, marginTop: 8 }}>Explorez nos formations disponibles et lancez-vous.</p>
+          <h1 style={{ fontFamily: F.serif, fontSize: 36, fontWeight: 600, color: C.tf, margin: 0 }}>{t("Catalogue des formations")}</h1>
+          <p style={{ fontSize: 15, color: C.t2, marginTop: 8 }}>{t("Explorez nos formations disponibles et lancez-vous.")}</p>
         </div>
       </div>
 
@@ -847,8 +847,8 @@ export function CourseCatalog({ onSelectCourse, onBack, user, onAddToCart }: { o
         {courses.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>📚</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: C.t, marginBottom: 8 }}>Aucune formation disponible</div>
-            <div style={{ fontSize: 13, color: C.t2 }}>Les formations seront bientot publiees.</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: C.t, marginBottom: 8 }}>{t("Aucune formation disponible")}</div>
+            <div style={{ fontSize: 13, color: C.t2 }}>{t("Les formations seront bientot publiees.")}</div>
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
@@ -859,11 +859,11 @@ export function CourseCatalog({ onSelectCourse, onBack, user, onAddToCart }: { o
                   style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 18, overflow: "hidden", transition:"background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, transform .3s cubic-bezier(.23,1,.32,1)" }}
                   
                   >
-                  <div style={{ padding: 20, background: `linear-gradient(135deg,${c.color}10,transparent)`, borderBottom: `1px solid ${C.bdr}` }}>
+                  <div style={{ padding: 20, background: `linear-gradient(135deg,${alpha(c.color, 6.3)},transparent)`, borderBottom: `1px solid ${C.bdr}` }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                      <div style={{ width: 48, height: 48, borderRadius: 12, background: `${c.color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{c.icon}</div>
+                      <div style={{ width: 48, height: 48, borderRadius: 12, background: `${alpha(c.color, 9.4)}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{c.icon}</div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
-                        <span style={{ fontSize: 10, color: c.color, fontFamily: F.mono, background: `${c.color}18`, padding: "3px 8px", borderRadius: 4 }}>{c.category}</span>
+                        <span style={{ fontSize: 10, color: c.color, fontFamily: F.mono, background: `${alpha(c.color, 9.4)}`, padding: "3px 8px", borderRadius: 4 }}>{c.category}</span>
                         <span style={{ fontSize: 10, color: C.t2, fontFamily: F.mono }}>{c.level}</span>
                       </div>
                     </div>

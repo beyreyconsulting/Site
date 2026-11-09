@@ -270,7 +270,7 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
                 {mode === "login" ? "Accédez à votre espace étudiant" : mode === "register" ? "Rejoignez Beyrey Consulting" : mode === "forgot" ? "Reinitialisez votre mot de passe" : "Verifiez votre adresse email"}
               </div>
             </div>
-            <button onClick={onClose} aria-label="Fermer" style={btn({ background: C.bdr, color: C.t2, width: 30, height: 30, borderRadius: "50%", fontSize: 14 })}>✕</button>
+            <button onClick={onClose} aria-label={t("Fermer")} style={btn({ background: C.bdr, color: C.t2, width: 30, height: 30, borderRadius: "50%", fontSize: 14 })}>✕</button>
           </div>
         </div>
 
@@ -550,7 +550,7 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
             <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: C.tf }}>{t("Panier")}</div>
             <div style={{ fontSize: 12, color: C.t2 }}>{count} formation{count > 1 ? "s" : ""}</div>
           </div>
-          <button onClick={onClose} aria-label="Fermer" style={btn({ background: C.bdr, color: C.t2, width: 32, height: 32, borderRadius: "50%", fontSize: 14 })}>✕</button>
+          <button onClick={onClose} aria-label={t("Fermer")} style={btn({ background: C.bdr, color: C.t2, width: 32, height: 32, borderRadius: "50%", fontSize: 14 })}>✕</button>
         </div>
         {result ? (
           <div style={{ padding: 28, textAlign: "center" }}>
@@ -840,7 +840,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
               <m.div
                 key={i}
                 variants={staggerItem}
-                whileHover={{ y: -4, boxShadow: `0 12px 40px ${stat.color}20` }}
+                whileHover={{ y: -4, boxShadow: `0 12px 40px ${alpha(stat.color, 12.5)}` }}
                 style={{ padding: "20px 24px", background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 16, position: "relative", overflow: "hidden" }}
               >
                 <div style={{ position: "absolute", top: 12, insetInlineEnd: 12, fontSize: 24, opacity: 0.3 }}>{stat.icon}</div>

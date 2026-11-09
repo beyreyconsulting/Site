@@ -34,7 +34,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
             <h2 style={{fontFamily:F.serif,fontSize:26,fontWeight:600,color:C.tf,margin:0,lineHeight:1.2}}>{course.title}</h2>
             <div style={{fontSize:13,color:C.t2,marginTop:6}}>{course.sub}</div>
           </div>
-          <button onClick={onClose} aria-label="Fermer" style={btn({background:C.bdr,color:C.t2,width:32,height:32,borderRadius:"50%",fontSize:14,flexShrink:0})}>✕</button>
+          <button onClick={onClose} aria-label={t("Fermer")} style={btn({background:C.bdr,color:C.t2,width:32,height:32,borderRadius:"50%",fontSize:14,flexShrink:0})}>✕</button>
         </div>
 
         {/* Tabs */}
@@ -55,7 +55,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
                 <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".1em",textTransform:"uppercase",marginBottom:10}}>{t("Compétences acquises")}</div>
                 <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
                   {course.skills.map((s:string,i:number)=>(
-                    <span key={i} style={{background:`${course.color}12`,color:course.color,fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:8,border:`1px solid ${course.color}28`}}>{s}</span>
+                    <span key={i} style={{background:`${alpha(course.color, 7.1)}`,color:course.color,fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:8,border:`1px solid ${alpha(course.color, 15.7)}`}}>{s}</span>
                   ))}
                 </div>
                 <div className="cd-stats" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:20}}>
@@ -87,7 +87,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
               <div key={si} style={{marginBottom:14,padding:14,background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:12}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                   <div style={{display:"flex",alignItems:"center",gap:10}}>
-                    <div style={{width:28,height:28,borderRadius:8,background:`${course.color}18`,color:course.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800}}>{si+1}</div>
+                    <div style={{width:28,height:28,borderRadius:8,background:`${alpha(course.color, 9.4)}`,color:course.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800}}>{si+1}</div>
                     <div style={{fontSize:13,fontWeight:700,color:C.t}}>{s.t}</div>
                   </div>
                   <div style={{display:"flex",gap:12,fontSize:11,color:C.t2,fontFamily:F.mono}}>
@@ -158,7 +158,7 @@ export function BlogModal({post,onClose}:{post:any,onClose:()=>void}){
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={post.title} tabIndex={-1} style={{background:C.s1,border:`1px solid ${C.bdr}`,borderRadius:22,width:"100%",maxWidth:720,maxHeight:"92vh",overflow:"hidden",display:"flex",flexDirection:"column",boxShadow:"0 32px 80px rgba(0,0,0,.7)"}}>
 
         <div style={{background:`linear-gradient(135deg,${C.s1},${C.s2})`,padding:"24px 28px",borderBottom:`1px solid ${C.bdr}`,position:"relative"}}>
-          <button onClick={onClose} aria-label="Fermer" style={btn({position:"absolute",top:18,insetInlineEnd:18,background:C.bdr,color:C.t2,width:32,height:32,borderRadius:"50%",fontSize:14})}>✕</button>
+          <button onClick={onClose} aria-label={t("Fermer")} style={btn({position:"absolute",top:18,insetInlineEnd:18,background:C.bdr,color:C.t2,width:32,height:32,borderRadius:"50%",fontSize:14})}>✕</button>
           <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
             <Tag c={C.gold}>{post.icon} {post.cat}</Tag>
             <Tag c={C.t2}>{post.time} de lecture</Tag>

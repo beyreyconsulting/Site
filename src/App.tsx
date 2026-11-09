@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { m, AnimatePresence, useInView } from "framer-motion";
-import { C, F, COURSES, POSTS, DIAL, TESTIMONIALS, STATS, fmt, btn, Tag, clickable, textOn, alpha } from "./data.tsx";
+import { C, F, COURSES, POSTS, DIAL, TESTIMONIALS, STATS, fmt, btn, Tag, clickable, textOn, alpha, tronquer} from "./data.tsx";
 import { track, supabase } from "./supabase";
 import { CommutateurTheme } from "./theme.tsx";
 import { SelecteurLangue, useLangue } from "./i18n.tsx";
@@ -39,7 +39,7 @@ function Header({onNav, user, profile, cartCount, onShowAuth, onShowCart}:{onNav
   const { t } = useLangue();
   const consultingLinks=[
     {l:"Services",id:"formations"},
-    {l:"Méthode DIAL™",id:"methode"},
+    {l:"Méthode DIAL™‎",id:"methode"},
     {l:"Témoignages",id:"temoignages"},
     {l:"Blog",id:"blog"},
     {l:"À propos",id:"apropos"},
@@ -281,7 +281,7 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
             style={{fontSize:18,color:C.t2,lineHeight:1.75,maxWidth:540,margin:"0 0 36px"}}
           >
             <strong style={{color:C.t}}>Beyrey Consulting</strong> {t("aide les entreprises maliennes à exploiter la puissance de leurs données.")}
-            <span style={{color:C.gold,fontWeight:700}}> {t("ROI prouvé, méthodologie éprouvée DIAL™.")}</span>
+            <span style={{color:C.gold,fontWeight:700}}> {t("ROI prouvé, méthodologie éprouvée DIAL™‎.")}</span>
           </m.p>
 
           {/* ROI Stats */}
@@ -637,7 +637,7 @@ function DialSection({onDownload}:{onDownload:()=>void}){
   return(
     <section id="methode" style={{padding:"80px 24px",background:"linear-gradient(180deg,transparent,rgba(14,26,44,.4),transparent)"}}>
       <div style={{maxWidth:1200,margin:"0 auto"}}>
-        <SectionTitle tag={t("Méthode propriétaire")} title={<>DIAL™ — <span style={{color:C.gold,fontStyle:"italic"}}>{t("la gouvernance frugale")}</span></>} sub={t("Diagnostiquer, Implémenter, Automatiser, Livrer. Une méthode conçue pour la réalité africaine, pas pour les éditeurs occidentaux.")} center/>
+        <SectionTitle tag={t("Méthode propriétaire")} title={<>DIAL™‎ — <span style={{color:C.gold,fontStyle:"italic"}}>{t("la gouvernance frugale")}</span></>} sub={t("Diagnostiquer, Implémenter, Automatiser, Livrer. Une méthode conçue pour la réalité africaine, pas pour les éditeurs occidentaux.")} center/>
 
         {/* PAS d'auto-fit ici. D-I-A-L est un acronyme : ses quatre cartes
             se lisent comme un mot. `auto-fit` les cassait en 3 + 1 dès que
@@ -654,11 +654,18 @@ function DialSection({onDownload}:{onDownload:()=>void}){
                 <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
                   <div style={{width:44,height:44,borderRadius:12,background:`${alpha(d.color, 9.4)}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{d.icon}</div>
                   <div>
-                    <div style={{fontFamily:F.mono,fontSize:10,color:d.color,letterSpacing:".15em"}}>ÉTAPE {i+1}</div>
+                    <div style={{fontFamily:F.mono,fontSize:10,color:d.color,letterSpacing:".15em"}}>{t("ÉTAPE")} {i+1}</div>
+                    {/* LE TITRE NE SE TRADUIT PAS, ET CE N'EST PAS UN OUBLI.
+                        Diagnostiquer, Implémenter, Automatiser, Livrer
+                        forment D-I-A-L, que la carte reprend en filigrane
+                        juste derrière. En anglais « Livrer » devient
+                        « Deliver » : D-I-A-D. Le titre traduit
+                        contredirait la lettre affichée derrière lui. La
+                        méthode porte un nom, et un nom ne se traduit pas. */}
                     <div style={{fontFamily:F.serif,fontSize:22,fontWeight:600,color:C.tf}}>{d.title}</div>
                   </div>
                 </div>
-                <p style={{fontSize:13,color:C.t2,lineHeight:1.7,margin:0}}>{d.desc}</p>
+                <p style={{fontSize:13,color:C.t2,lineHeight:1.7,margin:0}}>{t(d.desc)}</p>
               </div>
             </div>
           ))}
@@ -796,7 +803,7 @@ function AboutSection(){
               "J'ai visité plus de 40 entreprises à Bamako. Dans 9 cas sur 10, les données existent — mais elles dorment dans des fichiers Excel que personne n'analyse. Mon métier : les réveiller."
             </p>
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-              {["Power BI","Python","DIAL™","Gouvernance","Audit","Formation"].map((s,i)=>(
+              {["Power BI","Python","DIAL™‎","Gouvernance","Audit","Formation"].map((s,i)=>(
                 <span key={i} style={{fontSize:10,color:C.t2,background:C.s2,padding:"5px 10px",borderRadius:6,border:`1px solid ${C.bdr}`}}>{s}</span>
               ))}
             </div>
@@ -849,7 +856,7 @@ function ContactSection(){
         <div style={{padding:40}}>
           <SectionTitle tag={t("Travaillons ensemble")} title={<>{t("Un projet data ?")}<br/><span style={{color:C.gold,fontStyle:"italic"}}>{t("Parlons-en.")}</span></>}/>
           <p style={{fontSize:14,color:C.t2,lineHeight:1.7,margin:"0 0 24px"}}>
-            Audit, formation sur mesure, accompagnement DIAL™. Réponse sous 24h ouvrées.
+            Audit, formation sur mesure, accompagnement DIAL™‎. Réponse sous 24h ouvrées.
           </p>
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
             <div style={{display:"flex",alignItems:"center",gap:12,color:C.t2,fontSize:13}}>
@@ -937,7 +944,7 @@ function Footer({onNav}:{onNav:(id:string)=>void}){
             </div>
           </div>
           <p style={{fontSize:13,color:C.t2,lineHeight:1.7,maxWidth:320,margin:"0 0 18px"}}>
-            Le cabinet de référence Data & BI au Mali. Méthode DIAL™ — gouvernance frugale pour l'Afrique.
+            Le cabinet de référence Data & BI au Mali. Méthode DIAL™‎ — gouvernance frugale pour l'Afrique.
           </p>
           <div style={{display:"flex",gap:10}}>
             {[{s:"𝕏",l:"X (Twitter)"},{s:"in",l:"LinkedIn"},{s:"f",l:"Facebook"},{s:"✉",l:"Email"}].map((x)=>(
@@ -947,14 +954,14 @@ function Footer({onNav}:{onNav:(id:string)=>void}){
         </div>
         <div>
           <div style={{fontFamily:F.mono,fontSize:10,color:C.gold,letterSpacing:".1em",textTransform:"uppercase",marginBottom:14}}>Navigation</div>
-          {[{l:"Formations",id:"formations"},{l:"Méthode DIAL™",id:"methode"},{l:"Témoignages",id:"temoignages"},{l:"Blog",id:"blog"},{l:"À propos",id:"apropos"}].map(x=>(
+          {[{l:"Formations",id:"formations"},{l:"Méthode DIAL™‎",id:"methode"},{l:"Témoignages",id:"temoignages"},{l:"Blog",id:"blog"},{l:"À propos",id:"apropos"}].map(x=>(
             <button key={x.id} onClick={()=>onNav(x.id)} style={btn({display:"block",background:"none",color:C.t2,fontSize:13,padding:"4px 0",textAlign: "start"})}>{x.l}</button>
           ))}
         </div>
         <div>
           <div style={{fontFamily:F.mono,fontSize:10,color:C.gold,letterSpacing:".1em",textTransform:"uppercase",marginBottom:14}}>Formations</div>
           {COURSES.slice(0,5).map(c=>(
-            <div key={c.id} style={{fontSize:13,color:C.t2,padding:"4px 0"}}>{c.icon} {c.title.length>22?c.title.substring(0,22)+"…":c.title}</div>
+            <div key={c.id} style={{fontSize:13,color:C.t2,padding:"4px 0"}}>{c.icon} <bdi>{tronquer(c.title, 22)}</bdi></div>
           ))}
         </div>
         <div>
@@ -1123,7 +1130,7 @@ export default function App() {
         }
         /* L'EN-TÊTE EST FIXE ET HAUT DE 88 px. Sans cette réserve, chaque
            lien du menu dépose la section visée SOUS l'en-tête : on arrive
-           sur « Méthode DIAL™ » et le titre est déjà caché. La marge se
+           sur « Méthode DIAL™‎ » et le titre est déjà caché. La marge se
            pose sur la cible (scrollIntoView l'honore) et le remplissage
            Une SEULE règle, posée sur le conteneur de défilement : la
            réserve de la page et une marge sur la cible S'ADDITIONNENT.
@@ -1136,8 +1143,8 @@ export default function App() {
         @media(max-width:1080px){.grille-dial{grid-template-columns:repeat(2,1fr)}}
         @media(max-width:560px){.grille-dial{grid-template-columns:1fr}}
         /* LA NAVIGATION DE BUREAU CÈDE À 1080, PAS À 768. Les libellés
-           français sont plus longs que les anglais — « Méthode DIAL™ »
-           contre « DIAL™ Method », « À propos » contre « About ». À
+           français sont plus longs que les anglais — « Méthode DIAL™‎ »
+           contre « DIAL™‎ Method », « À propos » contre « About ». À
            1024 px la barre était saturée au pixel près : les liens
            passaient à la ligne et recouvraient le logo. La bascule vers
            le menu ☰ se fait donc là où la place manque vraiment. */

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { m, AnimatePresence } from "framer-motion";
-import { C, F, PAY, fmt, btn, Tag, alpha } from "./data.tsx";
+import { C, F, PAY, fmt, btn, Tag, alpha, tronquer} from "./data.tsx";
 import { useLangue } from "./i18n.tsx";
 import { supabase, askKalan, track } from "./supabase";
 import { useDialog } from "./a11y";
@@ -29,7 +29,7 @@ export function RichText({text}:{text:string}){
 export function KalanAI(){
   const { t } = useLangue();
   const [open,setOpen]=useState(false);
-  const [msgs,setMsgs]=useState([{r:"a",t:"Bonjour ! Je suis **Kalan**, votre guide data chez Beyrey Consulting. Comment puis-je vous aider ? Je peux vous recommander une formation, répondre à vos questions sur Power BI, Excel, Python ou la méthode DIAL™. 😊"}]);
+  const [msgs,setMsgs]=useState([{r:"a",t:"Bonjour ! Je suis **Kalan**, votre guide data chez Beyrey Consulting. Comment puis-je vous aider ? Je peux vous recommander une formation, répondre à vos questions sur Power BI, Excel, Python ou la méthode DIAL™‎. 😊"}]);
   const [input,setInput]=useState("");
   const [busy,setBusy]=useState(false);
   const endRef=useRef<HTMLDivElement>(null);
@@ -384,7 +384,7 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
           <div style={{background:C.s2,padding:"18px 20px",borderBottom:`1px solid ${C.bdr}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div>
               <div style={{fontSize:15,fontWeight:800,color:C.tf}}>{t("Choisir le paiement")}</div>
-              <div style={{fontFamily:F.mono,fontSize:11,color:C.gold}}>{fmt(course.price)} · {course.title.substring(0,30)}{course.title.length>30?"…":""}</div>
+              <div style={{fontFamily:F.mono,fontSize:11,color:C.gold}}>{fmt(course.price)} · <bdi>{tronquer(course.title, 30)}</bdi></div>
             </div>
             <button onClick={onClose} style={btn({background:C.bdr,color:C.t2,width:30,height:30,borderRadius:"50%",fontSize:14})}>✕</button>
           </div>

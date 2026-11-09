@@ -110,7 +110,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
             <div style={{background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16}}>
               <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".1em",textTransform:"uppercase",marginBottom:10}}>{t("Approche pédagogique")}</div>
               <p style={{fontSize:13,color:C.t,lineHeight:1.7,margin:0}}>
-                Chaque formation suit la méthode DIAL™ : diagnostiquer votre niveau, implémenter les bons outils, automatiser le travail manuel, livrer des compétences durables. 80% de pratique, 20% de théorie. Tous les exercices sont tirés du contexte malien.
+                Chaque formation suit la méthode DIAL™‎ : diagnostiquer votre niveau, implémenter les bons outils, automatiser le travail manuel, livrer des compétences durables. 80% de pratique, 20% de théorie. Tous les exercices sont tirés du contexte malien.
               </p>
             </div>
           </>}

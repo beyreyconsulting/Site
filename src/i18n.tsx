@@ -40,7 +40,7 @@ const TRADUCTIONS: Record<Exclude<Langue, "fr">, Record<string, string>> = {
   en: {
     // ----- Navigation et en-tête -----
     "Services": "Services",
-    "Méthode DIAL™": "DIAL™ Method",
+    "Méthode DIAL™‎": "DIAL™‎ Method",
     "Témoignages": "Testimonials",
     "Blog": "Blog",
     "À propos": "About",
@@ -99,7 +99,7 @@ const TRADUCTIONS: Record<Exclude<Langue, "fr">, Record<string, string>> = {
 
     // ----- Page d'accueil -----
     "CABINET DATA & BI · BAMAKO": "DATA & BI CONSULTANCY · BAMAKO",
-    "ROI prouvé, méthodologie éprouvée DIAL™.": "Proven ROI, proven DIAL™ method.",
+    "ROI prouvé, méthodologie éprouvée DIAL™‎.": "Proven ROI, proven DIAL™‎ method.",
     "De zéro à votre premier dashboard professionnel": "From zero to your first professional dashboard",
     "RESSOURCE GRATUITE": "FREE RESOURCE",
     "LIVRE BLANC": "WHITE PAPER",
@@ -240,12 +240,19 @@ const TRADUCTIONS: Record<Exclude<Langue, "fr">, Record<string, string>> = {
     "Le cabinet": "The firm",
     "Travaillons ensemble": "Let us work together",
     "Directeur Data": "Head of Data",
+
+    // ----- Les quatre etapes DIAL -----
+    "Audit complet de vos données, de vos flux et de vos compétences internes. On identifie les goulots, les doublons, les pertes de valeur.": "A full audit of your data, your flows and your in-house skills. We find the bottlenecks, the duplicates, the value you are losing.",
+    "Mise en place des outils adaptés à votre contexte — Power BI, Power Query, pipelines ETL. Préférer le frugal au coûteux.": "The tools that fit your context — Power BI, Power Query, ETL pipelines. Frugal before expensive.",
+    "Éliminer le travail manuel répétitif. Vos rapports se mettent à jour seuls. Vos équipes se concentrent sur l'analyse, pas la saisie.": "An end to repetitive manual work. Your reports refresh themselves. Your teams work on analysis, not data entry.",
+    "Formation de vos équipes, documentation, transfert de compétences. Le système fonctionne encore quand le consultant est parti.": "Training, documentation, handover of skills. The system still runs once the consultant has gone.",
+    "ÉTAPE": "STEP",
   },
 
   ar: {
     // ----- Navigation et en-tête -----
     "Services": "الخدمات",
-    "Méthode DIAL™": "منهج DIAL™",
+    "Méthode DIAL™‎": "منهج DIAL™‎",
     "Témoignages": "آراء العملاء",
     "Blog": "المدونة",
     "À propos": "من نحن",
@@ -304,7 +311,7 @@ const TRADUCTIONS: Record<Exclude<Langue, "fr">, Record<string, string>> = {
 
     // ----- Page d'accueil -----
     "CABINET DATA & BI · BAMAKO": "مكتب البيانات وذكاء الأعمال · باماكو",
-    "ROI prouvé, méthodologie éprouvée DIAL™.": "عائد مثبت، ومنهج DIAL™ مجرَّب.",
+    "ROI prouvé, méthodologie éprouvée DIAL™‎.": "عائد مثبت، ومنهج DIAL™‎ مجرَّب.",
     "De zéro à votre premier dashboard professionnel": "من الصفر إلى أول لوحة معلومات مهنية",
     "RESSOURCE GRATUITE": "مورد مجاني",
     "LIVRE BLANC": "ورقة بيضاء",
@@ -445,6 +452,13 @@ const TRADUCTIONS: Record<Exclude<Langue, "fr">, Record<string, string>> = {
     "Le cabinet": "المكتب",
     "Travaillons ensemble": "لنعمل معاً",
     "Directeur Data": "مدير البيانات",
+
+    // ----- Les quatre etapes DIAL -----
+    "Audit complet de vos données, de vos flux et de vos compétences internes. On identifie les goulots, les doublons, les pertes de valeur.": "تدقيق شامل لبياناتك وتدفّقاتك وكفاءات فريقك. نحدّد الاختناقات والتكرارات ومواضع ضياع القيمة.",
+    "Mise en place des outils adaptés à votre contexte — Power BI, Power Query, pipelines ETL. Préférer le frugal au coûteux.": "تركيب الأدوات المناسبة لسياقك — Power BI وPower Query وخطوط ETL. الأوفر قبل الأغلى.",
+    "Éliminer le travail manuel répétitif. Vos rapports se mettent à jour seuls. Vos équipes se concentrent sur l'analyse, pas la saisie.": "إنهاء العمل اليدوي المتكرّر. تقاريرك تتحدّث من تلقاء نفسها، وفرقك تتفرّغ للتحليل بدل الإدخال.",
+    "Formation de vos équipes, documentation, transfert de compétences. Le système fonctionne encore quand le consultant est parti.": "تدريب فرقك وتوثيق النظام ونقل المهارات. يظل النظام يعمل بعد رحيل الاستشاري.",
+    "ÉTAPE": "الخطوة",
   },
 };
 

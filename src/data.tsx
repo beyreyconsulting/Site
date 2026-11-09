@@ -74,6 +74,31 @@ export function alpha(couleur: string, opacite: number): string {
   // de fabriquer du CSS douteux.
   return couleur;
 }
+
+/** Raccourcit un texte SANS couper au milieu d'un caractère.
+ *
+ * `substring(0, 22)` compte des unités de code UTF-16, pas des
+ * caractères. Il tranche donc au hasard :
+ *
+ *  - une paire de substitution (émoji, écritures hors du plan de base)
+ *    devient un losange noir ;
+ *  - un caractère INVISIBLE de formatage saute sans qu'on le voie. C'est
+ *    ce qui est arrivé ici : « Gouvernance Data DIAL™ » fait 22 unités
+ *    pile, et la marque gauche-à-droite posée juste après tombait
+ *    toujours du mauvais côté de la coupe. Le ™ se retrouvait à GAUCHE
+ *    du mot dans la version arabe — uniquement dans les deux endroits
+ *    qui raccourcissent, ce qui rendait le défaut incompréhensible.
+ *
+ * On découpe donc par points de code, et on laisse le rendu isoler la
+ * direction (élément `bdi`) plutôt que de compter sur une marque que la
+ * coupe peut emporter.
+ */
+export function tronquer(texte: string, limite: number): string {
+  const lettres = [...texte];
+  if (lettres.length <= limite) return texte;
+  return lettres.slice(0, limite).join("") + "…";
+}
+
 export const F = {
   serif:"'Cormorant Garamond',Georgia,serif",
   sans:"'Plus Jakarta Sans',system-ui,sans-serif",
@@ -118,18 +143,18 @@ export const COURSES = [
   },
   {
     id:3,icon:"🏛️",color:"#E060C0",cat:"Gouvernance",lvl:"Expert",
-    title:"Gouvernance Data DIAL™",
+    title:"Gouvernance Data DIAL™‎",
     sub:"La méthode de gouvernance data conçue pour l'Afrique",
     price:120000,orig:160000,dur:"12h",vids:36,students:34,rating:5.0,reviews:18,preview:false,
-    desc:"La formation phare Beyrey Consulting. Maîtrisez la méthode DIAL™ complète et devenez expert de la gouvernance data adaptée au contexte africain. Inclut une certification.",
-    skills:["DIAL™","Gouvernance data","Stratégie","Change management","Audit data"],
+    desc:"La formation phare Beyrey Consulting. Maîtrisez la méthode DIAL™‎ complète et devenez expert de la gouvernance data adaptée au contexte africain. Inclut une certification.",
+    skills:["DIAL™‎","Gouvernance data","Stratégie","Change management","Audit data"],
     curriculum:[
       {t:"Fondements — gouvernance data en Afrique",n:5,d:"2h"},
       {t:"D — Diagnostiquer vos données",n:7,d:"2h30"},
       {t:"I — Implémenter les bons outils",n:6,d:"2h20"},
       {t:"A — Automatiser le travail manuel",n:8,d:"2h45"},
       {t:"L — Livrer et former vos équipes",n:6,d:"2h25"},
-      {t:"Projet de certification DIAL™",n:4,d:"Pratique"},
+      {t:"Projet de certification DIAL™‎",n:4,d:"Pratique"},
     ],
   },
   {
@@ -199,7 +224,7 @@ Trois raisons. D'abord, le coût perçu : les dirigeants associent "data" à des
 
 **La bonne nouvelle**
 
-La gouvernance frugale — au cœur de DIAL™ — montre qu'on peut résoudre 80% des problèmes data d'une PME malienne avec Power BI Desktop et Power Query. Sans serveur coûteux. Sans consultant expatrié. Le plus grand frein n'est pas financier : c'est culturel.`,
+La gouvernance frugale — au cœur de DIAL™‎ — montre qu'on peut résoudre 80% des problèmes data d'une PME malienne avec Power BI Desktop et Power Query. Sans serveur coûteux. Sans consultant expatrié. Le plus grand frein n'est pas financier : c'est culturel.`,
   },
   {
     id:2,cat:"Power BI",time:"7 min",date:"22 Jan 2025",icon:"⚖️",
@@ -239,7 +264,7 @@ La gouvernance frugale n'est pas un compromis par manque de moyens. C'est maximi
     excerpt:"Comment nous avons transformé le reporting mensuel d'une entreprise industrielle malienne avec Power BI et un pipeline ETL sur mesure.",
     body:`EMICOM Mali est une entreprise du secteur de l'énergie et de l'ingénierie. Leur reporting mensuel prenait 3 jours de travail manuel.
 
-**Le diagnostic initial (phase D — DIAL™)**
+**Le diagnostic initial (phase D — DIAL™‎)**
 
 Les données venaient de 4 sources différentes. Chaque mois, une personne passait 3 jours à les consolider à la main dans un Excel de synthèse.
 
@@ -307,7 +332,7 @@ export const PAY = [
 ═══════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════
-   DIAL™ METHOD
+   DIAL™‎ METHOD
 ═══════════════════════════════════════════════════ */
 export const DIAL = [
   {letter:"D",title:"Diagnostiquer",icon:"🔍",color:C.gold,desc:"Audit complet de vos données, de vos flux et de vos compétences internes. On identifie les goulots, les doublons, les pertes de valeur."},
@@ -322,7 +347,7 @@ export const DIAL = [
 export const TESTIMONIALS = [
   {name:"Aminata Traoré",role:"DAF, EMICOM Mali",avatar:"AT",color:C.gold,text:"Beyrey Consulting a transformé notre reporting mensuel. De 3 jours de travail manuel à 20 minutes. Le ROI s'est fait en 2 mois."},
   {name:"Mahamed Cissé",role:"Directeur M&E, ONG Sahel",avatar:"MC",color:C.grn,text:"La formation Dashboard ONG & Bailleurs est exactement ce dont nous avions besoin. Nos rapports bailleurs sont enfin à jour et automatisés."},
-  {name:"Fatoumata Diallo",role:"Analyste Data, BDM Bank",avatar:"FD",color:C.blue,text:"La méthode DIAL™ m'a donné un cadre structuré pour penser la gouvernance data. Je l'applique tous les jours dans mon travail."},
+  {name:"Fatoumata Diallo",role:"Analyste Data, BDM Bank",avatar:"FD",color:C.blue,text:"La méthode DIAL™‎ m'a donné un cadre structuré pour penser la gouvernance data. Je l'applique tous les jours dans mon travail."},
   {name:"Seydou Keita",role:"DG, Keita Commerce",avatar:"SK",color:"#E060C0",text:"Je ne savais pas qu'on pouvait faire ça avec Power BI. Maintenant, je vois mes KPIs chaque matin sur mon téléphone."},
 ];
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { C, F, btn, alpha } from "./data.tsx";
+import { useLangue } from "./i18n.tsx";
 import { supabase, createOrder } from "./supabase";
 import { useDialog } from "./a11y";
 import { staggerContainer, staggerItem } from "./motion";
@@ -98,6 +99,7 @@ export function useAuth() {
 
 /* ─────────────── AUTH MODAL ─────────────── */
 export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: () => void }) {
+  const { t } = useLangue();
   const dialogRef = useDialog(onClose);
   const [mode, setMode] = useState<"login" | "register" | "forgot" | "verify">("login");
   const [form, setForm] = useState({ email: "", password: "", fullName: "", confirmPassword: "" });
@@ -257,7 +259,7 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(4,8,16,.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Connexion / Inscription" tabIndex={-1} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 440, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)", maxHeight: "90vh", overflowY: "auto" }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={t("Connexion / Inscription")} tabIndex={-1} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 440, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)", maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ background: `linear-gradient(135deg,${C.s1},${C.s2})`, padding: "24px 28px", borderBottom: `1px solid ${C.bdr}` }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
@@ -280,13 +282,13 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
           {mode === "login" && (
             <>
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Email</div>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>{t("Email")}</div>
                 <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                   style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
                   placeholder="vous@exemple.com" type="email" />
               </div>
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Mot de passe</div>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>{t("Mot de passe")}</div>
                 <input value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                   style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
                   placeholder="••••••••" type="password" />
@@ -310,22 +312,22 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
           {mode === "register" && (
             <>
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Nom complet *</div>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>{t("Nom complet *")}</div>
                 <input value={form.fullName} onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))}
                   style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
                   placeholder="Ibrahim Seydou" />
               </div>
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Email *</div>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>{t("Email *")}</div>
                 <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                   style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
                   placeholder="vous@exemple.com" type="email" />
               </div>
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Mot de passe *</div>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>{t("Mot de passe *")}</div>
                 <input value={form.password} onChange={e => { setForm(f => ({ ...f, password: e.target.value })); setPasswordErrors([]); }}
                   style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
-                  placeholder="Minimum 8 caracteres" type="password" />
+                  placeholder={t("Minimum 8 caracteres")} type="password" />
                 {passwordErrors.length > 0 && (
                   <div style={{ marginTop: 6 }}>
                     {passwordErrors.map((e, i) => (
@@ -338,17 +340,17 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
                 </div>
               </div>
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Confirmer le mot de passe *</div>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>{t("Confirmer le mot de passe *")}</div>
                 <input value={form.confirmPassword} onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
                   style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
-                  placeholder="Retapez le mot de passe" type="password" />
+                  placeholder={t("Retapez le mot de passe")} type="password" />
               </div>
               <button onClick={handleRegister} disabled={loading || !form.email || !form.password || !form.fullName || !form.confirmPassword}
                 style={btn({ width: "100%", background: loading || !form.email || !form.password || !form.fullName || !form.confirmPassword ? C.bdr : `linear-gradient(135deg,${C.gold},${C.gl})`, color: loading ? C.t3 : C.bg, padding: 14, borderRadius: 10, fontWeight: 800, fontSize: 14 })}>
                 {loading ? "Creation..." : "Creer mon compte"}
               </button>
               <div style={{ marginTop: 16, textAlign: "center", fontSize: 13, color: C.t2 }}>
-                Déjà un compte ? <button onClick={() => { setMode("login"); setError(""); }} style={{ background: "none", border: "none", color: C.gold, cursor: "pointer", fontWeight: 700 }}>Se connecter</button>
+                Déjà un compte ? <button onClick={() => { setMode("login"); setError(""); }} style={{ background: "none", border: "none", color: C.gold, cursor: "pointer", fontWeight: 700 }}>{t("Se connecter")}</button>
               </div>
             </>
           )}
@@ -360,7 +362,7 @@ export function AuthModal({ onClose, onAuth }: { onClose: () => void; onAuth: ()
                 Entrez votre adresse email. Nous vous enverrons un lien pour reinitialiser votre mot de passe.
               </div>
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Email</div>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>{t("Email")}</div>
                 <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                   style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", color: C.t, fontSize: 14, outline: "none", boxSizing: "border-box" }}
                   placeholder="vous@exemple.com" type="email" />
@@ -515,6 +517,7 @@ export function useCertificates(user: User | null) {
 
 /* ─────────────── SHOPPING CART MODAL ─────────────── */
 export function CartModal({ onClose, onCheckout }: { onClose: () => void; onCheckout: () => void }) {
+  const { t } = useLangue();
   const dialogRef = useDialog(onClose);
   const { user } = useAuth();
   const { items, loading, removeFromCart, clearCart, total, count } = useCart(user);
@@ -541,10 +544,10 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(4,8,16,.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Votre panier" tabIndex={-1} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 480, maxHeight: "92vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={t("Votre panier")} tabIndex={-1} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 480, maxHeight: "92vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}>
         <div style={{ background: `linear-gradient(135deg,${C.s1},${C.s2})`, padding: "20px 24px", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: C.tf }}>Panier</div>
+            <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: C.tf }}>{t("Panier")}</div>
             <div style={{ fontSize: 12, color: C.t2 }}>{count} formation{count > 1 ? "s" : ""}</div>
           </div>
           <button onClick={onClose} aria-label="Fermer" style={btn({ background: C.bdr, color: C.t2, width: 32, height: 32, borderRadius: "50%", fontSize: 14 })}>✕</button>
@@ -554,29 +557,29 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
             <div style={{ fontSize: 44, marginBottom: 12 }}>{result === "paid" ? "✅" : "⏳"}</div>
             {result === "paid" ? (
               <>
-                <div style={{ fontSize: 16, fontWeight: 800, color: C.grn, marginBottom: 8 }}>Inscription confirmée !</div>
-                <div style={{ fontSize: 13, color: C.t2, marginBottom: 20 }}>Vous avez maintenant accès à vos formations.</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: C.grn, marginBottom: 8 }}>{t("Inscription confirmée !")}</div>
+                <div style={{ fontSize: 13, color: C.t2, marginBottom: 20 }}>{t("Vous avez maintenant accès à vos formations.")}</div>
                 <button onClick={onCheckout} style={btn({ background: C.gold, color: C.bg, padding: "12px 24px", borderRadius: 10, fontWeight: 800, fontSize: 14 })}>Aller à mon espace →</button>
               </>
             ) : (
               <>
-                <div style={{ fontSize: 16, fontWeight: 800, color: C.gold, marginBottom: 8 }}>Commande enregistrée</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: C.gold, marginBottom: 8 }}>{t("Commande enregistrée")}</div>
                 <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.7, marginBottom: 16, textAlign: "start" }}>
                   Pour activer votre accès, effectuez le paiement par <strong style={{ color: C.t }}>Orange Money</strong> ou <strong style={{ color: C.t }}>Wave</strong> au :
                   <div style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 10, padding: "12px 14px", margin: "10px 0", fontFamily: F.mono, fontSize: 16, color: C.gold, textAlign: "center", fontWeight: 700 }}>+223 92 97 66 46</div>
                   en précisant votre email <strong style={{ color: C.t }}>{user?.email}</strong>. Votre accès sera activé dès confirmation (sous 24h ouvrées).
                 </div>
-                <button onClick={onCheckout} style={btn({ background: C.gold, color: C.bg, padding: "12px 24px", borderRadius: 10, fontWeight: 800, fontSize: 14 })}>J'ai compris</button>
+                <button onClick={onCheckout} style={btn({ background: C.gold, color: C.bg, padding: "12px 24px", borderRadius: 10, fontWeight: 800, fontSize: 14 })}>{t("J'ai compris")}</button>
               </>
             )}
           </div>
         ) : (<>
         <div style={{ padding: 20, maxHeight: 400, overflowY: "auto" }}>
-          {loading && <div style={{ textAlign: "center", color: C.t3, padding: 20 }}>Chargement...</div>}
+          {loading && <div style={{ textAlign: "center", color: C.t3, padding: 20 }}>{t("Chargement...")}</div>}
           {!loading && items.length === 0 && (
             <div style={{ textAlign: "center", padding: 40 }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>🛒</div>
-              <div style={{ fontSize: 14, color: C.t2 }}>Votre panier est vide</div>
+              <div style={{ fontSize: 14, color: C.t2 }}>{t("Votre panier est vide")}</div>
             </div>
           )}
           {items.map(item => (
@@ -590,7 +593,7 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
               </div>
               <div style={{ textAlign: "end", flexShrink: 0 }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: C.gold }}>{(item.course?.price || 0).toLocaleString("fr-FR")} F</div>
-                <button onClick={() => removeFromCart(item.id)} style={btn({ background: "none", color: C.t3, fontSize: 10, padding: "2px 4px" })}>Retirer</button>
+                <button onClick={() => removeFromCart(item.id)} style={btn({ background: "none", color: C.t3, fontSize: 10, padding: "2px 4px" })}>{t("Retirer")}</button>
               </div>
             </div>
           ))}
@@ -598,7 +601,7 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
         {items.length > 0 && (
           <div style={{ padding: "20px 24px", borderTop: `1px solid ${C.bdr}`, background: C.s2 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <span style={{ fontSize: 14, color: C.t2 }}>Total</span>
+              <span style={{ fontSize: 14, color: C.t2 }}>{t("Total")}</span>
               <span style={{ fontFamily: F.serif, fontSize: 24, fontWeight: 600, color: C.gold }}>{total.toLocaleString("fr-FR")} FCFA</span>
             </div>
             {checkoutErr && <div style={{ fontSize: 12, color: C.red, marginBottom: 10 }}>{checkoutErr}</div>}
@@ -615,6 +618,7 @@ export function CartModal({ onClose, onCheckout }: { onClose: () => void; onChec
 
 /* ─────────────── CERTIFICATE VIEW ─────────────── */
 function CertificateView({ certificate, onClose, onShare }: { certificate: Certificate; onClose: () => void; onShare: () => void }) {
+  const { t } = useLangue();
   const dialogRef = useDialog(onClose);
   const course = certificate.course;
   const [copied, setCopied] = useState(false);
@@ -629,26 +633,26 @@ function CertificateView({ certificate, onClose, onShare }: { certificate: Certi
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(4,8,16,.95)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, overflowY: "auto" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Certificat" tabIndex={-1} style={{ background: "#fff", borderRadius: 0, width: "100%", maxWidth: 800, maxHeight: "92vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 40px 100px rgba(0,0,0,.5)" }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={t("Certificat")} tabIndex={-1} style={{ background: "#fff", borderRadius: 0, width: "100%", maxWidth: 800, maxHeight: "92vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 40px 100px rgba(0,0,0,.5)" }}>
         {/* Certificate Content */}
         <div style={{ padding: "48px 56px", background: "#fffdf8", position: "relative", textAlign: "center" }}>
           {/* Border decorations */}
           <div style={{ position: "absolute", inset: 16, border: `3px solid ${C.gold}`, borderRadius: 4, pointerEvents: "none" }} />
           <div style={{ position: "absolute", inset: 24, border: `1px solid ${C.gold}`, pointerEvents: "none" }} />
 
-          <div style={{ fontSize: 12, color: "#8B7355", letterSpacing: ".3em", textTransform: "uppercase", fontFamily: F.mono }}>Certificat de Reussite</div>
+          <div style={{ fontSize: 12, color: "#8B7355", letterSpacing: ".3em", textTransform: "uppercase", fontFamily: F.mono }}>{t("Certificat de Reussite")}</div>
 
           <div style={{ fontSize: 48, fontFamily: F.serif, color: C.gold, margin: "20px 0", fontWeight: 600, fontStyle: "italic" }}>
             Beyrey Consulting
           </div>
 
-          <div style={{ fontSize: 14, color: "#666", marginBottom: 28 }}>atteste que</div>
+          <div style={{ fontSize: 14, color: "#666", marginBottom: 28 }}>{t("atteste que")}</div>
 
           <div style={{ fontSize: 28, fontFamily: F.serif, color: "#1a1a1a", fontWeight: 700, marginBottom: 8 }}>
             {certificate.course?.title || "Étudiant"}
           </div>
 
-          <div style={{ fontSize: 14, color: "#666", marginBottom: 28 }}>a suivi avec succes la formation</div>
+          <div style={{ fontSize: 14, color: "#666", marginBottom: 28 }}>{t("a suivi avec succes la formation")}</div>
 
           <div style={{ display: "inline-block", padding: "12px 32px", background: `linear-gradient(135deg,${C.gold},${C.gl})`, color: C.tf, fontFamily: F.serif, fontSize: 22, fontWeight: 600, borderRadius: 4, marginBottom: 28 }}>
             {course?.title}
@@ -656,15 +660,15 @@ function CertificateView({ certificate, onClose, onShare }: { certificate: Certi
 
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 40, borderTop: "1px solid #e0d5c5", paddingTop: 32, flexWrap: "wrap", gap: 16 }}>
             <div style={{ textAlign: "start" }}>
-              <div style={{ fontSize: 10, color: "#999", textTransform: "uppercase", letterSpacing: ".1em" }}>Date</div>
+              <div style={{ fontSize: 10, color: "#999", textTransform: "uppercase", letterSpacing: ".1em" }}>{t("Date")}</div>
               <div style={{ fontSize: 14, color: "#333", fontWeight: 700 }}>{new Date(certificate.issued_at).toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })}</div>
             </div>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 10, color: "#999", textTransform: "uppercase", letterSpacing: ".1em" }}>N° Certificat</div>
+              <div style={{ fontSize: 10, color: "#999", textTransform: "uppercase", letterSpacing: ".1em" }}>{t("N° Certificat")}</div>
               <div style={{ fontSize: 14, color: "#333", fontWeight: 700, fontFamily: F.mono }}>{certificate.certificate_number}</div>
             </div>
             <div style={{ textAlign: "end" }}>
-              <div style={{ fontSize: 10, color: "#999", textTransform: "uppercase", letterSpacing: ".1em" }}>Code Verification</div>
+              <div style={{ fontSize: 10, color: "#999", textTransform: "uppercase", letterSpacing: ".1em" }}>{t("Code Verification")}</div>
               <div style={{ fontSize: 14, color: "#333", fontWeight: 700, fontFamily: F.mono }}>{certificate.verification_code}</div>
             </div>
           </div>
@@ -672,7 +676,7 @@ function CertificateView({ certificate, onClose, onShare }: { certificate: Certi
 
         {/* Share section */}
         <div style={{ padding: 16, background: C.s2, borderBottom: `1px solid ${C.bdr}` }}>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 8 }}>Lien de verification</div>
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 8 }}>{t("Lien de verification")}</div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <input value={verifyUrl} readOnly style={{ flex: 1, background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 6, padding: "8px 12px", fontSize: 12, color: C.t, fontFamily: F.mono }} />
             <button onClick={copyLink} style={btn({ background: copied ? C.grn : C.gold, color: copied ? C.surAccent : C.bg, padding: "8px 14px", borderRadius: 6, fontWeight: 700, fontSize: 12, whiteSpace: "nowrap" })}>
@@ -701,6 +705,7 @@ function CertificateView({ certificate, onClose, onShare }: { certificate: Certi
 
 /* ─────────────── STUDENT DASHBOARD ─────────────── */
 export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { user: User; profile: StudentProfile | null; onSignOut: () => void; onViewCourse: (id: string) => void }) {
+  const { t } = useLangue();
   const { enrollments, loading: enrollLoading } = useEnrollments(user);
   const { certificates, hasCertificate, generateCertificate } = useCertificates(user);
   const [tab, setTab] = useState<"courses" | "certificates">("courses");
@@ -861,7 +866,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
               style={{ marginTop: 24, padding: "20px 24px", background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 16 }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: C.t }}>Progression globale</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: C.t }}>{t("Progression globale")}</span>
                 <span style={{ fontSize: 14, fontWeight: 800, color: C.gold, fontFamily: F.mono }}>{totalProgress}%</span>
               </div>
               <div style={{ height: 10, background: C.bdr, borderRadius: 5, overflow: "hidden" }}>
@@ -931,7 +936,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                     style={{ width: 40, height: 40, border: `3px solid ${C.bdr}`, borderTopColor: C.gold, borderRadius: "50%", margin: "0 auto 16px" }}
                   />
-                  <div style={{ color: C.t3 }}>Chargement...</div>
+                  <div style={{ color: C.t3 }}>{t("Chargement...")}</div>
                 </div>
               ) : enrollments.length === 0 ? (
                 <m.div
@@ -945,7 +950,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                     transition={{ type: "spring", stiffness: 200 }}
                     style={{ fontSize: 64, marginBottom: 20 }}
                   >📚</m.div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: C.t, marginBottom: 10 }}>Aucune formation</div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: C.t, marginBottom: 10 }}>{t("Aucune formation")}</div>
                   <div style={{ fontSize: 14, color: C.t2, marginBottom: 24, maxWidth: 400, margin: "0 auto 24px" }}>
                     Explorez notre catalogue et inscrivez-vous à une formation pour commencer votre apprentissage.
                   </div>
@@ -997,7 +1002,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                         {/* Progress */}
                         <div style={{ marginBottom: 20 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                            <span style={{ fontSize: 12, color: C.t2, fontFamily: F.mono, letterSpacing: ".04em" }}>Progression</span>
+                            <span style={{ fontSize: 12, color: C.t2, fontFamily: F.mono, letterSpacing: ".04em" }}>{t("Progression")}</span>
                             <m.span
                               key={en.progress_pct}
                               initial={{ scale: 1.3 }}
@@ -1077,7 +1082,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                     transition={{ type: "spring", stiffness: 200 }}
                     style={{ fontSize: 64, marginBottom: 20 }}
                   >🏆</m.div>
-                  <m.div style={{ fontSize: 20, fontWeight: 700, color: C.t, marginBottom: 10 }}>Aucun certificat</m.div>
+                  <m.div style={{ fontSize: 20, fontWeight: 700, color: C.t, marginBottom: 10 }}>{t("Aucun certificat")}</m.div>
                   <div style={{ fontSize: 14, color: C.t2, maxWidth: 400, margin: "0 auto" }}>
                     Complétez une formation pour obtenir votre premier certificat.
                   </div>
@@ -1103,7 +1108,7 @@ export function StudentDashboard({ user, profile, onSignOut, onViewCourse }: { u
                         transition={{ delay: idx * 0.1, type: "spring", stiffness: 200 }}
                         style={{ fontSize: 48, marginBottom: 16 }}
                       >🏆</m.div>
-                      <div style={{ fontSize: 10, color: "#8B7355", letterSpacing: ".2em", textTransform: "uppercase", fontFamily: F.mono, marginBottom: 8 }}>Certificat de Réussite</div>
+                      <div style={{ fontSize: 10, color: "#8B7355", letterSpacing: ".2em", textTransform: "uppercase", fontFamily: F.mono, marginBottom: 8 }}>{t("Certificat de Réussite")}</div>
                       <div style={{ fontSize: 18, fontWeight: 700, color: "#1a1a1a", fontFamily: F.serif, marginBottom: 12 }}>{cert.course?.title}</div>
                       <div style={{ fontSize: 11, color: "#666", fontFamily: F.mono, marginBottom: 20 }}>
                         Délivré le {new Date(cert.issued_at).toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })}

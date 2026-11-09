@@ -13,18 +13,39 @@ export async function askKalan(
   messages: { role: "user" | "assistant"; content: string }[],
 ): Promise<string> {
   const { data: { session } } = await supabase.auth.getSession();
-  const res = await fetch(`${FUNCTIONS_URL}/kalan`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      apikey: key,
-      Authorization: `Bearer ${session?.access_token ?? key}`,
-    },
-    body: JSON.stringify({ messages }),
-  });
-  const d = await res.json();
-  if (!res.ok) throw new Error(d?.error || "kalan error");
-  return d.text as string;
+
+  // LA FONCTION NOMME DÉJÀ CHAQUE PANNE — clé absente, limiteur muet,
+  // quota atteint, refus d'Anthropic — et elle prend soin de ne rien
+  // dire d'interne. Ce qui se perdait, c'est le chemin du retour : un
+  // corps non lisible ou une coupure réseau effaçaient le motif et ne
+  // laissaient qu'un « une erreur s'est produite » qui ne se diagnostique
+  // pas. Chaque sortie porte donc désormais sa raison.
+  let res: Response;
+  try {
+    res = await fetch(`${FUNCTIONS_URL}/kalan`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: key,
+        Authorization: `Bearer ${session?.access_token ?? key}`,
+      },
+      body: JSON.stringify({ messages }),
+    });
+  } catch {
+    throw new Error("Kalan est injoignable. Vérifiez votre connexion.");
+  }
+
+  // Une passerelle en panne répond du HTML, pas du JSON : lire le corps
+  // sans filet perdrait le code d'état, seule information restante.
+  let d: { error?: string; text?: string } | null = null;
+  try {
+    d = await res.json();
+  } catch { /* corps illisible : on s'en tiendra au code d'état */ }
+
+  if (!res.ok) {
+    throw new Error(d?.error || `Kalan a répondu ${res.status}.`);
+  }
+  return (d?.text ?? "") as string;
 }
 
 /**

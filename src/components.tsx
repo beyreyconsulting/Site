@@ -50,7 +50,18 @@ export function KalanAI(){
       const apiMsgs=next.filter((m,i)=>!(i===0&&m.r==="a")).map(m=>({role:(m.r==="u"?"user":"assistant") as "user"|"assistant",content:m.t}));
       const text=await askKalan(apiMsgs);
       setMsgs([...next,{r:"a",t:text||"Désolé, une erreur s'est produite."}]);
-    }catch{setMsgs([...next,{r:"a",t:"Une erreur s'est produite. Réessayez dans un instant."}]);}
+    }catch(e){
+      // AFFICHER LA RAISON, PAS UN HAUSSEMENT D'ÉPAULES. Le serveur
+      // distingue déjà la clé absente, le quota du jour, le refus
+      // d'Anthropic et le limiteur en panne, en formulations prévues
+      // pour être lues par un visiteur. Les remplacer toutes par la
+      // même phrase rendait la panne indiagnosticable : on ne pouvait
+      // plus savoir s'il fallait recharger, attendre demain, ou aller
+      // poser une clé sur le serveur.
+      const raison = e instanceof Error && e.message ? e.message
+        : "Une erreur s'est produite. Réessayez dans un instant.";
+      setMsgs([...next,{r:"a",t:raison}]);
+    }
     finally{setBusy(false);}
   };
 

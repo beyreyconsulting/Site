@@ -1201,7 +1201,16 @@ export default function App() {
         <CartModal onClose={()=>setShowCart(false)} onCheckout={()=>{ setShowCart(false); window.location.hash = "student"; }} />
       )}
 
-      <div style={{position:"fixed",bottom:24,insetInlineStart:24,width:56,height:56,zIndex:150}}>
+      {/* LES DEUX BULLES TIENNENT LE MÊME COIN, EN COLONNE.
+          Séparées, elles encadraient la page et chacune mordait sur le
+          texte de son côté : mesuré à 1280 px, celle de gauche occupait
+          24→80 alors que les paragraphes commencent à 57. Réunies, elles
+          se lisent comme un seul groupe « nous joindre », et le côté
+          qu'elles quittent redevient lisible.
+          24 (bas de Kalan) + 56 (sa hauteur) + 12 d'écart = 92.
+          Le côté est LOGIQUE : à droite en lecture latine, à gauche en
+          arabe — c'est-à-dire du côté opposé au texte dans les deux cas. */}
+      <div style={{position:"fixed",bottom:92,insetInlineEnd:20,width:56,height:56,zIndex:150}}>
         <a
           className="fab"
           href="https://wa.me/22392976646"

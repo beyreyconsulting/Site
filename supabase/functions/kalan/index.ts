@@ -56,7 +56,18 @@ Deno.serve(async (req) => {
 
   try {
     const key = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!key) return json({ error: "server not configured" }, 500);
+    if (!key) {
+      // CETTE PHRASE SE LIT DANS LA BULLE. Les autres sorties de cette
+      // fonction s'adressent déjà au visiteur ; celle-ci restait un code
+      // interne en anglais, qui ne disait à personne quoi faire. Dire
+      // qu'une clé manque ne révèle rien d'exploitable, et c'est la
+      // seule panne des quatre qui se répare en une minute.
+      console.error("ANTHROPIC_API_KEY absente de l'environnement");
+      return json(
+        { error: "Kalan n'est pas encore configuré côté serveur." },
+        500,
+      );
+    }
 
     // ── Rate limit per client IP ──
     const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { C, F, PAY, fmt, btn, Tag, alpha } from "./data.tsx";
+import { useLangue } from "./i18n.tsx";
 import { supabase, askKalan, track } from "./supabase";
 import { useDialog } from "./a11y";
 
@@ -26,6 +27,7 @@ export function RichText({text}:{text:string}){
    KALAN AI ASSISTANT
 ═══════════════════════════════════════════════════ */
 export function KalanAI(){
+  const { t } = useLangue();
   const [open,setOpen]=useState(false);
   const [msgs,setMsgs]=useState([{r:"a",t:"Bonjour ! Je suis **Kalan**, votre guide data chez Beyrey Consulting. Comment puis-je vous aider ? Je peux vous recommander une formation, répondre à vos questions sur Power BI, Excel, Python ou la méthode DIAL™. 😊"}]);
   const [input,setInput]=useState("");
@@ -54,7 +56,7 @@ export function KalanAI(){
 
   return(
     <>
-      <button onClick={()=>setOpen(o=>!o)} style={{position:"fixed",bottom:24,insetInlineEnd:20,zIndex:200,width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},${C.gl})`,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 28px rgba(200,151,26,.45)",fontSize:open?18:22,color:C.bg,fontWeight:open?800:400,transition:"background-color .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease, transform .25s cubic-bezier(.23,1,.32,1)",transform:open?"rotate(5deg)":"none"}} aria-label="Ouvrir Kalan">
+      <button onClick={()=>setOpen(o=>!o)} style={{position:"fixed",bottom:24,insetInlineEnd:20,zIndex:200,width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},${C.gl})`,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 28px rgba(200,151,26,.45)",fontSize:open?18:22,color:C.bg,fontWeight:open?800:400,transition:"background-color .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease, transform .25s cubic-bezier(.23,1,.32,1)",transform:open?"rotate(5deg)":"none"}} aria-label={t("Ouvrir Kalan")}>
         {open?"✕":"🤖"}
       </button>
       {open&&(
@@ -80,7 +82,7 @@ export function KalanAI(){
             <div ref={endRef}/>
           </div>
           <div style={{borderTop:`1px solid ${C.bdr}`,padding:"10px 12px",display:"flex",gap:8,background:C.s2}}>
-            <input aria-label="Votre question à Kalan" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Posez votre question…"
+            <input aria-label={t("Votre question à Kalan")} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder={t("Posez votre question…")}
               style={{flex:1,background:C.bg,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"9px 12px",color:C.t,fontSize:12,fontFamily:F.sans,outline:"none"}}/>
             <button onClick={send} disabled={busy||!input.trim()}
               style={btn({background:input.trim()&&!busy?C.gold:C.bdr,color:input.trim()&&!busy?C.bg:C.t2,width:36,height:36,borderRadius:10,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"})}>→</button>
@@ -96,6 +98,7 @@ export function KalanAI(){
    VIDEO PLAYER - OPTIMIZED WITH LAZY LOADING
 ═══════════════════════════════════════════════════ */
 export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
+  const { t } = useLangue();
   const [playing,setPlaying]=useState(false);
   const [prog,setProg]=useState(0);
   const [sel,setSel]=useState(0);
@@ -171,7 +174,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
             transition={{ delay: 0.3 }}
             style={{textAlign:"center",position:"relative",zIndex:1}}
           >
-            <div style={{fontFamily:F.serif,fontSize:17,fontWeight:600,color:C.tf,marginBottom:6}}>Contenu verrouillé</div>
+            <div style={{fontFamily:F.serif,fontSize:17,fontWeight:600,color:C.tf,marginBottom:6}}>{t("Contenu verrouillé")}</div>
             <div style={{fontSize:12,color:C.t2}}>Inscrivez-vous pour accéder aux {totalVids} leçons</div>
           </m.div>
         </div>
@@ -357,6 +360,7 @@ export function VideoPlayer({course,enrolled}:{course:any,enrolled:boolean}){
    PAYMENT MODAL
 ═══════════════════════════════════════════════════ */
 export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>void,onSuccess:()=>void}){
+  const { t } = useLangue();
   const [step,setStep]=useState(1);
   const [method,setMethod]=useState<any>(null);
   const [phone,setPhone]=useState("");
@@ -379,13 +383,13 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
         {step===1&&<>
           <div style={{background:C.s2,padding:"18px 20px",borderBottom:`1px solid ${C.bdr}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <div>
-              <div style={{fontSize:15,fontWeight:800,color:C.tf}}>Choisir le paiement</div>
+              <div style={{fontSize:15,fontWeight:800,color:C.tf}}>{t("Choisir le paiement")}</div>
               <div style={{fontFamily:F.mono,fontSize:11,color:C.gold}}>{fmt(course.price)} · {course.title.substring(0,30)}{course.title.length>30?"…":""}</div>
             </div>
             <button onClick={onClose} style={btn({background:C.bdr,color:C.t2,width:30,height:30,borderRadius:"50%",fontSize:14})}>✕</button>
           </div>
           <div style={{padding:20}}>
-            <div style={{fontSize:12,fontWeight:700,color:C.t,marginBottom:14}}>Sélectionnez votre mode de paiement</div>
+            <div style={{fontSize:12,fontWeight:700,color:C.t,marginBottom:14}}>{t("Sélectionnez votre mode de paiement")}</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:18}}>
               {PAY.map(m=>(
                 <button key={m.id} onClick={()=>setMethod(m)}
@@ -414,7 +418,7 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
             {method?.id!=="card"?<>
               <div style={{fontSize:12,color:C.t2,marginBottom:14,lineHeight:1.6}}>Entrez votre numéro {method?.name}. Vous recevrez un message USSD pour confirmer.</div>
               <div style={{marginBottom:14}}>
-                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Numéro de téléphone</div>
+                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>{t("Numéro de téléphone")}</div>
                 <div style={{display:"flex",gap:8}}>
                   <div style={{background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:8,padding:"11px 12px",fontFamily:F.mono,fontSize:12,color:C.t2,flexShrink:0}}>+223</div>
                   <input value={phone} onChange={e=>setPhone(e.target.value.replace(/\D/g,"").substring(0,8))} placeholder="76 00 00 00" maxLength={8}
@@ -426,17 +430,17 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
               </div>
             </>:<>
               <div style={{marginBottom:14}}>
-                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Numéro de carte</div>
+                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>{t("Numéro de carte")}</div>
                 <input value={card.n} onChange={e=>setCard({...card, n:e.target.value.replace(/\D/g,"")})} placeholder="0000 0000 0000 0000" maxLength={16}
                   style={{width:"100%",background:C.s2,border:`1px solid ${err?C.red:C.bdr}`,borderRadius:8,padding:"11px 14px",color:C.t,fontFamily:F.mono,fontSize:14,outline:"none",boxSizing:"border-box"}}/>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
                  <div>
-                   <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>Expiration</div>
+                   <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>{t("Expiration")}</div>
                    <input value={card.e} onChange={e=>setCard({...card, e:e.target.value})} placeholder="MM/AA" maxLength={5} style={{width:"100%",background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:8,padding:"11px 14px",color:C.t,fontFamily:F.mono,fontSize:14,outline:"none",boxSizing:"border-box"}}/>
                  </div>
                  <div>
-                   <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>CVC</div>
+                   <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".08em",textTransform:"uppercase",marginBottom:6}}>{t("CVC")}</div>
                    <input value={card.c} onChange={e=>setCard({...card, c:e.target.value.replace(/\D/g,"")})} placeholder="123" maxLength={3} style={{width:"100%",background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:8,padding:"11px 14px",color:C.t,fontFamily:F.mono,fontSize:14,outline:"none",boxSizing:"border-box"}}/>
                  </div>
               </div>
@@ -450,15 +454,15 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
 
         {step===3&&<div style={{padding:40,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16}}>
            <div style={{width:40,height:40,border:`3px solid ${C.bdr}`,borderTopColor:C.gold,borderRadius:"50%",animation:"spin 1s linear infinite"}}/>
-           <div style={{fontSize:14,color:C.t}}>Traitement du paiement en cours...</div>
+           <div style={{fontSize:14,color:C.t}}>{t("Traitement du paiement en cours...")}</div>
            <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
         </div>}
 
         {step===4&&<div style={{padding:40,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,textAlign:"center"}}>
            <div style={{width:60,height:60,borderRadius:"50%",background:C.grn,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,color:C.surAccent}}>✓</div>
            <div>
-             <div style={{fontSize:18,fontWeight:800,color:C.tf,marginBottom:6}}>Paiement réussi !</div>
-             <div style={{fontSize:12,color:C.t2,marginBottom:20}}>Vous avez maintenant accès à la formation.</div>
+             <div style={{fontSize:18,fontWeight:800,color:C.tf,marginBottom:6}}>{t("Paiement réussi !")}</div>
+             <div style={{fontSize:12,color:C.t2,marginBottom:20}}>{t("Vous avez maintenant accès à la formation.")}</div>
              <button onClick={()=>{onSuccess();onClose();}} style={btn({background:C.gold,color:C.bg,padding:"10px 20px",borderRadius:8,fontWeight:700})}>
                Commencer la formation
              </button>
@@ -474,6 +478,7 @@ export function PaymentModal({course,onClose,onSuccess}:{course:any,onClose:()=>
    BOOK DOWNLOAD MODAL
 ═══════════════════════════════════════════════════ */
 export function BookDownloadModal({ onClose }: { onClose: () => void }) {
+  const { t } = useLangue();
   const dialogRef = useDialog(onClose);
   const [form, setForm] = useState({ nom: "", email: "", entreprise: "", poste: "" });
   const [err, setErr] = useState<Partial<typeof form>>({});
@@ -533,7 +538,7 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
       style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(4,8,16,.88)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Télécharger le livre blanc" tabIndex={-1} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 480, maxHeight: "92vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={t("Télécharger le livre blanc")} tabIndex={-1} style={{ background: C.s1, border: `1px solid ${C.bdr}`, borderRadius: 22, width: "100%", maxWidth: 480, maxHeight: "92vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,.7)" }}>
 
         {/* Header */}
         <div style={{ background: `linear-gradient(135deg,${C.s1},${C.s2})`, borderBottom: `1px solid ${C.bdr}`, padding: "24px 28px 20px" }}>
@@ -541,12 +546,12 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
             <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
               <div style={{ width: 52, height: 52, borderRadius: 12, background: `${alpha(C.gold, 9.4)}`, border: `1px solid ${alpha(C.gold, 18.8)}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>📖</div>
               <div>
-                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 4 }}>Livre blanc · Gratuit</div>
+                <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".12em", textTransform: "uppercase", marginBottom: 4 }}>{t("Livre blanc · Gratuit")}</div>
                 <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: C.tf, lineHeight: 1.2 }}>L'Art de la Rigueur</div>
-                <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>Manifeste pour une gouvernance frugale de la data en Afrique</div>
+                <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>{t("Manifeste pour une gouvernance frugale de la data en Afrique")}</div>
               </div>
             </div>
-            <button onClick={onClose} aria-label="Fermer" style={btn({ background: C.bdr, color: C.t2, width: 30, height: 30, borderRadius: "50%", fontSize: 14, flexShrink: 0 })}>✕</button>
+            <button onClick={onClose} aria-label={t("Fermer")} style={btn({ background: C.bdr, color: C.t2, width: 30, height: 30, borderRadius: "50%", fontSize: 14, flexShrink: 0 })}>✕</button>
           </div>
         </div>
 
@@ -575,11 +580,11 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div>
-                  <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Entreprise</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>{t("Entreprise")}</div>
                   <input {...inp("entreprise")} placeholder="Beyrey Consulting" />
                 </div>
                 <div>
-                  <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>Poste</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 6 }}>{t("Poste")}</div>
                   <input {...inp("poste")} placeholder="Directeur Data" />
                 </div>
               </div>
@@ -602,7 +607,7 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
         {step === "loading" && (
           <div style={{ padding: 48, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
             <div style={{ width: 40, height: 40, border: `3px solid ${C.bdr}`, borderTopColor: C.gold, borderRadius: "50%", animation: "spin 1s linear infinite" }} />
-            <div style={{ fontSize: 14, color: C.t }}>Préparation du téléchargement…</div>
+            <div style={{ fontSize: 14, color: C.t }}>{t("Préparation du téléchargement…")}</div>
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
           </div>
         )}
@@ -611,10 +616,10 @@ export function BookDownloadModal({ onClose }: { onClose: () => void }) {
           <div style={{ padding: "28px 28px 36px", display: "flex", flexDirection: "column", alignItems: "center", gap: 14, textAlign: "center" }}>
             <div style={{ width: 64, height: 64, borderRadius: "50%", background: C.grn, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, color: C.surAccent, boxShadow: `0 8px 24px ${alpha(C.grn, 31.4)}` }}>✓</div>
             <div>
-              <div style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 600, color: C.tf, marginBottom: 8 }}>Votre téléchargement a démarré !</div>
+              <div style={{ fontFamily: F.serif, fontSize: 22, fontWeight: 600, color: C.tf, marginBottom: 8 }}>{t("Votre téléchargement a démarré !")}</div>
               <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.65, maxWidth: 340 }}>
                 Si le téléchargement ne démarre pas automatiquement,{" "}
-                <a href="/L_Art_de_la_Rigueur.pdf" download="L_Art_de_la_Rigueur_Beyrey_Consulting.pdf" style={{ color: C.gold, textDecoration: "underline" }}>cliquez ici</a>.
+                <a href="/L_Art_de_la_Rigueur.pdf" download="L_Art_de_la_Rigueur_Beyrey_Consulting.pdf" style={{ color: C.gold, textDecoration: "underline" }}>{t("cliquez ici")}</a>.
               </div>
             </div>
             <button onClick={onClose} style={btn({ background: C.s2, color: C.t, border: `1px solid ${C.bdr2}`, padding: "10px 24px", borderRadius: 10, fontWeight: 700, fontSize: 13, marginTop: 6 })}>

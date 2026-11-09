@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { C, F, btn, clickable, alpha } from "./data.tsx";
+import { useLangue } from "./i18n.tsx";
 import { supabase, signMedia } from "./supabase";
 
 /* ─────────────── TYPES ─────────────── */
@@ -216,6 +217,7 @@ function ProtectedVideoPlayer({ url, path, isPreview, onComplete, onProgress }: 
 /* ─────────────── QUIZ TAKER ─────────────── */
 // `userId` ne sert plus : le serveur identifie l'élève par sa session (submit_quiz).
 function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string; onComplete?: () => void }) {
+  const { t } = useLangue();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -261,11 +263,11 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string
     <div style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 16, padding: 24 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".1em" }}>QUIZ</div>
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".1em" }}>{t("QUIZ")}</div>
           <div style={{ fontFamily: F.serif, fontSize: 20, fontWeight: 600, color: C.tf }}>{quiz.title}</div>
         </div>
         <div style={{ textAlign: "end" }}>
-          <div style={{ fontSize: 10, color: C.t3, fontFamily: F.mono }}>Score minimum</div>
+          <div style={{ fontSize: 10, color: C.t3, fontFamily: F.mono }}>{t("Score minimum")}</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: C.gold }}>{quiz.pass_score}%</div>
         </div>
       </div>
@@ -327,7 +329,7 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string
             </div>
             {submitted && q.explanation && (
               <div style={{ marginTop: 10, padding: "10px 12px", background: `${alpha(C.blue, 6.3)}`, borderRadius: 8, fontSize: 12, color: C.t2, lineHeight: 1.6 }}>
-                <strong style={{ color: C.blue }}>Explication :</strong> {q.explanation}
+                <strong style={{ color: C.blue }}>{t("Explication :")}</strong> {q.explanation}
               </div>
             )}
           </div>
@@ -352,6 +354,7 @@ function QuizTaker({ lessonId, onComplete }: { lessonId: string; userId?: string
 
 /* ─────────────── Q&A SECTION ─────────────── */
 function QASection({ lessonId }: { lessonId: string }) {
+  const { t } = useLangue();
   const [qas, setQas] = useState<QA[]>([]);
   // Pas de champ email : le serveur prend celui du compte connecté
   // (trg_lms_qa_author) et ne le montre plus à personne d'autre que l'admin.
@@ -388,28 +391,28 @@ function QASection({ lessonId }: { lessonId: string }) {
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
         <div style={{ fontSize: 22 }}>💬</div>
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".1em" }}>QUESTIONS & REPONSES</div>
-          <div style={{ fontFamily: F.serif, fontSize: 18, fontWeight: 600, color: C.tf }}>Zone de discussion</div>
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".1em" }}>{t("QUESTIONS & REPONSES")}</div>
+          <div style={{ fontFamily: F.serif, fontSize: 18, fontWeight: 600, color: C.tf }}>{t("Zone de discussion")}</div>
         </div>
       </div>
 
       <div style={{ background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 16, marginBottom: 20 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: C.t, marginBottom: 12 }}>Posez votre question</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: C.t, marginBottom: 12 }}>{t("Posez votre question")}</div>
         <div style={{ marginBottom: 10 }}>
           <input aria-label="Votre nom" value={newQuestion.name} onChange={e => setNewQuestion(q => ({ ...q, name: e.target.value }))} placeholder="Votre nom"
             style={{ width: "100%", boxSizing: "border-box", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "10px 12px", color: C.t, fontSize: 13, outline: "none" }} />
         </div>
-        <textarea value={newQuestion.question} onChange={e => setNewQuestion(q => ({ ...q, question: e.target.value }))} placeholder="Votre question..." rows={3}
+        <textarea value={newQuestion.question} onChange={e => setNewQuestion(q => ({ ...q, question: e.target.value }))} placeholder={t("Votre question...")} rows={3}
           style={{ width: "100%", background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "10px 12px", color: C.t, fontSize: 13, outline: "none", resize: "vertical", boxSizing: "border-box", marginBottom: 10 }} />
         {erreurQA && <div role="alert" style={{ fontSize: 12, color: C.red, marginBottom: 10 }}>{erreurQA}</div>}
-        {submited && <div style={{ fontSize: 12, color: C.grn, marginBottom: 10 }}>Question envoyee ! Un formateur vous repondra bientot.</div>}
+        {submited && <div style={{ fontSize: 12, color: C.grn, marginBottom: 10 }}>{t("Question envoyee ! Un formateur vous repondra bientot.")}</div>}
         <button onClick={submitQuestion} disabled={submitting || !newQuestion.name.trim() || !newQuestion.question.trim()}
           style={btn({ background: submitting || !newQuestion.question.trim() ? C.bdr : C.gold, color: submitting || !newQuestion.question.trim() ? C.t3 : C.bg, padding: "10px 18px", borderRadius: 8, fontWeight: 700, fontSize: 12 })}>
           {submitting ? "Envoi..." : "Envoyer la question"}
         </button>
       </div>
 
-      {qas.length === 0 && <div style={{ fontSize: 13, color: C.t3, textAlign: "center", padding: 20 }}>Aucune question pour cette lecon. Soyez le premier a poser la votre !</div>}
+      {qas.length === 0 && <div style={{ fontSize: 13, color: C.t3, textAlign: "center", padding: 20 }}>{t("Aucune question pour cette lecon. Soyez le premier a poser la votre !")}</div>}
       {qas.map(qa => (
         <div key={qa.id} style={{ background: C.bg, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 16, marginBottom: 12 }}>
           <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
@@ -420,7 +423,7 @@ function QASection({ lessonId }: { lessonId: string }) {
               <div style={{ fontSize: 13, fontWeight: 700, color: C.t }}>{qa.author_name}</div>
               <div style={{ fontSize: 10, color: C.t3, fontFamily: F.mono }}>{new Date(qa.created_at).toLocaleDateString("fr-FR")}</div>
             </div>
-            {qa.is_answered && <div style={{ marginInlineStart: "auto", fontSize: 10, color: C.grn, fontFamily: F.mono, background: `${alpha(C.grn, 8.2)}`, padding: "3px 8px", borderRadius: 4 }}>REPONDU</div>}
+            {qa.is_answered && <div style={{ marginInlineStart: "auto", fontSize: 10, color: C.grn, fontFamily: F.mono, background: `${alpha(C.grn, 8.2)}`, padding: "3px 8px", borderRadius: 4 }}>{t("REPONDU")}</div>}
           </div>
           <p style={{ fontSize: 13, color: C.t, lineHeight: 1.65, margin: 0 }}>{qa.question}</p>
 
@@ -431,7 +434,7 @@ function QASection({ lessonId }: { lessonId: string }) {
                   {ans.author_name?.[0]?.toUpperCase()}
                 </div>
                 <span style={{ fontSize: 11, fontWeight: 700, color: ans.is_from_instructor ? C.gold : C.t }}>{ans.author_name}</span>
-                {ans.is_from_instructor && <span style={{ fontSize: 9, color: C.gold, fontFamily: F.mono, background: `${alpha(C.gold, 9.4)}`, padding: "2px 6px", borderRadius: 4 }}>FORMATEUR</span>}
+                {ans.is_from_instructor && <span style={{ fontSize: 9, color: C.gold, fontFamily: F.mono, background: `${alpha(C.gold, 9.4)}`, padding: "2px 6px", borderRadius: 4 }}>{t("FORMATEUR")}</span>}
               </div>
               <p style={{ fontSize: 12, color: C.t, lineHeight: 1.6, margin: 0 }}>{ans.answer}</p>
             </div>
@@ -444,6 +447,7 @@ function QASection({ lessonId }: { lessonId: string }) {
 
 /* ─────────────── FILES SECTION ─────────────── */
 function FilesSection({ lessonId }: { lessonId: string }) {
+  const { t } = useLangue();
   const [files, setFiles] = useState<LessonFile[]>([]);
   const [opening, setOpening] = useState<string | null>(null);
 
@@ -468,8 +472,8 @@ function FilesSection({ lessonId }: { lessonId: string }) {
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
         <div style={{ fontSize: 22 }}>📁</div>
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".1em" }}>RESSOURCES</div>
-          <div style={{ fontFamily: F.serif, fontSize: 18, fontWeight: 600, color: C.tf }}>Fichiers du cours</div>
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.gold, letterSpacing: ".1em" }}>{t("RESSOURCES")}</div>
+          <div style={{ fontFamily: F.serif, fontSize: 18, fontWeight: 600, color: C.tf }}>{t("Fichiers du cours")}</div>
         </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -493,6 +497,7 @@ function FilesSection({ lessonId }: { lessonId: string }) {
 
 /* ─────────────── LESSON VIEWER ─────────────── */
 function LessonViewer({ lesson, onBack, onPrevious, onNext, hasQuiz, user, progress, onComplete, onQuizPass }: { lesson: Lesson; onBack: () => void; onPrevious?: () => void; onNext?: () => void; hasQuiz?: boolean; user: User | null; progress?: LessonProgress; onComplete: () => void; onQuizPass: () => void }) {
+  const { t } = useLangue();
   const [tab, setTab] = useState<"video" | "files" | "quiz" | "qa">("video");
 
   const isComplete = progress?.completed_at;
@@ -542,7 +547,7 @@ function LessonViewer({ lesson, onBack, onPrevious, onNext, hasQuiz, user, progr
         ) : (
           <div style={{ background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 16, padding: 60, textAlign: "center" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🎬</div>
-            <div style={{ fontSize: 15, color: C.t2 }}>Aucune video pour cette lecon</div>
+            <div style={{ fontSize: 15, color: C.t2 }}>{t("Aucune video pour cette lecon")}</div>
             <button onClick={onComplete} style={btn({ background: C.gold, color: C.bg, padding: "12px 24px", borderRadius: 10, fontWeight: 700, fontSize: 13, marginTop: 20 })}>
               Marquer comme terminee
             </button>
@@ -556,7 +561,7 @@ function LessonViewer({ lesson, onBack, onPrevious, onNext, hasQuiz, user, progr
       {/* Description */}
       {lesson.description && (
         <div style={{ marginTop: 20, background: C.s2, border: `1px solid ${C.bdr}`, borderRadius: 12, padding: 16 }}>
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 8 }}>A propos de cette lecon</div>
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.t2, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 8 }}>{t("A propos de cette lecon")}</div>
           <p style={{ fontSize: 13, color: C.t2, lineHeight: 1.7, margin: 0 }}>{lesson.description}</p>
         </div>
       )}

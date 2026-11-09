@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { C, F, fmt, btn, Tag, alpha } from "./data.tsx";
+import { useLangue } from "./i18n.tsx";
 import { VideoPlayer, RichText } from "./components";
 import { useDialog } from "./a11y";
 
@@ -7,6 +8,7 @@ import { useDialog } from "./a11y";
    COURSE DETAIL MODAL
 ═══════════════════════════════════════════════════ */
 export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{course:any,enrolled:boolean,onClose:()=>void,onBuy:()=>void,onEnroll:(id:number)=>void}){
+  const { t } = useLangue();
   const [tab,setTab]=useState<"apercu"|"programme"|"formateur">("apercu");
   const dialogRef=useDialog(onClose);
 
@@ -50,7 +52,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
             <div className="cd-apercu" style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 280px",gap:24,alignItems:"start"}}>
               <div>
                 <p style={{fontSize:14,color:C.t,lineHeight:1.7,marginBottom:18}}>{course.desc}</p>
-                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".1em",textTransform:"uppercase",marginBottom:10}}>Compétences acquises</div>
+                <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".1em",textTransform:"uppercase",marginBottom:10}}>{t("Compétences acquises")}</div>
                 <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
                   {course.skills.map((s:string,i:number)=>(
                     <span key={i} style={{background:`${course.color}12`,color:course.color,fontSize:11,fontWeight:600,padding:"6px 12px",borderRadius:8,border:`1px solid ${course.color}28`}}>{s}</span>
@@ -106,7 +108,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
               </div>
             </div>
             <div style={{background:C.s2,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16}}>
-              <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".1em",textTransform:"uppercase",marginBottom:10}}>Approche pédagogique</div>
+              <div style={{fontFamily:F.mono,fontSize:10,color:C.t2,letterSpacing:".1em",textTransform:"uppercase",marginBottom:10}}>{t("Approche pédagogique")}</div>
               <p style={{fontSize:13,color:C.t,lineHeight:1.7,margin:0}}>
                 Chaque formation suit la méthode DIAL™ : diagnostiquer votre niveau, implémenter les bons outils, automatiser le travail manuel, livrer des compétences durables. 80% de pratique, 20% de théorie. Tous les exercices sont tirés du contexte malien.
               </p>
@@ -122,7 +124,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
               <span style={{fontSize:13,color:C.t3,textDecoration:"line-through"}}>{fmt(course.orig)}</span>
               <Tag c={C.red}>-{Math.round((1-course.price/course.orig)*100)}%</Tag>
             </div>
-            <div style={{fontSize:10,color:C.t2,fontFamily:F.mono,marginTop:2}}>Accès à vie · Certification incluse</div>
+            <div style={{fontSize:10,color:C.t2,fontFamily:F.mono,marginTop:2}}>{t("Accès à vie · Certification incluse")}</div>
           </div>
           {enrolled?(
             <button onClick={()=>onEnroll(course.id)} style={btn({background:C.grn,color:C.surGrn,padding:"13px 28px",borderRadius:10,fontWeight:800,fontSize:14,boxShadow:"0 6px 24px rgba(0,200,150,.3)"})}>
@@ -143,6 +145,7 @@ export function CourseDetailModal({course,enrolled,onClose,onBuy,onEnroll}:{cour
    BLOG POST MODAL
 ═══════════════════════════════════════════════════ */
 export function BlogModal({post,onClose}:{post:any,onClose:()=>void}){
+  const { t } = useLangue();
   const dialogRef=useDialog(onClose);
   useEffect(()=>{
     document.body.style.overflow="hidden";
@@ -176,7 +179,7 @@ export function BlogModal({post,onClose}:{post:any,onClose:()=>void}){
         </div>
 
         <div style={{borderTop:`1px solid ${C.bdr}`,padding:"16px 28px",background:C.s2,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div style={{fontSize:11,color:C.t2,fontFamily:F.mono}}>Partagez cet article</div>
+          <div style={{fontSize:11,color:C.t2,fontFamily:F.mono}}>{t("Partagez cet article")}</div>
           <div style={{display:"flex",gap:8}}>
             {[{s:"𝕏",l:"Partager sur X"},{s:"in",l:"Partager sur LinkedIn"},{s:"f",l:"Partager sur Facebook"},{s:"✉",l:"Partager par email"}].map((x)=>(
               <button key={x.l} aria-label={x.l} style={btn({width:34,height:34,borderRadius:"50%",background:C.bdr,color:C.t2,fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"})}>{x.s}</button>

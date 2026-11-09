@@ -252,7 +252,7 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
             transition={{ delay: 0.3 }}
             style={{fontSize:18,color:C.t2,lineHeight:1.75,maxWidth:540,margin:"0 0 36px"}}
           >
-            <strong style={{color:C.t}}>Beyrey Consulting</strong> aide les entreprises maliennes à exploiter la puissance de leurs données.
+            <strong style={{color:C.t}}>Beyrey Consulting</strong> {t("aide les entreprises maliennes à exploiter la puissance de leurs données.")}
             <span style={{color:C.gold,fontWeight:700}}> {t("ROI prouvé, méthodologie éprouvée DIAL™.")}</span>
           </m.p>
 
@@ -264,9 +264,9 @@ function Hero({onNav}:{onNav:(id:string)=>void}){
             style={{display:"flex",gap:28,marginBottom:36,flexWrap:"wrap"}}
           >
             {[
-              { value: "+40%", label: "Gain d'efficacité" },
-              { value: "50+", label: "Entreprises formées" },
-              { value: "3x", label: "ROI moyen" },
+              { value: "+40%", label: t("Gain d'efficacité") },
+              { value: "50+", label: t("Entreprises formées") },
+              { value: "3x", label: t("ROI moyen") },
             ].map((stat, i) => (
               <m.div
                 key={i}
